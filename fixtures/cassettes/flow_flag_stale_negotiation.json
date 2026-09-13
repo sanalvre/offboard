@@ -1,0 +1,172 @@
+{
+  "key": "flow_flag_stale_negotiation",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T21:33:34Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nBe precise about semantics; they differ between systems:\n- Salesforce validation rules: a blank number is null; any numeric comparison on a blank is FALSE. ISPICKVAL compares\n  the picklist API name. Percent fields store 50 for 50%.\n- Airtable: a blank number is treated as 0 in comparisons; {Percent} stores 0.5 for 50%; a single select compares\n  against its option label.\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed. If a Salesforce field has no Airtable counterpart, say so in caveats and still\nproduce your best mapping.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record. Do not round up.\n"
+      },
+      {
+        "role": "user",
+        "content": "This artefact is a RECORD-TRIGGERED FLOW whose only action assigns a checkbox on the same record. The equivalent in\nAirtable is a computed formula field that is 1 exactly when the flow's entry conditions AND the decision outcome hold,\nelse 0. Produce that formula in guard_formula using IF(<condition>, 1, 0) and name the field after the flow's target\nfield in guard_field_name. The condition is given to you as a Salesforce-style boolean expression.\n\nSalesforce object: Opportunity\nRule API name: Flag_Stale_Negotiation\nFormula / condition:\n((ISPICKVAL(StageName, \"Negotiation/Review\") && Probability < 50) && Amount > 100000)\nError message shown to users: (none)\nAdmin description (business intent): Forecasting: a negotiation-stage deal over $100k with probability under 50% needs manager review. Sets Needs Review.\nActive: True\n\nSalesforce fields referenced or available:\n- StageName: picklist, required options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\"]\n- Amount: currency\n- Probability: percent (stores 50 for 50%)\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent (stores 0.5 for 50%)\n- Discount: percent (stores 0.5 for 50%)\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789335202-FoquwSFKcUhbW5HndOjk",
+    "object": "chat.completion",
+    "created": 1789335202,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\":\"Flag negotiation-stage opportunities over $100k with less than 50% probability as needing manager review.\",\"field_mapping\":[{\"source_field\":\"StageName\",\"target_field\":\"Stage\",\"target_type\":\"singleSelect\"},{\"source_field\":\"Amount\",\"target_field\":\"Amount\",\"target_type\":\"currency\"},{\"source_field\":\"Probability\",\"target_field\":\"Probability\",\"target_type\":\"percent\"}],\"guard_field_name\":\"Needs Review\",\"guard_formula\":\"IF(AND({Stage} = \\\"Negotiation/Review\\\", {Probability} < 0.5, {Amount} > 100000), 1, 0)\",\"rationale\":\"Directly translates the flow's entry condition: Stage equals 'Negotiation/Review', Probability under 50% (0.5 in Airtable's decimal storage), and Amount exceeding $100,000. All three Salesforce fields have exact-name Airtable counterparts, and the picklist value 'Negotiation/Review' exists identically in the Airtable Stage options.\",\"confidence\":0.8,\"caveats\":[\"Salesforce treats a null Probability as failing any numeric comparison (so a blank Probability would NOT trigger the rule), but Airtable treats a blank Probability field as 0, which IS less than 0.5 — this could cause a false VIOLATION in Airtable for records with Stage='Negotiation/Review', Amount>100000, and no Probability set, where Salesforce would not have flagged it.\",\"Similarly, a blank Amount in Airtable is treated as 0, which fails the >100000 check, matching Salesforce's null-comparison-is-false behavior for Amount — this case is consistent.\",\"The Airtable Stage field includes extra options ('Negotiation', 'Proposal') not present in Salesforce; these are irrelevant to this rule since we match specifically on 'Negotiation/Review'.\",\"Assumes the Airtable Probability field is truly a decimal fraction (0.5 = 50%) as stated; if actual stored values differ, the threshold comparison would be wrong.\"]}",
+          "refusal": null,
+          "reasoning": "I'm matching Salesforce's 50 stored probability to Airtable's 0.5, keeping the amount threshold consistent, and mapping the Stage directly since Airtable already has \"Negotiation/Review\" as an option. Then I'm writing a formula that sets Needs Review to 1 when the stage, probability, and amount conditions all hold true, otherwise 0.\n\nOne caveat worth flagging: blank Probability values behave differently across systems—Salesforce treats a null probability as failing the <50 check, but Airtable would treat a blank as 0, which satisfies <0.5. That mismatch could create false positive violations when Probability is empty but Stage and Amount conditions are met, so I should note this edge case.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "I'm matching Salesforce's 50 stored probability to Airtable's 0.5, keeping the amount threshold consistent, and mapping the Stage directly since Airtable already has \"Negotiation/Review\" as an option. Then I'm writing a formula that sets Needs Review to 1 when the stage, probability, and amount conditions all hold true, otherwise 0.\n\nOne caveat worth flagging: blank Probability values behave differently across systems—Salesforce treats a null probability as failing the <50 check, but Airtable would treat a blank as 0, which satisfies <0.5. That mismatch could create false positive violations when Probability is empty but Stage and Amount conditions are met, so I should note this edge case.\n\n",
+              "format": "anthropic-claude-v1",
+              "index": 0,
+              "signature": "EvYJCrABCBEYAipAQ3P25bD1LvLg5h20tyNuwDVa/oIfmV8Z2aoDk5oyweJnR8EHAT9R8IQF7VvsYCFBg/HNUt5qCcmhbNmoLzF1UjIPY2xhdWRlLXNvbm5ldC01OABCCHRoaW5raW5nWiQ0YzBmMDQ2Zi0yNWZkLTQ1ZmItYmZiMy1hMDhhOGUyNDljYTd6HnVwcm9mXzAxMUNlUmVjUlk5emQzOFV0Vlp3VHBrOKgBqa2c1QYSDIQJ+tYeACxOZH30VxoMFMOiW5cJqU2J/fXbIjA8iYPcCfDknNt825j4S0tvME4GZj1L7ZWl8jVDLCRbp2O9Q5nvs321KX4AeYLCtJ0q8geZ5kMyxXk8CRDU6b2JLwDFOnNPkuIBKu2xD5lmFzqMBQ7lWiF+ssvpn7s7A2wCWnOyFCa+Ea5+hMDeMdGaV1LhOcAK6Zf6rur8JWkzaGvIKuRHB9tBCeA5xDbTABXCGr1Q8xLJMUCvFv6kCbPH/f7hSfI+C9RP8+o/C/GQHbpJjw9s0rGvwbToXHwGFGKr0JLqrI0xwOyIh10bK84na/RlhFMyMBj22/TNFpU5C5u4J+NJ1isrkRaiup07g9MDd5Cvu3Y6PDGYy+CzguMqXFCGQBkjJ9ipRTjWediQZ0DyE7d+ttPuN+aBU8GZt8HTVqbdYiLqLgeYm8ZhhwwgaeGI2zLi3uVFMZrzd+tpnkqDl2nQWxFIIazmUZfpYjWLD+J+7cpnFgHYKEcx+SO8ybOSQ580tp4fExtKh3VrRcnCpWG1bhUkeRXiTRMs/A7NaMJ4MzZLNRW6009+z6b4tCPTwtVCFwKziz9Ac19IOkS+8LaqkdpN3dCZjg1EuMkvSlDlA79CQCxMgnazSzo/H+4y6KhO4rzrC5f9Q4ybU0F23pzgEke7N6wMh2retUxpNfT69v++nGhOkezTAaLaqZhrh7wzvKw92oPvZaO8FPza4KsaQfNgAfPaYbic3vwjGBKI83PWeOmZun41sRxfyuJTf5VByxVPDWSSEDS+yAK4xsRoIL+VaaUGxrJhfYsPa/T5UBMsRBklBURxST/pmkOO4K6lzlynxIUk1BLuC0aePytdszhV+q8LDiFGguOyMC/Wb9dPp2BUb+Ou+xDw52XPGxlR+3kT27CJ+AQfwMCjLWc/YHJ7LRhDTuSZPkOXXPlIor79X/j8DYqhremLuDS1LcPz6lkahRL/7cdQPA+qsK/i93wXsoB6I57NX1ExOHd2mgZ6BBmX2vfWnSnqq6YfUq6TO3pHmfSLGyibCH4mZmHF9747ubAj+CE2rYVL9myzbjVcZ/09o/VK4iL73UbxvlYdIgx8eDvUbRerOVkTjw0DEmKGAjFPuNMqpup9sKNr26W5O5eXh4EAvDb/5wlXflefVprgRkgzqh0ZE1GFbuKYm5FSqQ7+HbjcP+5BIOBgL49r5qpbb7hHg2vihvCl9uonpAipyszehvdsIpYrSe8J4rUDWZyuawJAEDCvmgPolriki0IDG5a3qINTUzf5Y0UiAF0nb1x90PP/FdPgRX2tn5lS7ZfTzfhJnh64EMEbjrVVo0utufA81s/OdB/L+NVf7mc18KgofOzbapsiL7HK2KLeGUIdoxTAUf39jDEz5aRGM0dj0wsWZhvXqHj3XJEoSEaHmx7YPsmUpXnwD6h7vyP0sf4spwkl8ITgyjv8aRgB"
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2166,
+      "completion_tokens": 1072,
+      "total_tokens": 3238,
+      "cost": 0.015052,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.015052,
+        "upstream_inference_prompt_cost": 0.004332,
+        "upstream_inference_completions_cost": 0.01072
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 386,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

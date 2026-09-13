@@ -49,6 +49,7 @@ class AirtableAdapter:
     def _create_field(self, table: str, body: dict) -> dict: raise NotImplementedError
     def _create_record(self, table: str, fields: dict) -> dict: raise NotImplementedError
     def _get_record(self, table: str, record_id: str) -> dict: raise NotImplementedError
+    def _delete_record(self, table: str, record_id: str) -> dict: raise NotImplementedError
 
     def _traced(self, op: str, request: dict, fn):
         self.calls += 1
@@ -87,6 +88,9 @@ class AirtableAdapter:
 
     def get_record(self, table: str, record_id: str) -> dict:
         return self._traced("get_record", {"method": "GET", "table": table, "id": record_id}, lambda: self._get_record(table, record_id))
+
+    def delete_record(self, table: str, record_id: str) -> dict:
+        return self._traced("delete_record", {"method": "DELETE", "table": table, "id": record_id}, lambda: self._delete_record(table, record_id))
 
     def snapshot(self, schema: dict[str, Any]) -> dict[str, Any]:
         """Before/after state used for the bounded-diff invariant: field lists and all records of every table."""
@@ -142,6 +146,9 @@ class LiveAirtable(AirtableAdapter):
 
     def _get_record(self, table, record_id):
         return self._req("GET", f"https://api.airtable.com/v0/{self.base}/{httpx.URL(table).path}/{record_id}")
+
+    def _delete_record(self, table, record_id):
+        return self._req("DELETE", f"https://api.airtable.com/v0/{self.base}/{httpx.URL(table).path}/{record_id}")
 
     def _table_id(self, table: str) -> str:
         for t in self._schema()["tables"]:
@@ -204,7 +211,7 @@ class MockAirtable(AirtableAdapter):
 
     def _list(self, table, formula):
         t = self._t(table)
-        recs = [{"id": r["id"], "createdTime": r["createdTime"], "fields": r["fields"]} for r in t["records"]]
+        recs = [self._with_formulas(table, r) for r in t["records"]]
         if formula:
             # only the shape the pipeline uses: {Rule} = "name"  or FIND('x', {Name})
             import re
@@ -243,5 +250,42 @@ class MockAirtable(AirtableAdapter):
     def _get_record(self, table, record_id):
         for r in self._t(table)["records"]:
             if r["id"] == record_id:
-                return r
+                return self._with_formulas(table, r)
         raise AirtableError(404, {"error": "NOT_FOUND"})
+
+    def _delete_record(self, table, record_id):
+        t = self._t(table)
+        before = len(t["records"])
+        t["records"] = [r for r in t["records"] if r["id"] != record_id]
+        if len(t["records"]) == before:
+            raise AirtableError(404, {"error": "NOT_FOUND"})
+        self._save()
+        return {"id": record_id, "deleted": True}
+
+    def _with_formulas(self, table, r):
+        """Mock evaluation of formula fields with the project's own parsers and reference interpreter under Airtable
+        semantics. Live mode reads Airtable's real computation; the mock approximates it."""
+        from ..parsers.at_formula import parse_at_formula
+        from ..parsers.numeric import parse_numeric
+        from ..reference import evaluate, evaluate_expr
+        from .schema import at_fields
+        t = self._t(table)
+        specs = at_fields({"fields": t["fields"]})
+        out = {"id": r["id"], "createdTime": r["createdTime"], "fields": dict(r["fields"])}
+        for f in t["fields"]:
+            if f["type"] != "formula":
+                continue
+            formula = (f.get("options") or {}).get("formula", "")
+            rec = dict(r["fields"])
+            num = parse_numeric(formula, specs, "at")
+            if num.expr is not None:
+                val = evaluate_expr(num.expr, rec, specs, "at")
+                if val is not None:
+                    out["fields"][f["name"]] = val
+                continue
+            b = parse_at_formula(formula, specs)
+            if b.node is not None:
+                fired = evaluate(b.node, rec, specs, "at")
+                text = '"VIOLATION"' in formula
+                out["fields"][f["name"]] = ("VIOLATION" if fired else "") if text else (1 if fired else 0)
+        return out

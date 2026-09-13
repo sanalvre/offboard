@@ -131,3 +131,18 @@ def test_reference_expr_semantics_by_hand():
     a = at("{Amount} - {Amount} * IF({Discount} = BLANK(), 0, {Discount})").expr
     assert evaluate_expr(a, {"Amount": 1000, "Discount": 0.1}, AT_FIELDS, "at") == 900.0
     assert evaluate_expr(a, {"Amount": None, "Discount": 0.1}, AT_FIELDS, "at") == 0.0
+
+
+def test_blank_result_matches_salesforce_blank_as_blank():
+    # Airtable can return a blank result with BLANK(); that makes the BlankAsBlank net amount provably equivalent
+    res = run(NET, "IF({Amount} = BLANK(), BLANK(), {Amount} - {Amount} * IF({Discount} = BLANK(), 0, {Discount}))")
+    assert res.status == "equivalent"
+    e = at("IF({Amount} = BLANK(), BLANK(), 1)").expr
+    assert e.op == "if" and e.args[0].op == "blank"
+    assert evaluate_expr(e, {"Amount": None}, AT_FIELDS, "at") is None and evaluate_expr(e, {"Amount": 5}, AT_FIELDS, "at") == 1.0
+
+
+def test_solver_is_deterministic_across_repeated_checks():
+    a = run(NET, "{Amount} - ({Amount} * IF({Discount} = BLANK(), 0, {Discount}) / 100)", blanks="BlankAsZero")
+    b = run(NET, "{Amount} - ({Amount} * IF({Discount} = BLANK(), 0, {Discount}) / 100)", blanks="BlankAsZero")
+    assert (a.counterexample, a.outputs, a.sexpr) == (b.counterexample, b.outputs, b.sexpr)

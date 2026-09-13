@@ -96,6 +96,8 @@ def evaluate_expr(expr: Expr, record: Mapping[str, Any], fields: Mapping[str, Fi
         op = e.op
         if op == "num":
             return float(e.value)  # type: ignore[arg-type]
+        if op == "blank":
+            return None
         if op == "field":
             raw = record.get(e.field)  # type: ignore[arg-type]
             spec = fields[e.field]  # type: ignore[index]

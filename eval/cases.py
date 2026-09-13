@@ -130,6 +130,28 @@ def blocks_source_firing_record(doc: dict) -> Optional[str]:
     return None if (s["source_fires"] is True and s["target_flags"] is False) else f"expected source fires / target passes, got {s['source_fires']}/{s['target_flags']}"
 
 
+def behavioural_check_verified(doc: dict) -> Optional[str]:
+    """On PASS a probe record was created, Airtable's computed value matched the reference interpreter, probe deleted."""
+    if doc["summary"]["verdict"] != "PASS":
+        return None
+    cl = {c["kind"]: c for c in doc["summary"]["claims"]}
+    if "behavioural_check" not in cl:
+        return "no behavioural check claim on a PASS"
+    if cl["behavioural_check"]["verified"] is not True:
+        return f"behavioural check not verified: {cl['behavioural_check']['detail']}"
+    if cl.get("probe_deleted", {}).get("verified") is not True:
+        return "probe record not confirmed deleted"
+    return None
+
+
+def outputs_recorded(doc: dict) -> Optional[str]:
+    s = solver(doc)
+    if not s or s["status"] != "not_equivalent":
+        return f"expected a transformation counterexample, got {s and s['status']}"
+    o = s.get("outputs") or {}
+    return None if "source" in o and "target" in o and o["source"] != o["target"] else f"outputs missing or equal: {o}"
+
+
 def schema_mismatch_reason(doc: dict) -> Optional[str]:
     s = solver(doc)
     # either path is a correct refusal: the solver's pre-check (unmapped source field / missing option) or the
@@ -208,6 +230,17 @@ CASES: list[Case] = [
     Case("recovery_after_partial_failure", HERO, "ERROR", "Arga recovery / idempotency: injected 503 then rerun",
          [error_captured("create_record", 503)], cassette="happy_closedwon_amount", inject_fault="airtable.create_record:503",
          rerun=True, expect_second="PASS", checks_second=[solver_equivalent, guard_field_written], live_ok=False),
+    # ---- phase 2: formula fields and flows (skills/plan-phase2.md)
+    Case("formula_net_amount", "Opportunity.Net_Amount__c", "SOLVER_TRUTH", "transformation: arithmetic + percent scale + BLANKVALUE, verified by Z3 and by a live probe record",
+         [write_matches_verdict, confidence_consistent, llm_confidence_recorded, behavioural_check_verified]),
+    Case("formula_is_big_deal", "Opportunity.Is_Big_Deal__c", "SOLVER_TRUTH", "boolean formula field (checkbox) verified as a condition",
+         [write_matches_verdict, confidence_consistent, llm_confidence_recorded, behavioural_check_verified]),
+    Case("formula_literal_copy_off_by_100", "Opportunity.Net_Amount__c", "FAIL", "transformation trap: /100 copied although Airtable percent is already 0.5 (hand-edited cassette)",
+         [outputs_recorded, system_confidence_at_most(0.3), only_audit_record_written], cassette="net_amount_literal_copy", live_ok=False),
+    Case("flow_flag_stale_negotiation", "Flow.Flag_Stale_Negotiation", "SOLVER_TRUTH", "record-triggered flow: entry filters AND decision outcome proven; single assignment reconfigured as a computed field",
+         [write_matches_verdict, confidence_consistent, llm_confidence_recorded]),
+    Case("flow_not_verifiable_inventoried", "Flow.sfdc_default_ReportExport_Protection_Flow", "AMBIGUOUS", "non-record flow: inventoried with a reason, no LLM call, audit record only",
+         [no_llm_call, system_confidence_at_most(0.0), only_audit_record_written], needs_llm=False),
     Case("distractor_near_duplicate", HERO, "PASS", "Arga unauthorized / wrong-target write: 15 pre-existing rule records and the agents table must be byte-identical",
          [solver_equivalent, guard_field_written], cassette="happy_closedwon_amount", live_ok=False),
 ]

@@ -124,6 +124,11 @@ class _NumParser:
             if cond is None:
                 return Expr(op="num", value=0.0)
             return Expr(op="if", cond=cond, args=[a, b])
+        if up == "BLANK" and self.system == "at":
+            parts = self._slice_args()
+            if parts and parts != [""]:
+                raise ParseError("BLANK() takes no arguments")
+            return Expr(op="blank")
         if up in ("BLANKVALUE", "NULLVALUE"):
             parts = self._slice_args()
             if len(parts) != 2:

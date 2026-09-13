@@ -1,0 +1,172 @@
+{
+  "key": "formula_is_big_deal",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T21:30:42Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nBe precise about semantics; they differ between systems:\n- Salesforce validation rules: a blank number is null; any numeric comparison on a blank is FALSE. ISPICKVAL compares\n  the picklist API name. Percent fields store 50 for 50%.\n- Airtable: a blank number is treated as 0 in comparisons; {Percent} stores 0.5 for 50%; a single select compares\n  against its option label.\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed. If a Salesforce field has no Airtable counterpart, say so in caveats and still\nproduce your best mapping.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record. Do not round up.\n"
+      },
+      {
+        "role": "user",
+        "content": "This artefact is a FORMULA FIELD, not a validation rule. Produce an Airtable formula that COMPUTES THE SAME VALUE\nfor every record (a number, in Airtable's units: currency as the amount, percent as 0.5 for 50%), not a guard.\nPut it in guard_formula and the Airtable field name (usually the Salesforce label) in guard_field_name. Salesforce\nformula fields with \"treat blanks as blanks\" return blank when any operand is blank unless BLANKVALUE guards it;\nAirtable treats blank operands as 0. Use only + - * / parentheses, IF(<condition>, a, b), IF({F} = BLANK(), d, {F})\nas the blank guard, MIN(a,b), MAX(a,b), numbers and {Field} references.\n\nSalesforce object: Opportunity\nRule API name: Is_Big_Deal__c\nFormula / condition:\nAmount > 1000000 && NOT(ISPICKVAL(Type,\"New Customer\"))\nError message shown to users: (none)\nAdmin description (business intent): Exec review flag: seven-figure deal that is not new business.\nActive: True\n\nSalesforce fields referenced or available:\n- Amount: currency\n- Type: picklist options=[\"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Customer\"]\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent (stores 0.5 for 50%)\n- Discount: percent (stores 0.5 for 50%)\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789335025-H7N0VIHoq0CwTrQnombo",
+    "object": "chat.completion",
+    "created": 1789335025,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\":\"Flag opportunities as a 'Big Deal' for exec review when the amount exceeds one million dollars and the deal is not new business.\",\"field_mapping\":[{\"source_field\":\"Amount\",\"target_field\":\"Amount\",\"target_type\":\"currency\"},{\"source_field\":\"Type\",\"target_field\":\"Type\",\"target_type\":\"singleSelect\"}],\"guard_field_name\":\"Is Big Deal\",\"guard_formula\":\"IF(AND({Amount} > 1000000, {Type} != \\\"New Customer\\\"), 1, 0)\",\"rationale\":\"The Salesforce formula returns TRUE when Amount exceeds 1,000,000 and the Type picklist is not 'New Customer'. Airtable's checkbox-equivalent numeric formula mirrors this using AND() and a not-equal comparison on Type, returning 1 for true and 0 for false. Blank Amounts default to 0 in Airtable (same as Salesforce treating blank amounts as failing the >1000000 test), and blank Type values are correctly treated as not equal to 'New Customer' in both systems, preserving equivalence.\",\"confidence\":0.85,\"caveats\":[\"Airtable's Type picklist includes extra values ('New Business','Renewal','Upsell') not present in Salesforce; if used, they will correctly evaluate as not 'New Customer', consistent with intent but not explicitly validated by Salesforce rule.\",\"This treats the result as a numeric 1/0 flag rather than a native boolean; if the Airtable field is a checkbox, 1/0 will render as checked/unchecked correctly.\",\"No explicit BLANK() guard was needed since both systems naturally handle blank Amount/Type consistently for this particular comparison.\"]}",
+          "refusal": null,
+          "reasoning": "This formula evaluates to a boolean checking whether Amount exceeds 1,000,000 and the Type isn't \"New Customer,\" so despite the task mentioning numbers, the actual return type here is a checkbox/boolean field.\n\nI'm weighing what logical operators are allowed—the guidance lists IF, MIN, MAX, arithmetic, and comparisons but doesn't explicitly mention AND/NOT/TRUE/FALSE, though those likely belong inside the condition argument of IF. I'll draft the formula using AND and a negated equality check inside an IF statement to reproduce the original logic.\n\nFor field mapping, I'm pairing Amount with a currency field and Type with a single-select field, and naming the guard field something like \"Is Big Deal\". I'm also checking edge cases: blank Type still evaluates as not equal to \"New Customer\" in both systems, and blank Amount defaults to false in both, so behavior stays consistent—giving me fairly high confidence, around 0.9.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "This formula evaluates to a boolean checking whether Amount exceeds 1,000,000 and the Type isn't \"New Customer,\" so despite the task mentioning numbers, the actual return type here is a checkbox/boolean field.\n\nI'm weighing what logical operators are allowed—the guidance lists IF, MIN, MAX, arithmetic, and comparisons but doesn't explicitly mention AND/NOT/TRUE/FALSE, though those likely belong inside the condition argument of IF. I'll draft the formula using AND and a negated equality check inside an IF statement to reproduce the original logic.\n\nFor field mapping, I'm pairing Amount with a currency field and Type with a single-select field, and naming the guard field something like \"Is Big Deal\". I'm also checking edge cases: blank Type still evaluates as not equal to \"New Customer\" in both systems, and blank Amount defaults to false in both, so behavior stays consistent—giving me fairly high confidence, around 0.9.\n\n",
+              "format": "anthropic-claude-v1",
+              "index": 0,
+              "signature": "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"
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2175,
+      "completion_tokens": 1488,
+      "total_tokens": 3663,
+      "cost": 0.01923,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.01923,
+        "upstream_inference_prompt_cost": 0.00435,
+        "upstream_inference_completions_cost": 0.01488
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 914,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

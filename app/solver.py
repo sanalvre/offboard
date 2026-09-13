@@ -35,7 +35,8 @@ class SchemaMismatch(Exception):
 
 
 class _Vars:
-    def __init__(self) -> None:
+    def __init__(self, ctx: z3.Context) -> None:
+        self.ctx = ctx
         self.present: dict[str, z3.BoolRef] = {}
         self.value: dict[str, Any] = {}
         self.enum: dict[str, tuple[Any, dict[str, Any]]] = {}  # field -> (sort, key->const)
@@ -53,20 +54,21 @@ def _collect_literals(node: Optional[Node], field: str) -> set[str]:
     return out
 
 
-def _build_vars(fields: dict[str, FieldSpec], nodes: list[Optional[Node]], name_prefix: str = "") -> _Vars:
-    v = _Vars()
+def _build_vars(fields: dict[str, FieldSpec], nodes: list[Optional[Node]], name_prefix: str = "", ctx: Optional[z3.Context] = None) -> _Vars:
+    ctx = ctx or z3.Context()
+    v = _Vars(ctx)
     for name, spec in fields.items():
-        v.present[name] = z3.Bool(f"{name_prefix}{name}.present")
+        v.present[name] = z3.Bool(f"{name_prefix}{name}.present", ctx)
         if not spec.nullable:
             v.domain.append(v.present[name])
         if spec.type in ("currency", "number", "percent"):
-            v.value[name] = z3.Real(f"{name_prefix}{name}.value")
+            v.value[name] = z3.Real(f"{name_prefix}{name}.value", ctx)
         elif spec.type == "checkbox":
-            v.value[name] = z3.Bool(f"{name_prefix}{name}.value")
+            v.value[name] = z3.Bool(f"{name_prefix}{name}.value", ctx)
             v.domain.append(v.present[name])
         else:
             keys = list(dict.fromkeys(spec.option_keys() + sorted({lit for n in nodes for lit in _collect_literals(n, name)}) + [OTHER]))
-            sort, consts = z3.EnumSort(f"{name_prefix}{name}.Sort", [str(k) for k in keys])
+            sort, consts = z3.EnumSort(f"{name_prefix}{name}.Sort", [str(k) for k in keys], ctx=ctx)
             v.enum[name] = (sort, dict(zip([str(k) for k in keys], consts)))
             v.value[name] = z3.Const(f"{name_prefix}{name}.value", sort)
     return v
@@ -75,9 +77,9 @@ def _build_vars(fields: dict[str, FieldSpec], nodes: list[Optional[Node]], name_
 def _encode(node: Node, fields: dict[str, FieldSpec], v: _Vars, system: str) -> z3.BoolRef:
     op = node.op
     if op == "true":
-        return z3.BoolVal(True)
+        return z3.BoolVal(True, v.ctx)
     if op == "false":
-        return z3.BoolVal(False)
+        return z3.BoolVal(False, v.ctx)
     if op == "and":
         return z3.And(*[_encode(a, fields, v, system) for a in node.args])
     if op == "or":
@@ -90,17 +92,17 @@ def _encode(node: Node, fields: dict[str, FieldSpec], v: _Vars, system: str) -> 
     if op == "is_blank":
         return z3.Not(present)
     if spec.type in ("currency", "number", "percent"):
-        lit = z3.RealVal(str(node.value))
-        scaled = value * z3.RealVal(str(spec.scale))
+        lit = z3.RealVal(str(node.value), v.ctx)
+        scaled = value * z3.RealVal(str(spec.scale), v.ctx)
         cmp = {"eq": scaled == lit, "ne": scaled != lit, "lt": scaled < lit, "lte": scaled <= lit, "gt": scaled > lit, "gte": scaled >= lit}
         if system == "sf":
             return z3.And(present, cmp[op])
         # airtable: blank behaves as 0
-        val0 = z3.If(present, scaled, z3.RealVal(0))
+        val0 = z3.If(present, scaled, z3.RealVal(0, v.ctx))
         cmp0 = {"eq": val0 == lit, "ne": val0 != lit, "lt": val0 < lit, "lte": val0 <= lit, "gt": val0 > lit, "gte": val0 >= lit}
         return cmp0[op]
     if spec.type == "checkbox":
-        target = z3.BoolVal(bool(node.value))
+        target = z3.BoolVal(bool(node.value), v.ctx)
         return value == target if op == "eq" else value != target
     sort, consts = v.enum[node.field]
     key = str(node.value)
@@ -178,8 +180,9 @@ def check_equivalence(
     at_fields_src = {field_map[k]: v for k, v in at_fields.items() if k in field_map}
     used = sf_node.fields() | at_on_source.fields()
     merged_fields = {k: sf_fields[k] for k in sf_fields if k in used}  # only fields the rules mention
-    prefix = f"c{next(_CHECK_IDS)}_"
-    v = _build_vars(merged_fields, [sf_node, at_on_source], name_prefix=prefix)
+    ctx = z3.Context()  # fresh context: stable names, deterministic models, no cross-check sort clashes
+    prefix = ""
+    v = _build_vars(merged_fields, [sf_node, at_on_source], ctx=ctx)
     for name in at_fields_src:
         if name in merged_fields and at_fields_src[name].type != merged_fields[name].type and \
            {at_fields_src[name].type, merged_fields[name].type} - {"currency", "number", "percent"}:
@@ -189,7 +192,7 @@ def check_equivalence(
     at_expr = _encode(at_on_source, {**merged_fields, **at_fields_src}, v, "at")
 
     def _sat(expr: z3.BoolRef) -> bool:
-        s = z3.Solver(); s.set("timeout", timeout_ms); s.add(*v.domain); s.add(expr)
+        s = z3.Solver(ctx=ctx); s.set("timeout", timeout_ms); s.add(*v.domain); s.add(expr)
         return s.check() == z3.sat
 
     wellformed = {
@@ -197,13 +200,13 @@ def check_equivalence(
         "target": {"can_fire": _sat(at_expr), "can_pass": _sat(z3.Not(at_expr))},
     }
 
-    s = z3.Solver()
+    s = z3.Solver(ctx=ctx)
     s.set("timeout", timeout_ms)
     s.set(unsat_core=True)
     for i, d in enumerate(v.domain):
-        s.assert_and_track(d, f"domain_{i}")
-    s.assert_and_track(sf_expr != at_expr, "sides_disagree")
-    sexpr = s.sexpr().replace(prefix, "")  # the per-check prefix only exists to keep z3's global sort names unique; strip it so traces are reproducible
+        s.assert_and_track(d, z3.Bool(f"domain_{i}", ctx))
+    s.assert_and_track(sf_expr != at_expr, z3.Bool("sides_disagree", ctx))
+    sexpr = s.sexpr()
     res = s.check()
     elapsed = round((time.perf_counter() - t0) * 1000, 1)
 
@@ -240,20 +243,22 @@ from .models import Expr  # noqa: E402
 
 def _encode_expr(e: Expr, fields: dict[str, FieldSpec], v: _Vars, system: str, blanks_as: str) -> tuple[z3.BoolRef, z3.ArithRef]:
     """Returns (present, value) in the formula's own units, mirroring reference.evaluate_expr."""
-    T, zero = z3.BoolVal(True), z3.RealVal(0)
+    T, zero = z3.BoolVal(True, v.ctx), z3.RealVal(0, v.ctx)
     op = e.op
     if op == "num":
-        return T, z3.RealVal(str(e.value))
+        return T, z3.RealVal(str(e.value), v.ctx)
+    if op == "blank":
+        return z3.BoolVal(False, v.ctx), zero
     if op == "field":
         spec = fields[e.field]  # type: ignore[index]
-        p, val = v.present[e.field], v.value[e.field] * z3.RealVal(str(spec.scale))  # type: ignore[index]
+        p, val = v.present[e.field], v.value[e.field] * z3.RealVal(str(spec.scale), v.ctx)  # type: ignore[index]
         if system == "at" or blanks_as == "BlankAsZero":
             return T, z3.If(p, val, zero)
         return p, val
     if op == "blankvalue":
         spec = fields[e.field]  # type: ignore[index]
-        p, val = v.present[e.field], v.value[e.field] * z3.RealVal(str(spec.scale))  # type: ignore[index]
-        return T, z3.If(p, val, z3.RealVal(str(e.value)))
+        p, val = v.present[e.field], v.value[e.field] * z3.RealVal(str(spec.scale), v.ctx)  # type: ignore[index]
+        return T, z3.If(p, val, z3.RealVal(str(e.value), v.ctx))
     if op == "neg":
         p, a = _encode_expr(e.args[0], fields, v, system, blanks_as)
         return p, -a
@@ -301,18 +306,18 @@ def check_transformation(
     at_fields_src = {field_map[k]: s for k, s in at_fields.items() if k in field_map}
     used = sf_expr.fields() | at_on_src.fields()
     merged = {k: sf_fields[k] for k in sf_fields if k in used}
-    prefix = f"c{next(_CHECK_IDS)}_"
-    v = _build_vars(merged, [sf_expr.cond, at_on_src.cond], name_prefix=prefix)
+    ctx = z3.Context()
+    v = _build_vars(merged, [sf_expr.cond, at_on_src.cond], ctx=ctx)
     sp, sv = _encode_expr(sf_expr, merged, v, "sf", sf_blanks_as)
     ap, av = _encode_expr(at_on_src, {**merged, **at_fields_src}, v, "at", "BlankAsZero")
-    sv_c, av_c = sv / z3.RealVal(str(sf_result_scale)), av / z3.RealVal(str(at_result_scale))
-    s = z3.Solver()
+    sv_c, av_c = sv / z3.RealVal(str(sf_result_scale), ctx), av / z3.RealVal(str(at_result_scale), ctx)
+    s = z3.Solver(ctx=ctx)
     s.set("timeout", timeout_ms)
     s.set(unsat_core=True)
     for i, d in enumerate(v.domain):
-        s.assert_and_track(d, f"domain_{i}")
-    s.assert_and_track(z3.Or(sp != ap, z3.And(sp, ap, sv_c != av_c)), "outputs_disagree")
-    sexpr = s.sexpr().replace(prefix, "")
+        s.assert_and_track(d, z3.Bool(f"domain_{i}", ctx))
+    s.assert_and_track(z3.Or(sp != ap, z3.And(sp, ap, sv_c != av_c)), z3.Bool("outputs_disagree", ctx))
+    sexpr = s.sexpr()
     res = s.check()
     elapsed = round((time.perf_counter() - t0) * 1000, 1)
     if res == z3.unsat:

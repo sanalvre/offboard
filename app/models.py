@@ -63,7 +63,7 @@ class Node(BaseModel):
 Node.model_rebuild()
 
 
-ExprOp = Literal["num", "field", "add", "sub", "mul", "div", "neg", "if", "blankvalue", "min", "max"]
+ExprOp = Literal["num", "field", "add", "sub", "mul", "div", "neg", "if", "blankvalue", "min", "max", "blank"]
 
 
 class Expr(BaseModel):
@@ -168,6 +168,7 @@ class Verdict(str, Enum):
     NOT_FOUND = "NOT_FOUND"
     DUPLICATE = "DUPLICATE"
     ERROR = "ERROR"
+    PARTIAL = "PARTIAL"  # condition proven, action has no API-writable equivalent; spec captured for a human
 
 
 class Decision(BaseModel):
@@ -179,7 +180,7 @@ class Decision(BaseModel):
 
 
 class Claim(BaseModel):
-    kind: str  # field_created | field_exists | record_written | rule_verified_equivalent | rule_blocked | no_write
+    kind: str  # field_created | field_exists | record_written | rule_verified_equivalent | rule_blocked | no_write | behavioural_check | probe_deleted | automation_spec
     detail: str
     verified: Optional[bool] = None
     evidence_seq: Optional[int] = None

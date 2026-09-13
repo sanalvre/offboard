@@ -83,11 +83,32 @@ def _fields_block(fields: dict[str, FieldSpec], system: str, variant: str = "inf
     return "\n".join(lines)
 
 
-def build_messages(ir: RuleIR, at_fields: dict[str, FieldSpec], variant: str = "informed") -> list[dict[str, str]]:
+KIND_INSTRUCTIONS = {
+    "rule": "",
+    "formula": """This artefact is a FORMULA FIELD, not a validation rule. Produce an Airtable formula that COMPUTES THE SAME VALUE
+for every record (a number, in Airtable's units: currency as the amount, percent as 0.5 for 50%), not a guard.
+Put it in guard_formula and the Airtable field name (usually the Salesforce label) in guard_field_name. Salesforce
+formula fields with "treat blanks as blanks" return blank when any operand is blank unless BLANKVALUE guards it;
+Airtable treats blank operands as 0. To return a blank RESULT (as Salesforce does when an operand is blank under
+"treat blanks as blanks"), use IF({F} = BLANK(), BLANK(), <expression>). Use only + - * / parentheses,
+IF(<condition>, a, b), IF({F} = BLANK(), d, {F}) as the operand guard, BLANK(), MIN(a,b), MAX(a,b), numbers and
+{Field} references.
+
+""",
+    "flow": """This artefact is a RECORD-TRIGGERED FLOW whose only action assigns a checkbox on the same record. The equivalent in
+Airtable is a computed formula field that is 1 exactly when the flow's entry conditions AND the decision outcome hold,
+else 0. Produce that formula in guard_formula using IF(<condition>, 1, 0) and name the field after the flow's target
+field in guard_field_name. The condition is given to you as a Salesforce-style boolean expression.
+
+""",
+}
+
+
+def build_messages(ir: RuleIR, at_fields: dict[str, FieldSpec], variant: str = "informed", kind: str = "rule") -> list[dict[str, str]]:
     src = ir.source
-    user = f"""Salesforce object: {src.object}
+    user = f"""{KIND_INSTRUCTIONS.get(kind, "")}Salesforce object: {src.object}
 Rule API name: {src.name}
-Error condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):
+{"Error condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE)" if kind == "rule" else "Formula / condition"}:
 {src.formula}
 Error message shown to users: {src.error_message or "(none)"}
 Admin description (business intent): {src.description or "(none)"}
@@ -113,8 +134,8 @@ class Proposer:
     def _cassette_path(self, key: str) -> Path:
         return self.cassette_dir / f"{key}.json"
 
-    def propose(self, ir: RuleIR, at_fields: dict[str, FieldSpec], cassette_key: str, variant: str = "informed") -> Proposal:
-        messages = build_messages(ir, at_fields, variant)
+    def propose(self, ir: RuleIR, at_fields: dict[str, FieldSpec], cassette_key: str, variant: str = "informed", kind: str = "rule") -> Proposal:
+        messages = build_messages(ir, at_fields, variant, kind)
         rf = {"type": "json_schema", "json_schema": {"name": "proposal", "strict": True, "schema": proposal_schema()}}
         request = {"model": self.model, "messages": messages, "response_format": rf, "max_tokens": 4000}
         t0 = time.perf_counter()

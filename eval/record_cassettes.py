@@ -55,6 +55,8 @@ def make_derived_cassettes() -> None:
            "literal translation without a blank guard for eval case solver_catches_naive_null_translation")
     derive("trap_percent_units", "percent_units_literal", 'IF({Discount} > 50, "VIOLATION", "")',
            "Salesforce literal copied without rescaling for eval case solver_catches_percent_units")
+    derive("formula_net_amount", "net_amount_literal_copy", '{Amount} - ({Amount} * IF({Discount} = BLANK(), 0, {Discount}) / 100)',
+           "Salesforce '/ 100' kept although Airtable percent is already a fraction, for eval case formula_literal_copy_off_by_100")
 
 
 def make_weaker_cassette() -> None:
