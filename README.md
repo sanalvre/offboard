@@ -121,7 +121,7 @@ This is a scoped demonstration of a pattern, not a general migration tool.
 - The model is stochastic. Two recordings of the same prompt gave different verdicts for one case; that is why
   the system is graded against the proof and the model's accuracy is only reported.
 - Airtable Free allows 1,000 API calls per month; a live run uses about 12. Number precision cannot be changed via
-  API (the two confidence fields round unless set to 2 decimals in the UI).
+  API; the two confidence fields were set to 2 decimals in the UI by hand.
 - Salesforce auth is the CLI's refresh token from a one-time browser login. SOAP `login()` is disabled by default on
   new orgs, which killed the username/password path during setup.
 - Discord is best-effort. The Browserbase second-witness path was researched and deliberately not built

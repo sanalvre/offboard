@@ -63,7 +63,7 @@ and whether it was verified empirically (four of five were, on 2026-09-13).
 ## Gotchas
 - `python-dotenv` `load_dotenv()` from stdin fails; scripts pass the path explicitly.
 - Airtable `Migration_Rules` confidence fields were created with precision 0 and cannot be changed via
-  API; change to 2 decimals in the UI or values are rounded on write.
+  API; set to 2 decimals in the UI on 2026-09-13; the API cannot change it.
 - `TestClient` is an `httpx.Client`; e2e tests block `httpx.HTTPTransport.handle_request`, not
   `Client.request`.
 
