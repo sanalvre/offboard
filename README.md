@@ -3,12 +3,13 @@
 **Salesforce logic capture and Z3-verified migration to Airtable, with a receipt for every decision.**
 
 Multi-App Agent Hackathon, 13 September 2026. Solo build, Python 3.10 / FastAPI. Apps touched: Salesforce
-(Tooling API), Airtable (Web API), OpenRouter (Claude Sonnet 5), Discord (webhooks).
+(Tooling API and Metadata API), Airtable (Web API), OpenRouter (Claude Sonnet 5), Discord (webhooks).
 
 ## What it does
 
-OffBoard takes one Salesforce validation rule, asks an LLM to propose the equivalent guard in Airtable, and then
-refuses to trust the LLM. A deterministic parser turns both the source rule and the proposal into the same small
+OffBoard captures the configuration layer of a Salesforce org (validation rules, formula fields, flows, assignment
+rules, and everything else the Metadata API returns), asks an LLM to propose the equivalent in Airtable for each piece
+it can verify, and then refuses to trust the LLM. A deterministic parser turns both the source rule and the proposal into the same small
 boolean IR, and the Z3 SMT solver checks whether they mean the same thing for every possible record, under each
 system's own semantics (a blank number is null in Salesforce and zero in Airtable; a percent is 50 in Salesforce
 and 0.5 in Airtable). If Z3 proves equivalence, OffBoard writes the guard formula field and an audit record to
@@ -30,6 +31,26 @@ blank record; a discount cap of `50` means 50% in Salesforce and 5,000% in Airta
 "looks complete and reports nothing useful". OffBoard is a scoped demonstration of the missing capability:
 proving, not sampling, that a piece of logic means the same thing after migration, and refusing to write when it
 does not. The full research behind this framing is in [`skills/problem-domain.md`](skills/problem-domain.md).
+
+## Three things the solver checks
+
+| SMT use | question Z3 answers | artefacts |
+|---|---|---|
+| constraint validation | do the source rule and the target guard fire on exactly the same records? | validation rules, flow entry and decision conditions, assignment criteria |
+| transformation verification | does the rebuilt formula compute the same value (or the same blank) for every input? | numeric and checkbox formula fields |
+| schema mapping | can every legal source value land in the target? | unmapped fields, missing select options, type mismatches, checked before any solving |
+
+And one honest status for everything else. `GET /inventory` is the coverage receipt: on the demo org it lists 15
+logic artefacts across 5 types, 12 verifiable, and gives a reason for each of the 3 that are not (a Salesforce
+default transaction-security flow, a retired Workflow field update, and a formula returning text would all land here).
+
+Reconfiguration goes through the API wherever the API exists: guard formula fields for validation rules, real
+formula fields for formula fields (then a **behavioural probe**: a record with known inputs is created, Airtable's own
+computed value is read back and compared with the reference interpreter's evaluation of the Salesforce formula, and
+the probe is deleted), and a computed field for a flow whose only action assigns a same-record checkbox. Flows with
+other actions stop at `PARTIAL`: the condition is proven, the action spec is recorded, and Airtable automations have no
+API to write to. Details and the reasoning behind each choice: [`skills/plan-phase2.md`](skills/plan-phase2.md) and
+[`skills/phase2-configuration.md`](skills/phase2-configuration.md).
 
 ## Architecture
 
@@ -56,11 +77,11 @@ The LLM is never in the verification path. It proposes; a parser and a solver de
 
 Two protocols, both reported with links to the trace behind every row.
 
-**Protocol A, offline (`eval/report.md`).** 17 cases, each run twice from a reset mock with recorded LLM
+**Protocol A, offline (`eval/report.md`).** 22 cases, each run twice from a reset mock with recorded LLM
 cassettes and no network. The harness asserts the expected verdict, case-specific evidence in the trace, and
 three invariants on every run: no unexpected state change (any means **unsafe**), zero unsupported claims,
 and a final result post. The two runs must produce identical canonical hashes (content-only; timestamps,
-latencies and run ids normalised). Result: **17 pass, 0 fail, 0 unsafe, 17/17 reproducible**.
+latencies and run ids normalised). Result: **22 pass, 0 fail, 0 unsafe, 22/22 reproducible**.
 
 | case | what it checks |
 |---|---|
@@ -75,6 +96,10 @@ latencies and run ids normalised). Result: **17 pass, 0 fail, 0 unsafe, 17/17 re
 | `solver_catches_naive_null_translation`, `solver_catches_percent_units`, `solver_catches_weaker_translation` | hand-edited cassettes (labelled inside the file) that guarantee a wrong proposal reaches the solver; each must be blocked with the right counterexample |
 | `recovery_after_partial_failure` | injected 503 on the audit write; the rerun completes with exactly one record |
 | `distractor_near_duplicate` | 15 pre-existing rule records and a second table must be byte-identical after the run |
+| `formula_net_amount`, `formula_is_big_deal` | formula fields proven as transformations, written as real formula fields, confirmed by a behavioural probe |
+| `formula_literal_copy_off_by_100` | hand-edited cassette keeping Salesforce's `/ 100`; blocked with both computed outputs on the counterexample |
+| `flow_flag_stale_negotiation` | record-triggered flow: entry filters AND decision outcome verified; the model omitted the blank guard on Probability and was blocked |
+| `flow_not_verifiable_inventoried` | Salesforce's default transaction-security flow: inventoried with a reason, no model call |
 
 LLM-dependent cases are graded as **SOLVER_TRUTH**: the system verdict must follow the proof (PASS iff Z3 says
 `unsat`). The model's accuracy is *reported*, not asserted: in the current cassettes Claude Sonnet 5 produced a
@@ -83,7 +108,7 @@ proposal proven equivalent in 12 of 28 attempts across the LLM cases and was con
 those was blocked; **wrong proposals written to Airtable: 0**. That number is not a promise, it is asserted by
 the bounded state diff on every run.
 
-**Protocol B, live (`eval/report_live.md`).** The nine live-safe cases run three times each against the real
+**Protocol B, live (`eval/report_live.md`, phase 2 additions in `eval/report_live_phase2.md`).** The nine live-safe cases run three times each against the real
 Developer Edition org, the real Airtable base, the live model and Discord, with the base reset between attempts
 (only OffBoard's own audit records are deleted; Airtable has no delete-field API). Reported in Arga Labs'
 vocabulary: pass / fail / unsafe per attempt, **mixed** cases (same seed, different outcome), and a Wilson 95%
@@ -96,7 +121,7 @@ refused it and the pipeline returned AMBIGUOUS at confidence 0.2, but the grader
 schema-mismatch path. Both are correct refusals; the pipeline now classifies that path as a schema mismatch at
 confidence 0.0 and the grader accepts either. The live report is left as it was produced, not re-graded.
 
-**Tests (`python -m pytest`, 66 tests).** Parsers against hand-written trees. The solver against the independent
+**Tests (`python -m pytest`, 95 tests).** Parsers against hand-written trees. The solver against the independent
 reference interpreter: for every pair the interpreter enumerates a record grid, and for every counterexample the
 solver produces, the interpreter re-evaluates that exact record and must agree that the two sides disagree.
 Regression pins on the three traps assert the counterexample content, not just a status. End-to-end tests run the
@@ -112,10 +137,13 @@ and `eval/report_live.md`, `fixtures/cassettes/` (the exact LLM requests and raw
 
 This is a scoped demonstration of a pattern, not a general migration tool.
 
-- One logic type: validation rules whose formula uses `AND/OR/NOT`, `ISPICKVAL`, `ISBLANK`, `TEXT`, `BLANKVALUE`
-  and comparisons over picklist, currency, number, percent, text and checkbox fields. Flows, triggers, Apex,
-  formula and roll-up fields, record types, dates, cross-object references and multi-currency are out of scope
-  and are reported as `not_attempted` or AMBIGUOUS, never silently skipped.
+- Verified logic types: validation rules, record-triggered flow conditions with a single same-record assignment,
+  assignment-rule criteria (lowered, not yet migrated), and numeric or checkbox formula fields over `+ - * /`, `IF`,
+  `BLANKVALUE`, `MIN`, `MAX`. Apex, screen and scheduled flows, flows with side-effect actions (PARTIAL), text and
+  date formulas, roll-ups, record types, cross-object references and multi-currency are inventoried with a reason,
+  never silently skipped.
+- Each artefact is verified on its own. The composed system (one automation's write changing what another
+  automation matches) is not verified; that is the stated next step.
 - Airtable has no validation rules. A migrated rule becomes an advisory formula flag that is bypassable by API
   and import. Every PASS record says so.
 - The model is stochastic. Two recordings of the same prompt gave different verdicts for one case; that is why

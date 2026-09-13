@@ -1,0 +1,188 @@
+{
+  "header": {
+    "run_id": "run_20260913T213709_757c3df3",
+    "mode": "test",
+    "rule": "Flow.Does_Not_Exist",
+    "case_id": "e2e_nf2",
+    "attempt": 1,
+    "started_at": "2026-09-13T21:37:09.472+00:00",
+    "schema": "offboard-trace/1",
+    "finished_at": "2026-09-13T21:37:09.515+00:00"
+  },
+  "summary": {
+    "verdict": "NOT_FOUND",
+    "decision": {
+      "verdict": "NOT_FOUND",
+      "system_confidence": 0.0,
+      "llm_confidence": null,
+      "overconfidence_gap": null,
+      "reasons": [
+        "no artefact named 'Flow.Does_Not_Exist'"
+      ]
+    },
+    "claims": [
+      {
+        "kind": "no_write",
+        "detail": "nothing was written to Airtable",
+        "verified": true,
+        "evidence_seq": null
+      }
+    ],
+    "unsupported_claims": 0,
+    "unexpected_changes": [],
+    "state_diff": {},
+    "airtable_calls": 0
+  },
+  "canonical_hash": "8402ac969e221d4c8d80062086d914f4d757d946dd5973b6c23d3c7e50b2ed44",
+  "entries": [
+    {
+      "seq": 1,
+      "ts": "2026-09-13T21:37:09.487+00:00",
+      "kind": "assumption",
+      "name": "sf_blank_number_is_null",
+      "statement": "In a Salesforce validation rule a blank number is null and any numeric comparison on it is false.",
+      "evidence": "Dev org probe 2026-09-13 (scripts/seed_salesforce.py): blank Amount saved under `Amount <= 0`, Amount 0 rejected.",
+      "verified": true
+    },
+    {
+      "seq": 2,
+      "ts": "2026-09-13T21:37:09.488+00:00",
+      "kind": "assumption",
+      "name": "at_blank_number_is_zero",
+      "statement": "In Airtable a blank number behaves as 0 in comparisons.",
+      "evidence": "Real base probe 2026-09-13 (scripts/smoke_airtable_naive.py): `{Amount}<=0` matched the blank record, `{Amount}<0` did not.",
+      "verified": true
+    },
+    {
+      "seq": 3,
+      "ts": "2026-09-13T21:37:09.489+00:00",
+      "kind": "assumption",
+      "name": "sf_percent_scale_100",
+      "statement": "Salesforce percent fields store 50 for 50%; formula literals are in the same units.",
+      "evidence": "Opportunity describe: Probability type percent precision 3 scale 0; Salesforce field-type docs.",
+      "verified": true
+    },
+    {
+      "seq": 4,
+      "ts": "2026-09-13T21:37:09.489+00:00",
+      "kind": "assumption",
+      "name": "at_percent_scale_1",
+      "statement": "Airtable percent fields store 0.5 for 50%.",
+      "evidence": "Airtable field model docs; base schema percent precision 2.",
+      "verified": true
+    },
+    {
+      "seq": 5,
+      "ts": "2026-09-13T21:37:09.490+00:00",
+      "kind": "assumption",
+      "name": "picklist_eq_on_blank_false",
+      "statement": "ISPICKVAL / select equality on a blank value is false in both systems; <> is its negation.",
+      "evidence": "Salesforce formula docs; Airtable formula behaviour. Not probed empirically.",
+      "verified": false
+    },
+    {
+      "seq": 6,
+      "ts": "2026-09-13T21:37:09.491+00:00",
+      "kind": "step",
+      "latency_ms": 0.0,
+      "name": "extract"
+    },
+    {
+      "seq": 7,
+      "ts": "2026-09-13T21:37:09.512+00:00",
+      "kind": "note",
+      "message": "metadata inventory consulted for Flow.Does_Not_Exist: not found",
+      "inventory_source": "C:\\Users\\User\\OneDrive\\Desktop\\offboard\\fixtures\\seed\\metadata",
+      "artefact": null
+    },
+    {
+      "seq": 8,
+      "ts": "2026-09-13T21:37:09.513+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "OffBoard",
+          "embeds": [
+            {
+              "title": "offboard · extract · Flow.Does_Not_Exist",
+              "description": "`Flow.Does_Not_Exist` is not a validation rule, formula field or flow. No LLM call, no write.",
+              "footer": {
+                "text": "run run_20260913T213709_757c3df3 · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-1"
+      }
+    },
+    {
+      "seq": 9,
+      "ts": "2026-09-13T21:37:09.513+00:00",
+      "kind": "decision",
+      "verdict": "NOT_FOUND",
+      "system_confidence": 0.0,
+      "llm_confidence": null,
+      "overconfidence_gap": null,
+      "reasons": [
+        "no artefact named 'Flow.Does_Not_Exist'"
+      ]
+    },
+    {
+      "seq": 10,
+      "ts": "2026-09-13T21:37:09.514+00:00",
+      "kind": "claims",
+      "claims": [
+        {
+          "kind": "no_write",
+          "detail": "nothing was written to Airtable",
+          "verified": true,
+          "evidence_seq": null
+        }
+      ],
+      "unsupported_claims": 0,
+      "unexpected_changes": []
+    },
+    {
+      "seq": 11,
+      "ts": "2026-09-13T21:37:09.515+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "OffBoard",
+          "embeds": [
+            {
+              "title": "offboard · result · Flow.Does_Not_Exist",
+              "description": "• no_write: nothing was written to Airtable",
+              "fields": [
+                {
+                  "name": "unsupported claims",
+                  "value": "0/1",
+                  "inline": true
+                },
+                {
+                  "name": "unexpected state changes",
+                  "value": "0",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "run run_20260913T213709_757c3df3 · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-2"
+      }
+    }
+  ]
+}

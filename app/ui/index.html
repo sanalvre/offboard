@@ -83,7 +83,7 @@ window.addEventListener('hashchange', route);
 
 async function viewRuns() {
   const runs = await api('/runs');
-  const rules = ['Opportunity.ClosedWon_Requires_Amount','Opportunity.ClosedWon_Amount_Naive','Opportunity.ClosedLost_Requires_Reason','Opportunity.Negotiation_Min_Probability','Opportunity.Large_Deal_Type_Guard','Opportunity.Discount_Cap','Opportunity.Stage_Regression_Blocked','Opportunity.EMEA_Requires_Amount'];
+  const rules = ['Opportunity.ClosedWon_Requires_Amount','Opportunity.ClosedWon_Amount_Naive','Opportunity.ClosedLost_Requires_Reason','Opportunity.Negotiation_Min_Probability','Opportunity.Large_Deal_Type_Guard','Opportunity.Discount_Cap','Opportunity.Stage_Regression_Blocked','Opportunity.EMEA_Requires_Amount','Opportunity.Net_Amount__c','Opportunity.Is_Big_Deal__c','Flow.Flag_Stale_Negotiation','Flow.sfdc_default_ReportExport_Protection_Flow'];
   $('#main').innerHTML = `
     <div class="toolbar">
       <select id="rule">${rules.map(r => `<option>${r}</option>`).join('')}</select>
@@ -114,7 +114,8 @@ async function viewRuns() {
 function cassetteFor(rule, variant) {
   const m = {'Opportunity.ClosedWon_Requires_Amount':'happy_closedwon_amount','Opportunity.ClosedWon_Amount_Naive':'calibration_null_semantics',
     'Opportunity.ClosedLost_Requires_Reason':'happy_closedlost_reason','Opportunity.Negotiation_Min_Probability':'happy_percent_scaling',
-    'Opportunity.Large_Deal_Type_Guard':'over_refusal_guard','Opportunity.Discount_Cap':'trap_percent_units','Opportunity.EMEA_Requires_Amount':'ambiguous_schema_mismatch'};
+    'Opportunity.Large_Deal_Type_Guard':'over_refusal_guard','Opportunity.Discount_Cap':'trap_percent_units','Opportunity.EMEA_Requires_Amount':'ambiguous_schema_mismatch',
+    'Opportunity.Net_Amount__c':'formula_net_amount','Opportunity.Is_Big_Deal__c':'formula_is_big_deal','Flow.Flag_Stale_Negotiation':'flow_flag_stale_negotiation'};
   let k = m[rule]; if (k && variant === 'naive' && (k === 'calibration_null_semantics' || k === 'trap_percent_units')) k += '_naive_prompt';
   return k;
 }
@@ -124,7 +125,7 @@ function summarize(e) {
     case 'assumption': return `<span class="mute">${e.verified ? '✓ verified' : '○ unverified'}</span> ${esc(e.statement)} <span class="mute">— ${esc(e.evidence)}</span>`;
     case 'tool_call': return `<b>${esc(e.tool)}</b> ${e.error ? `<span class="badge FAIL">error</span> ${esc(e.error.message || JSON.stringify(e.error)).slice(0,200)}` : esc(shortReq(e))}`;
     case 'llm_call': return `<b>${esc(e.model)}</b> · ${esc(e.mode)}${e.cassette_key ? ' · cassette ' + esc(e.cassette_key) : ''}${e.parsed ? ` · confidence ${Number(e.parsed.confidence).toFixed(2)}<br><code>${esc(e.parsed.guard_formula)}</code>` : ''}${e.error ? ' · ' + esc(JSON.stringify(e.error)) : ''}`;
-    case 'solver': return `<b>${esc(e.status)}</b> · z3 <b>${esc(e.z3_result)}</b> · ${esc(e.reason)}${e.counterexample ? `<div class="ce">counterexample ${esc(JSON.stringify(e.counterexample))} → source ${e.source_fires ? 'fires' : 'does not fire'}, target ${e.target_flags ? 'flags' : 'does not flag'}</div>` : ''}`;
+    case 'solver': return `<b>${esc(e.status)}</b> · z3 <b>${esc(e.z3_result)}</b> · ${esc(e.reason)}${e.counterexample ? `<div class="ce">counterexample ${esc(JSON.stringify(e.counterexample))} → ${e.outputs ? `source computes ${esc(JSON.stringify(e.outputs.source))}, target computes ${esc(JSON.stringify(e.outputs.target))}` : `source ${e.source_fires ? 'fires' : 'does not fire'}, target ${e.target_flags ? 'flags' : 'does not flag'}`}</div>` : ''}`;
     case 'decision': return `${badge(e.verdict)} system ${num(e.system_confidence)} · llm ${num(e.llm_confidence)} · gap ${num(e.overconfidence_gap)}<br><span class="mute">${e.reasons.map(esc).join(' · ')}</span>`;
     case 'state_snapshot': return `${esc(e.phase)} · ${Object.entries(e.tables).map(([t,v]) => `${esc(t)}: ${v.fields.length} fields, ${v.record_count} records`).join(' · ')}${e.diff ? `<br>diff: fields+ ${esc(JSON.stringify(e.diff.fields_added))} records+ ${esc(JSON.stringify(e.diff.records_added))} changed ${Object.keys(e.diff.records_changed).length} removed ${Object.keys(e.diff.records_removed).length}` : ''}`;
     case 'claims': return `${e.unsupported_claims} unsupported of ${e.claims.length} · unexpected changes ${e.unexpected_changes.length}<br>${e.claims.map(c => `<span class="mute">${c.verified === true ? '✓' : c.verified === false ? '✗' : '·'}</span> ${esc(c.kind)}: ${esc(c.detail)}`).join('<br>')}`;

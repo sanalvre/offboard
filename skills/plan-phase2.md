@@ -2,6 +2,10 @@
 
 Written 2026-09-13 after phase 1 shipped (validation rules only). Phase 1 plan: `skills/plan.md`.
 
+Status at end of day: blocks P2-1 (inventory), P2-2 (flow conditions), P2-3 (transformations), P2-5 (behavioural probe)
+and P2-6 (eval) are built; P2-4 (mapping constraints as a separate report) is covered by the solver's schema checks
+only; P2-7 (Browserbase automation write path) was not built. See `skills/phase2-configuration.md`.
+
 ## 0. Thesis, sharpened
 
 Mapping fields and scrubbing duplicates is commodity work. The hard, unsolved part of a migration is the

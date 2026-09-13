@@ -6,7 +6,7 @@ Arga Labs' vocabulary (pass / fail / unsafe), and the LLM's accuracy is reported
 system's correctness.
 
 ## How it works
-- `eval/cases.py`: 17 cases. Each has a rule, an expected verdict, the failure class it targets, and a list
+- `eval/cases.py`: 22 cases (17 phase 1, 5 phase 2: formula fields, flows, non-verifiable artefact). Each has a rule, an expected verdict, the failure class it targets, and a list
   of check functions over the finalised trace document. Expected vocabulary: exact verdicts, `NOT_PASS`
   (the write must be blocked), and `SOLVER_TRUTH` (the verdict must follow the solver: PASS iff `unsat`,
   FAIL iff counterexample, AMBIGUOUS iff unverifiable). `SOLVER_TRUTH` is used for LLM-dependent cases

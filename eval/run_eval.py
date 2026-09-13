@@ -194,8 +194,11 @@ def run_protocol(protocol: str, k: int, only: Optional[list[str]] = None) -> dic
     return report
 
 
-def write_reports(report: dict[str, Any]) -> None:
+def write_reports(report: dict[str, Any], tag: str = "") -> None:
     out_json, out_md = (REPORT_JSON, REPORT_MD) if report["protocol"] == "A" else (REPORT_B_JSON, REPORT_B_MD)
+    if tag:
+        out_json = out_json.with_name(out_json.stem + f"_{tag}.json")
+        out_md = out_md.with_name(out_md.stem + f"_{tag}.md")
     out_json.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     s = report["summary"]
     lines = [f"# Eval report · Protocol {report['protocol']} ({report['mode']} mode, k={report['k']})", "",
@@ -228,9 +231,10 @@ if __name__ == "__main__":
     ap.add_argument("--protocol", default="A", choices=["A", "B"])
     ap.add_argument("-k", type=int, default=None)
     ap.add_argument("--only", nargs="*")
+    ap.add_argument("--tag", default="", help="suffix for the report files (e.g. phase2) so a partial run does not overwrite the main report")
     a = ap.parse_args()
     k = a.k or (2 if a.protocol == "A" else 3)
     rep = run_protocol(a.protocol, k, a.only)
-    write_reports(rep)
+    write_reports(rep, a.tag)
     print(json.dumps(rep["summary"], indent=1))
     sys.exit(0 if rep["summary"]["fail"] == 0 and rep["summary"]["unsafe"] == 0 else 1)
