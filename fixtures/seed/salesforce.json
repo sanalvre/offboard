@@ -1,0 +1,752 @@
+{
+  "exported_at": "2026-09-13",
+  "org_api_version": "67.0",
+  "object": "Opportunity",
+  "describe": {
+    "name": "Opportunity",
+    "fields": [
+      {
+        "name": "Id",
+        "label": "Opportunity ID",
+        "type": "id",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "IsDeleted",
+        "label": "Deleted",
+        "type": "boolean",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "AccountId",
+        "label": "Account ID",
+        "type": "reference",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "IsPrivate",
+        "label": "Private",
+        "type": "boolean",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "Name",
+        "label": "Name",
+        "type": "string",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "Description",
+        "label": "Description",
+        "type": "textarea",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "StageName",
+        "label": "Stage",
+        "type": "picklist",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": [
+          {
+            "value": "Prospecting",
+            "label": "Prospecting",
+            "active": true
+          },
+          {
+            "value": "Qualification",
+            "label": "Qualification",
+            "active": true
+          },
+          {
+            "value": "Needs Analysis",
+            "label": "Needs Analysis",
+            "active": true
+          },
+          {
+            "value": "Value Proposition",
+            "label": "Value Proposition",
+            "active": true
+          },
+          {
+            "value": "Id. Decision Makers",
+            "label": "Id. Decision Makers",
+            "active": true
+          },
+          {
+            "value": "Perception Analysis",
+            "label": "Perception Analysis",
+            "active": true
+          },
+          {
+            "value": "Proposal/Price Quote",
+            "label": "Proposal/Price Quote",
+            "active": true
+          },
+          {
+            "value": "Negotiation/Review",
+            "label": "Negotiation/Review",
+            "active": true
+          },
+          {
+            "value": "Closed Won",
+            "label": "Closed Won",
+            "active": true
+          },
+          {
+            "value": "Closed Lost",
+            "label": "Closed Lost",
+            "active": true
+          }
+        ]
+      },
+      {
+        "name": "Amount",
+        "label": "Amount",
+        "type": "currency",
+        "nillable": true,
+        "precision": 18,
+        "scale": 2,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "Probability",
+        "label": "Probability (%)",
+        "type": "percent",
+        "nillable": true,
+        "precision": 3,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "ExpectedRevenue",
+        "label": "Expected Amount",
+        "type": "currency",
+        "nillable": true,
+        "precision": 18,
+        "scale": 2,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "TotalOpportunityQuantity",
+        "label": "Quantity",
+        "type": "double",
+        "nillable": true,
+        "precision": 18,
+        "scale": 2,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "CloseDate",
+        "label": "Close Date",
+        "type": "date",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "Type",
+        "label": "Opportunity Type",
+        "type": "picklist",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": [
+          {
+            "value": "Existing Customer - Upgrade",
+            "label": "Existing Customer - Upgrade",
+            "active": true
+          },
+          {
+            "value": "Existing Customer - Replacement",
+            "label": "Existing Customer - Replacement",
+            "active": true
+          },
+          {
+            "value": "Existing Customer - Downgrade",
+            "label": "Existing Customer - Downgrade",
+            "active": true
+          },
+          {
+            "value": "New Customer",
+            "label": "New Customer",
+            "active": true
+          }
+        ]
+      },
+      {
+        "name": "NextStep",
+        "label": "Next Step",
+        "type": "string",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "LeadSource",
+        "label": "Lead Source",
+        "type": "picklist",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": [
+          {
+            "value": "Web",
+            "label": "Web",
+            "active": true
+          },
+          {
+            "value": "Phone Inquiry",
+            "label": "Phone Inquiry",
+            "active": true
+          },
+          {
+            "value": "Partner Referral",
+            "label": "Partner Referral",
+            "active": true
+          },
+          {
+            "value": "Purchased List",
+            "label": "Purchased List",
+            "active": true
+          },
+          {
+            "value": "Other",
+            "label": "Other",
+            "active": true
+          }
+        ]
+      },
+      {
+        "name": "IsClosed",
+        "label": "Closed",
+        "type": "boolean",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "IsWon",
+        "label": "Won",
+        "type": "boolean",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "ForecastCategory",
+        "label": "Forecast Category",
+        "type": "picklist",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": [
+          {
+            "value": "Omitted",
+            "label": "Omitted",
+            "active": true
+          },
+          {
+            "value": "Pipeline",
+            "label": "Pipeline",
+            "active": true
+          },
+          {
+            "value": "BestCase",
+            "label": "Best Case",
+            "active": true
+          },
+          {
+            "value": "MostLikely",
+            "label": "Most Likely",
+            "active": true
+          },
+          {
+            "value": "Forecast",
+            "label": "Commit",
+            "active": true
+          },
+          {
+            "value": "Closed",
+            "label": "Closed",
+            "active": true
+          }
+        ]
+      },
+      {
+        "name": "ForecastCategoryName",
+        "label": "Forecast Category",
+        "type": "picklist",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": [
+          {
+            "value": "Omitted",
+            "label": "Omitted",
+            "active": true
+          },
+          {
+            "value": "Pipeline",
+            "label": "Pipeline",
+            "active": true
+          },
+          {
+            "value": "Best Case",
+            "label": "Best Case",
+            "active": true
+          },
+          {
+            "value": "Commit",
+            "label": "Commit",
+            "active": true
+          },
+          {
+            "value": "Closed",
+            "label": "Closed",
+            "active": true
+          }
+        ]
+      },
+      {
+        "name": "CampaignId",
+        "label": "Campaign ID",
+        "type": "reference",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "HasOpportunityLineItem",
+        "label": "Has Line Item",
+        "type": "boolean",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "Pricebook2Id",
+        "label": "Price Book ID",
+        "type": "reference",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "OwnerId",
+        "label": "Owner ID",
+        "type": "reference",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "CreatedById",
+        "label": "Created By ID",
+        "type": "reference",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "LastModifiedById",
+        "label": "Last Modified By ID",
+        "type": "reference",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "LastActivityDate",
+        "label": "Last Activity",
+        "type": "date",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "PushCount",
+        "label": "Push Count",
+        "type": "int",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "FiscalQuarter",
+        "label": "Fiscal Quarter",
+        "type": "int",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "FiscalYear",
+        "label": "Fiscal Year",
+        "type": "int",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "Fiscal",
+        "label": "Fiscal Period",
+        "type": "string",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "ContactId",
+        "label": "Contact ID",
+        "type": "reference",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "HasOpenActivity",
+        "label": "Has Open Activity",
+        "type": "boolean",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "HasOverdueTask",
+        "label": "Has Overdue Task",
+        "type": "boolean",
+        "nillable": false,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "LastAmountChangedHistoryId",
+        "label": "Opportunity History ID",
+        "type": "reference",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "LastCloseDateChangedHistoryId",
+        "label": "Opportunity History ID",
+        "type": "reference",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": false,
+        "picklistValues": []
+      },
+      {
+        "name": "DeliveryInstallationStatus__c",
+        "label": "Delivery/Installation Status",
+        "type": "picklist",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": [
+          {
+            "value": "In progress",
+            "label": "In progress",
+            "active": true
+          },
+          {
+            "value": "Yet to begin",
+            "label": "Yet to begin",
+            "active": true
+          },
+          {
+            "value": "Completed",
+            "label": "Completed",
+            "active": true
+          }
+        ]
+      },
+      {
+        "name": "TrackingNumber__c",
+        "label": "Tracking Number",
+        "type": "string",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": []
+      },
+      {
+        "name": "OrderNumber__c",
+        "label": "Order Number",
+        "type": "string",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": []
+      },
+      {
+        "name": "CurrentGenerators__c",
+        "label": "Current Generator(s)",
+        "type": "string",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": []
+      },
+      {
+        "name": "MainCompetitors__c",
+        "label": "Main Competitor(s)",
+        "type": "string",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": []
+      },
+      {
+        "name": "Loss_Reason__c",
+        "label": "Loss Reason",
+        "type": "string",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": []
+      },
+      {
+        "name": "Discount__c",
+        "label": "Discount",
+        "type": "percent",
+        "nillable": true,
+        "precision": 5,
+        "scale": 2,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": []
+      },
+      {
+        "name": "Region__c",
+        "label": "Region",
+        "type": "picklist",
+        "nillable": true,
+        "precision": 0,
+        "scale": 0,
+        "inlineHelpText": null,
+        "custom": true,
+        "picklistValues": [
+          {
+            "value": "Americas",
+            "label": "Americas",
+            "active": true
+          },
+          {
+            "value": "EMEA",
+            "label": "EMEA",
+            "active": true
+          },
+          {
+            "value": "APAC",
+            "label": "APAC",
+            "active": true
+          }
+        ]
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "03dg7000002ptSjAAI",
+      "object": "Opportunity",
+      "name": "ClosedLost_Requires_Reason",
+      "active": true,
+      "formula": "ISPICKVAL(StageName,\"Closed Lost\") && ISBLANK(Loss_Reason__c)",
+      "error_message": "Enter a loss reason before closing as lost.",
+      "error_display_field": "Loss Reason",
+      "description": "Sales ops: win/loss analysis needs a reason on every lost deal."
+    },
+    {
+      "id": "03dg7000002ptPVAAY",
+      "object": "Opportunity",
+      "name": "ClosedWon_Amount_Naive",
+      "active": true,
+      "formula": "ISPICKVAL(StageName,\"Closed Won\") && Amount <= 0",
+      "error_message": "A Closed Won opportunity must have a positive amount.",
+      "error_display_field": "Amount",
+      "description": "Finance: no deal may be booked as won with zero or negative revenue."
+    },
+    {
+      "id": "03dg7000002ptR7AAI",
+      "object": "Opportunity",
+      "name": "ClosedWon_Requires_Amount",
+      "active": true,
+      "formula": "ISPICKVAL(StageName,\"Closed Won\") && (ISBLANK(Amount) || Amount <= 0)",
+      "error_message": "A Closed Won opportunity must have a positive amount.",
+      "error_display_field": "Amount",
+      "description": "Finance: revenue recognition depends on every won deal carrying a real amount."
+    },
+    {
+      "id": "03dg7000002puAHAAY",
+      "object": "Opportunity",
+      "name": "Discount_Cap",
+      "active": true,
+      "formula": "Discount__c > 50",
+      "error_message": "Discounts above 50% require a separate approval; enter 50 or less.",
+      "error_display_field": "Discount",
+      "description": "Finance policy: maximum self-serve discount is 50 percent."
+    },
+    {
+      "id": "03dg7000002pua5AAA",
+      "object": "Opportunity",
+      "name": "EMEA_Requires_Amount",
+      "active": true,
+      "formula": "ISPICKVAL(Region__c,\"EMEA\") && ISBLANK(Amount)",
+      "error_message": "EMEA opportunities must carry an amount at creation.",
+      "error_display_field": "Amount",
+      "description": "EMEA partner routing needs an amount at creation to pick the partner tier."
+    },
+    {
+      "id": "03dg7000002ptfdAAA",
+      "object": "Opportunity",
+      "name": "Large_Deal_Type_Guard",
+      "active": true,
+      "formula": "Amount > 1000000 && NOT(ISPICKVAL(Type,\"New Customer\"))",
+      "error_message": "Deals over $1M must be typed as New Customer for exec review.",
+      "error_display_field": "Type",
+      "description": "Exec review: every seven-figure deal is routed as new business regardless of account history."
+    },
+    {
+      "id": "03dg7000002ptZBAAY",
+      "object": "Opportunity",
+      "name": "Negotiation_Min_Probability",
+      "active": true,
+      "formula": "ISPICKVAL(StageName,\"Negotiation/Review\") && Probability < 50",
+      "error_message": "Deals in Negotiation/Review must have probability of at least 50%.",
+      "error_display_field": "Probability (%)",
+      "description": "Forecasting: negotiation-stage deals below 50% distort the weighted pipeline."
+    },
+    {
+      "id": "03dg7000002pqcwAAA",
+      "object": "Opportunity",
+      "name": "Stage_Regression_Blocked",
+      "active": true,
+      "formula": "ISPICKVAL(PRIORVALUE(StageName),\"Closed Won\") && NOT(ISPICKVAL(StageName,\"Closed Won\"))",
+      "error_message": "A Closed Won opportunity cannot be reopened; clone it instead.",
+      "error_display_field": "Stage",
+      "description": "Revenue integrity: booked deals are immutable; a reopened deal must be cloned instead."
+    }
+  ]
+}

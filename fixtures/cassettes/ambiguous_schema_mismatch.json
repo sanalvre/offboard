@@ -1,0 +1,172 @@
+{
+  "key": "ambiguous_schema_mismatch",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T18:25:56Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nBe precise about semantics; they differ between systems:\n- Salesforce validation rules: a blank number is null; any numeric comparison on a blank is FALSE. ISPICKVAL compares\n  the picklist API name. Percent fields store 50 for 50%.\n- Airtable: a blank number is treated as 0 in comparisons; {Percent} stores 0.5 for 50%; a single select compares\n  against its option label.\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed. If a Salesforce field has no Airtable counterpart, say so in caveats and still\nproduce your best mapping.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record. Do not round up.\n"
+      },
+      {
+        "role": "user",
+        "content": "Salesforce object: Opportunity\nRule API name: EMEA_Requires_Amount\nError condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):\nISPICKVAL(Region__c,\"EMEA\") && ISBLANK(Amount)\nError message shown to users: EMEA opportunities must carry an amount at creation.\nAdmin description (business intent): EMEA partner routing needs an amount at creation to pick the partner tier.\nActive: True\n\nSalesforce fields referenced or available:\n- Amount: currency\n- Region__c: picklist options=[\"Americas\", \"EMEA\", \"APAC\"]\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent (stores 0.5 for 50%)\n- Discount: percent (stores 0.5 for 50%)\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789323936-HWZlLLI5oBvXhuELQRag",
+    "object": "chat.completion",
+    "created": 1789323936,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\":\"EMEA opportunities must have an amount set at creation so partner tier routing can occur.\",\"field_mapping\":[{\"source_field\":\"Amount\",\"target_field\":\"Amount\",\"target_type\":\"currency\"}],\"guard_field_name\":\"Guard: EMEA Requires Amount\",\"guard_formula\":\"IF({Amount} = BLANK(), \\\"VIOLATION\\\", \\\"\\\")\",\"rationale\":\"The Salesforce rule fires when Region__c = 'EMEA' AND Amount is blank. The Airtable 'Opportunities' table has no field corresponding to Region__c (no picklist for Americas/EMEA/APAC exists among Name, Stage, Amount, Probability, Discount, Loss Reason, or Type). Without a region field, the EMEA-specific condition cannot be evaluated, so the guard falls back to checking only whether Amount is blank, which is a broader (and thus non-equivalent) approximation of the original rule.\",\"confidence\":0.15,\"caveats\":[\"Region__c has no corresponding field in the Airtable 'Opportunities' table; the guard cannot verify the EMEA condition and will therefore flag ALL opportunities with a blank Amount, not just EMEA ones, producing false positives for Americas/APAC deals.\",\"If a 'Region' field is later added to Airtable, this guard should be revised to AND({Region} = \\\"EMEA\\\", {Amount} = BLANK()) to match Salesforce semantics.\",\"Airtable currency fields treat blank as 0 in comparisons, but BLANK() equality check still correctly detects an empty Amount field, so that part of the logic is safe once region logic is restored.\"]}",
+          "refusal": null,
+          "reasoning": "There's no Region field available in Airtable, so I can't fully replicate any region-based logic. I'll note this as a caveat and build the guard formula using only the fields that actually exist, like Amount.\n\nSince Region field isn't actually available in the Airtable schema, I can only use the listed fields: Name, Stage, Amount, Probability, Discount, Loss Reason, Type. I'll build the guard using Amount blank alone as a rough approximation, flagging clearly in caveats that this overreaches without region filtering, and note in field mapping that Amount maps to a currency target field while Region__c has no equivalent to map.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "There's no Region field available in Airtable, so I can't fully replicate any region-based logic. I'll note this as a caveat and build the guard formula using only the fields that actually exist, like Amount.\n\nSince Region field isn't actually available in the Airtable schema, I can only use the listed fields: Name, Stage, Amount, Probability, Discount, Loss Reason, Type. I'll build the guard using Amount blank alone as a rough approximation, flagging clearly in caveats that this overreaches without region filtering, and note in field mapping that Amount maps to a currency target field while Region__c has no equivalent to map.\n\n",
+              "format": "anthropic-claude-v1",
+              "index": 0,
+              "signature": "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"
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1928,
+      "completion_tokens": 1692,
+      "total_tokens": 3620,
+      "cost": 0.020776,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.020776,
+        "upstream_inference_prompt_cost": 0.003856,
+        "upstream_inference_completions_cost": 0.01692
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1136,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

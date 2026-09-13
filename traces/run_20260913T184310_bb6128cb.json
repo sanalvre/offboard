@@ -1,0 +1,5067 @@
+{
+  "header": {
+    "run_id": "run_20260913T184310_bb6128cb",
+    "mode": "test",
+    "rule": "Opportunity.Discount_Cap",
+    "case_id": "trap_percent_units_naive_prompt",
+    "attempt": 2,
+    "started_at": "2026-09-13T18:43:10.623+00:00",
+    "schema": "receipt-trace/1",
+    "finished_at": "2026-09-13T18:43:10.708+00:00"
+  },
+  "summary": {
+    "verdict": "PASS",
+    "decision": {
+      "verdict": "PASS",
+      "system_confidence": 0.95,
+      "llm_confidence": 0.85,
+      "overconfidence_gap": 0.0,
+      "reasons": [
+        "solver proved the guard equivalent to the source rule for every record",
+        "Airtable guard is advisory: a formula flag, bypassable by API and import (Airtable has no validation rules)"
+      ]
+    },
+    "claims": [
+      {
+        "kind": "field_created",
+        "detail": "Opportunities.Guard: Discount_Cap created as formula field fldMOCK0000000001",
+        "verified": true,
+        "evidence_seq": null
+      },
+      {
+        "kind": "record_written",
+        "detail": "Migration_Rules record recMOCK0000000002 for Discount_Cap with verdict PASS",
+        "verified": true,
+        "evidence_seq": 29
+      },
+      {
+        "kind": "rule_verified_equivalent",
+        "detail": "Z3 proved the written guard equivalent to the source rule",
+        "verified": true,
+        "evidence_seq": null
+      }
+    ],
+    "unsupported_claims": 0,
+    "unexpected_changes": [],
+    "state_diff": {
+      "fields_added": {
+        "Opportunities": [
+          "Guard: Discount_Cap"
+        ]
+      },
+      "records_added": {
+        "Migration_Rules": [
+          "recMOCK0000000002"
+        ]
+      },
+      "records_changed": {},
+      "records_removed": {}
+    },
+    "airtable_calls": 12
+  },
+  "canonical_hash": "42a753e5c16c37989672c1801b1f20ed0ae957b95d8ddfb6d00cf7bd679ac825",
+  "entries": [
+    {
+      "seq": 1,
+      "ts": "2026-09-13T18:43:10.638+00:00",
+      "kind": "assumption",
+      "name": "sf_blank_number_is_null",
+      "statement": "In a Salesforce validation rule a blank number is null and any numeric comparison on it is false.",
+      "evidence": "Dev org probe 2026-09-13 (scripts/seed_salesforce.py): blank Amount saved under `Amount <= 0`, Amount 0 rejected.",
+      "verified": true
+    },
+    {
+      "seq": 2,
+      "ts": "2026-09-13T18:43:10.639+00:00",
+      "kind": "assumption",
+      "name": "at_blank_number_is_zero",
+      "statement": "In Airtable a blank number behaves as 0 in comparisons.",
+      "evidence": "Real base probe 2026-09-13 (scripts/smoke_airtable_naive.py): `{Amount}<=0` matched the blank record, `{Amount}<0` did not.",
+      "verified": true
+    },
+    {
+      "seq": 3,
+      "ts": "2026-09-13T18:43:10.640+00:00",
+      "kind": "assumption",
+      "name": "sf_percent_scale_100",
+      "statement": "Salesforce percent fields store 50 for 50%; formula literals are in the same units.",
+      "evidence": "Opportunity describe: Probability type percent precision 3 scale 0; Salesforce field-type docs.",
+      "verified": true
+    },
+    {
+      "seq": 4,
+      "ts": "2026-09-13T18:43:10.640+00:00",
+      "kind": "assumption",
+      "name": "at_percent_scale_1",
+      "statement": "Airtable percent fields store 0.5 for 50%.",
+      "evidence": "Airtable field model docs; base schema percent precision 2.",
+      "verified": true
+    },
+    {
+      "seq": 5,
+      "ts": "2026-09-13T18:43:10.641+00:00",
+      "kind": "assumption",
+      "name": "picklist_eq_on_blank_false",
+      "statement": "ISPICKVAL / select equality on a blank value is false in both systems; <> is its negation.",
+      "evidence": "Salesforce formula docs; Airtable formula behaviour. Not probed empirically.",
+      "verified": false
+    },
+    {
+      "seq": 6,
+      "ts": "2026-09-13T18:43:10.642+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.1,
+      "tool": "salesforce.mock.rest",
+      "request": {
+        "method": "GET",
+        "url": "/services/data/v67.0/tooling/query?q=SELECT%20Id%2C%20ValidationName%2C%20Active%2C%20ErrorMessage%2C%20Description%2C%20ErrorDisplayField%20FROM%20ValidationRule%20WHERE%20EntityDefinition.QualifiedApiName%20%3D%20%27Opportunity%27%20ORDER%20BY%20ValidationName",
+        "body": null
+      },
+      "response": {
+        "size": 8,
+        "totalSize": 8,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptSjAAI",
+            "ValidationName": "ClosedLost_Requires_Reason",
+            "Active": true,
+            "ErrorMessage": "Enter a loss reason before closing as lost.",
+            "Description": "Sales ops: win/loss analysis needs a reason on every lost deal.",
+            "ErrorDisplayField": "Loss Reason"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptPVAAY",
+            "ValidationName": "ClosedWon_Amount_Naive",
+            "Active": true,
+            "ErrorMessage": "A Closed Won opportunity must have a positive amount.",
+            "Description": "Finance: no deal may be booked as won with zero or negative revenue.",
+            "ErrorDisplayField": "Amount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptR7AAI",
+            "ValidationName": "ClosedWon_Requires_Amount",
+            "Active": true,
+            "ErrorMessage": "A Closed Won opportunity must have a positive amount.",
+            "Description": "Finance: revenue recognition depends on every won deal carrying a real amount.",
+            "ErrorDisplayField": "Amount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002puAHAAY",
+            "ValidationName": "Discount_Cap",
+            "Active": true,
+            "ErrorMessage": "Discounts above 50% require a separate approval; enter 50 or less.",
+            "Description": "Finance policy: maximum self-serve discount is 50 percent.",
+            "ErrorDisplayField": "Discount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002pua5AAA",
+            "ValidationName": "EMEA_Requires_Amount",
+            "Active": true,
+            "ErrorMessage": "EMEA opportunities must carry an amount at creation.",
+            "Description": "EMEA partner routing needs an amount at creation to pick the partner tier.",
+            "ErrorDisplayField": "Amount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptfdAAA",
+            "ValidationName": "Large_Deal_Type_Guard",
+            "Active": true,
+            "ErrorMessage": "Deals over $1M must be typed as New Customer for exec review.",
+            "Description": "Exec review: every seven-figure deal is routed as new business regardless of account history.",
+            "ErrorDisplayField": "Type"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptZBAAY",
+            "ValidationName": "Negotiation_Min_Probability",
+            "Active": true,
+            "ErrorMessage": "Deals in Negotiation/Review must have probability of at least 50%.",
+            "Description": "Forecasting: negotiation-stage deals below 50% distort the weighted pipeline.",
+            "ErrorDisplayField": "Probability (%)"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002pqcwAAA",
+            "ValidationName": "Stage_Regression_Blocked",
+            "Active": true,
+            "ErrorMessage": "A Closed Won opportunity cannot be reopened; clone it instead.",
+            "Description": "Revenue integrity: booked deals are immutable; a reopened deal must be cloned instead.",
+            "ErrorDisplayField": "Stage"
+          }
+        ]
+      }
+    },
+    {
+      "seq": 7,
+      "ts": "2026-09-13T18:43:10.643+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "salesforce.mock.rest",
+      "request": {
+        "method": "GET",
+        "url": "/services/data/v67.0/tooling/sobjects/ValidationRule/03dg7000002puAHAAY",
+        "body": null
+      },
+      "response": {
+        "Id": "03dg7000002puAHAAY",
+        "FullName": "Opportunity.Discount_Cap",
+        "Metadata": {
+          "active": true,
+          "errorConditionFormula": "Discount__c > 50",
+          "errorMessage": "Discounts above 50% require a separate approval; enter 50 or less.",
+          "errorDisplayField": "Discount",
+          "description": "Finance policy: maximum self-serve discount is 50 percent."
+        }
+      }
+    },
+    {
+      "seq": 8,
+      "ts": "2026-09-13T18:43:10.644+00:00",
+      "kind": "step",
+      "latency_ms": 2.4,
+      "name": "extract"
+    },
+    {
+      "seq": 9,
+      "ts": "2026-09-13T18:43:10.645+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "Receipt",
+          "embeds": [
+            {
+              "title": "receipt · extract · Opportunity.Discount_Cap",
+              "description": "```Discount__c > 50```",
+              "fields": [
+                {
+                  "name": "active",
+                  "value": "True",
+                  "inline": true
+                },
+                {
+                  "name": "intent",
+                  "value": "Finance policy: maximum self-serve discount is 50 percent.",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "run run_20260913T184310_bb6128cb · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-1"
+      }
+    },
+    {
+      "seq": 10,
+      "ts": "2026-09-13T18:43:10.646+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "salesforce.mock.rest",
+      "request": {
+        "method": "GET",
+        "url": "/services/data/v67.0/sobjects/Opportunity/describe",
+        "body": null
+      },
+      "response": {
+        "name": "Opportunity",
+        "fields": [
+          {
+            "name": "Id",
+            "label": "Opportunity ID",
+            "type": "id",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "IsDeleted",
+            "label": "Deleted",
+            "type": "boolean",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "AccountId",
+            "label": "Account ID",
+            "type": "reference",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "IsPrivate",
+            "label": "Private",
+            "type": "boolean",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "Name",
+            "label": "Name",
+            "type": "string",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "Description",
+            "label": "Description",
+            "type": "textarea",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "StageName",
+            "label": "Stage",
+            "type": "picklist",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": [
+              {
+                "value": "Prospecting",
+                "label": "Prospecting",
+                "active": true
+              },
+              {
+                "value": "Qualification",
+                "label": "Qualification",
+                "active": true
+              },
+              {
+                "value": "Needs Analysis",
+                "label": "Needs Analysis",
+                "active": true
+              },
+              {
+                "value": "Value Proposition",
+                "label": "Value Proposition",
+                "active": true
+              },
+              {
+                "value": "Id. Decision Makers",
+                "label": "Id. Decision Makers",
+                "active": true
+              },
+              {
+                "value": "Perception Analysis",
+                "label": "Perception Analysis",
+                "active": true
+              },
+              {
+                "value": "Proposal/Price Quote",
+                "label": "Proposal/Price Quote",
+                "active": true
+              },
+              {
+                "value": "Negotiation/Review",
+                "label": "Negotiation/Review",
+                "active": true
+              },
+              {
+                "value": "Closed Won",
+                "label": "Closed Won",
+                "active": true
+              },
+              {
+                "value": "Closed Lost",
+                "label": "Closed Lost",
+                "active": true
+              }
+            ]
+          },
+          {
+            "name": "Amount",
+            "label": "Amount",
+            "type": "currency",
+            "nillable": true,
+            "precision": 18,
+            "scale": 2,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "Probability",
+            "label": "Probability (%)",
+            "type": "percent",
+            "nillable": true,
+            "precision": 3,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "ExpectedRevenue",
+            "label": "Expected Amount",
+            "type": "currency",
+            "nillable": true,
+            "precision": 18,
+            "scale": 2,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "TotalOpportunityQuantity",
+            "label": "Quantity",
+            "type": "double",
+            "nillable": true,
+            "precision": 18,
+            "scale": 2,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "CloseDate",
+            "label": "Close Date",
+            "type": "date",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "Type",
+            "label": "Opportunity Type",
+            "type": "picklist",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": [
+              {
+                "value": "Existing Customer - Upgrade",
+                "label": "Existing Customer - Upgrade",
+                "active": true
+              },
+              {
+                "value": "Existing Customer - Replacement",
+                "label": "Existing Customer - Replacement",
+                "active": true
+              },
+              {
+                "value": "Existing Customer - Downgrade",
+                "label": "Existing Customer - Downgrade",
+                "active": true
+              },
+              {
+                "value": "New Customer",
+                "label": "New Customer",
+                "active": true
+              }
+            ]
+          },
+          {
+            "name": "NextStep",
+            "label": "Next Step",
+            "type": "string",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "LeadSource",
+            "label": "Lead Source",
+            "type": "picklist",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": [
+              {
+                "value": "Web",
+                "label": "Web",
+                "active": true
+              },
+              {
+                "value": "Phone Inquiry",
+                "label": "Phone Inquiry",
+                "active": true
+              },
+              {
+                "value": "Partner Referral",
+                "label": "Partner Referral",
+                "active": true
+              },
+              {
+                "value": "Purchased List",
+                "label": "Purchased List",
+                "active": true
+              },
+              {
+                "value": "Other",
+                "label": "Other",
+                "active": true
+              }
+            ]
+          },
+          {
+            "name": "IsClosed",
+            "label": "Closed",
+            "type": "boolean",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "IsWon",
+            "label": "Won",
+            "type": "boolean",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "ForecastCategory",
+            "label": "Forecast Category",
+            "type": "picklist",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": [
+              {
+                "value": "Omitted",
+                "label": "Omitted",
+                "active": true
+              },
+              {
+                "value": "Pipeline",
+                "label": "Pipeline",
+                "active": true
+              },
+              {
+                "value": "BestCase",
+                "label": "Best Case",
+                "active": true
+              },
+              {
+                "value": "MostLikely",
+                "label": "Most Likely",
+                "active": true
+              },
+              {
+                "value": "Forecast",
+                "label": "Commit",
+                "active": true
+              },
+              {
+                "value": "Closed",
+                "label": "Closed",
+                "active": true
+              }
+            ]
+          },
+          {
+            "name": "ForecastCategoryName",
+            "label": "Forecast Category",
+            "type": "picklist",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": [
+              {
+                "value": "Omitted",
+                "label": "Omitted",
+                "active": true
+              },
+              {
+                "value": "Pipeline",
+                "label": "Pipeline",
+                "active": true
+              },
+              {
+                "value": "Best Case",
+                "label": "Best Case",
+                "active": true
+              },
+              {
+                "value": "Commit",
+                "label": "Commit",
+                "active": true
+              },
+              {
+                "value": "Closed",
+                "label": "Closed",
+                "active": true
+              }
+            ]
+          },
+          {
+            "name": "CampaignId",
+            "label": "Campaign ID",
+            "type": "reference",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "HasOpportunityLineItem",
+            "label": "Has Line Item",
+            "type": "boolean",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "Pricebook2Id",
+            "label": "Price Book ID",
+            "type": "reference",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "OwnerId",
+            "label": "Owner ID",
+            "type": "reference",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "CreatedById",
+            "label": "Created By ID",
+            "type": "reference",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "LastModifiedById",
+            "label": "Last Modified By ID",
+            "type": "reference",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "LastActivityDate",
+            "label": "Last Activity",
+            "type": "date",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "PushCount",
+            "label": "Push Count",
+            "type": "int",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "FiscalQuarter",
+            "label": "Fiscal Quarter",
+            "type": "int",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "FiscalYear",
+            "label": "Fiscal Year",
+            "type": "int",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "Fiscal",
+            "label": "Fiscal Period",
+            "type": "string",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "ContactId",
+            "label": "Contact ID",
+            "type": "reference",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "HasOpenActivity",
+            "label": "Has Open Activity",
+            "type": "boolean",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "HasOverdueTask",
+            "label": "Has Overdue Task",
+            "type": "boolean",
+            "nillable": false,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "LastAmountChangedHistoryId",
+            "label": "Opportunity History ID",
+            "type": "reference",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "LastCloseDateChangedHistoryId",
+            "label": "Opportunity History ID",
+            "type": "reference",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": false,
+            "picklistValues": []
+          },
+          {
+            "name": "DeliveryInstallationStatus__c",
+            "label": "Delivery/Installation Status",
+            "type": "picklist",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": [
+              {
+                "value": "In progress",
+                "label": "In progress",
+                "active": true
+              },
+              {
+                "value": "Yet to begin",
+                "label": "Yet to begin",
+                "active": true
+              },
+              {
+                "value": "Completed",
+                "label": "Completed",
+                "active": true
+              }
+            ]
+          },
+          {
+            "name": "TrackingNumber__c",
+            "label": "Tracking Number",
+            "type": "string",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": []
+          },
+          {
+            "name": "OrderNumber__c",
+            "label": "Order Number",
+            "type": "string",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": []
+          },
+          {
+            "name": "CurrentGenerators__c",
+            "label": "Current Generator(s)",
+            "type": "string",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": []
+          },
+          {
+            "name": "MainCompetitors__c",
+            "label": "Main Competitor(s)",
+            "type": "string",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": []
+          },
+          {
+            "name": "Loss_Reason__c",
+            "label": "Loss Reason",
+            "type": "string",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": []
+          },
+          {
+            "name": "Discount__c",
+            "label": "Discount",
+            "type": "percent",
+            "nillable": true,
+            "precision": 5,
+            "scale": 2,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": []
+          },
+          {
+            "name": "Region__c",
+            "label": "Region",
+            "type": "picklist",
+            "nillable": true,
+            "precision": 0,
+            "scale": 0,
+            "inlineHelpText": null,
+            "custom": true,
+            "picklistValues": [
+              {
+                "value": "Americas",
+                "label": "Americas",
+                "active": true
+              },
+              {
+                "value": "EMEA",
+                "label": "EMEA",
+                "active": true
+              },
+              {
+                "value": "APAC",
+                "label": "APAC",
+                "active": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seq": 11,
+      "ts": "2026-09-13T18:43:10.648+00:00",
+      "kind": "step",
+      "latency_ms": 2.5,
+      "name": "describe_fields"
+    },
+    {
+      "seq": 12,
+      "ts": "2026-09-13T18:43:10.649+00:00",
+      "kind": "rule_ir",
+      "ir": {
+        "source": {
+          "object": "Opportunity",
+          "name": "Discount_Cap",
+          "formula": "Discount__c > 50",
+          "active": true,
+          "error_message": "Discounts above 50% require a separate approval; enter 50 or less.",
+          "error_display_field": "Discount",
+          "description": "Finance policy: maximum self-serve discount is 50 percent.",
+          "source_id": "03dg7000002puAHAAY"
+        },
+        "condition": {
+          "op": "gt",
+          "field": "Discount__c",
+          "value": 50,
+          "args": []
+        },
+        "dependency": {
+          "trigger_field": null,
+          "constrained_field": "Discount__c"
+        },
+        "unsupported": [],
+        "parse_error": null
+      },
+      "fields_used": [
+        "Discount__c"
+      ]
+    },
+    {
+      "seq": 13,
+      "ts": "2026-09-13T18:43:10.650+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.get_schema",
+      "request": {
+        "method": "GET",
+        "path": "/meta/bases/{base}/tables"
+      },
+      "response": {
+        "tables": [
+          {
+            "id": "tbl1kQWEAPtik3uTJ",
+            "name": "Opportunities",
+            "primaryFieldId": "fldbcl89dbYRYRTpK",
+            "fields": [
+              {
+                "id": "fldbcl89dbYRYRTpK",
+                "name": "Name",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldGnsAnaO6bq3WlJ",
+                "name": "Stage",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "selrbaWryao0L9cLt",
+                      "name": "Prospecting",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selhblXGu64wS3cly",
+                      "name": "Qualification",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selIQsMoTMLgcz0jk",
+                      "name": "Needs Analysis",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "sel5QREOY2bkXRRVp",
+                      "name": "Value Proposition",
+                      "color": "greenLight2"
+                    },
+                    {
+                      "id": "sel92v7KkCIjwo8SQ",
+                      "name": "Id. Decision Makers",
+                      "color": "yellowLight2"
+                    },
+                    {
+                      "id": "selLPFt8gtpTxwDvJ",
+                      "name": "Perception Analysis",
+                      "color": "orangeLight2"
+                    },
+                    {
+                      "id": "selQfK4AlBquANKM1",
+                      "name": "Proposal/Price Quote",
+                      "color": "redLight2"
+                    },
+                    {
+                      "id": "sel1RBdVA0GSKEFMu",
+                      "name": "Negotiation/Review",
+                      "color": "pinkLight2"
+                    },
+                    {
+                      "id": "seldEfTtpR8ImdsEY",
+                      "name": "Closed Won",
+                      "color": "purpleLight2"
+                    },
+                    {
+                      "id": "sel0qmoavhVLdljkl",
+                      "name": "Closed Lost",
+                      "color": "grayLight2"
+                    },
+                    {
+                      "id": "sel9QkXhGip7OIULg",
+                      "name": "Negotiation",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selobmb5Qh5ipN7bH",
+                      "name": "Proposal",
+                      "color": "cyanLight2"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "fldjyihYXcLajfpRc",
+                "name": "Amount",
+                "type": "currency",
+                "options": {
+                  "precision": 2,
+                  "symbol": "$"
+                }
+              },
+              {
+                "id": "fldhP2d5fh18rsivi",
+                "name": "Probability",
+                "type": "percent",
+                "options": {
+                  "precision": 2
+                }
+              },
+              {
+                "id": "fldp24iN9iB6zna6l",
+                "name": "Discount",
+                "type": "percent",
+                "options": {
+                  "precision": 2
+                }
+              },
+              {
+                "id": "fld7LEkyolZnHZe9R",
+                "name": "Loss Reason",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldaSIfAKPMtpmTws",
+                "name": "Type",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "selkFHANzxofHhYw6",
+                      "name": "New Customer",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selygt6wXIlFoTtYz",
+                      "name": "Existing Customer - Upgrade",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selrmzTIYfJ5uhxCt",
+                      "name": "Existing Customer - Replacement",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "seluRs11jzQGO5jiJ",
+                      "name": "Existing Customer - Downgrade",
+                      "color": "greenLight2"
+                    },
+                    {
+                      "id": "selKbECxdpWSCmLCX",
+                      "name": "New Business",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selg0faVjPfZgFN6v",
+                      "name": "Renewal",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selVmmCgDOohBkdIW",
+                      "name": "Upsell",
+                      "color": "tealLight2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "tblx3eUdbMqyhGcOm",
+            "name": "Migration_Rules",
+            "primaryFieldId": "fldv3L3n8r70uItW0",
+            "fields": [
+              {
+                "id": "fldv3L3n8r70uItW0",
+                "name": "Rule",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldKMr0z6eCyTIVRT",
+                "name": "Source Object",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldSVdX3mqbhBnUdc",
+                "name": "Source Formula",
+                "type": "multilineText"
+              },
+              {
+                "id": "fld4ybdHNjLahLnzg",
+                "name": "Guard Formula",
+                "type": "multilineText"
+              },
+              {
+                "id": "fldw2xBx22A7oYp35",
+                "name": "Verdict",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "sel2QZtIC3YlDqN3s",
+                      "name": "PASS",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "sel6Q06FaMHMNFcCW",
+                      "name": "FAIL",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selhkME77Rj1tM3FI",
+                      "name": "AMBIGUOUS",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "sel4UDw8CYPw0yDT0",
+                      "name": "Approved",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selv8NpfNHiZ3bZzP",
+                      "name": "Rejected",
+                      "color": "cyanLight2"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "fld4uk2vtqP3cEpZi",
+                "name": "System Confidence",
+                "type": "number",
+                "options": {
+                  "precision": 0
+                }
+              },
+              {
+                "id": "fldMpdDHQF6xUB61Y",
+                "name": "LLM Confidence",
+                "type": "number",
+                "options": {
+                  "precision": 0
+                }
+              },
+              {
+                "id": "fldsYbNAGIJdbl4ha",
+                "name": "Run ID",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldNH5xL91PWJjCFP",
+                "name": "Trace Link",
+                "type": "url"
+              },
+              {
+                "id": "fldVJBrlCOK7cHjw2",
+                "name": "Migrated At",
+                "type": "dateTime",
+                "options": {
+                  "dateFormat": {
+                    "name": "iso",
+                    "format": "YYYY-MM-DD"
+                  },
+                  "timeFormat": {
+                    "name": "24hour",
+                    "format": "HH:mm"
+                  },
+                  "timeZone": "utc"
+                }
+              },
+              {
+                "id": "fldsQvaJuDu66GBnp",
+                "name": "Migration_Agents",
+                "type": "multipleRecordLinks",
+                "options": {
+                  "linkedTableId": "tbli50VGGZ1JTh93i",
+                  "isReversed": false,
+                  "prefersSingleRecordLink": false,
+                  "inverseLinkFieldId": "fldjeLo4BRkJ4MYZY"
+                }
+              }
+            ]
+          },
+          {
+            "id": "tbli50VGGZ1JTh93i",
+            "name": "Migration_Agents",
+            "primaryFieldId": "fldGdcasfGXGz07QX",
+            "fields": [
+              {
+                "id": "fldGdcasfGXGz07QX",
+                "name": "Agent Name",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldjKTt5fOuJxBThY",
+                "name": "Agent Type",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "seluD8NjBUxDkUDdz",
+                      "name": "LLM",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selKxND0dKfPqoLvL",
+                      "name": "Heuristic",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selrrFE04Mm91VlBN",
+                      "name": "Hybrid",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "selDG7WFhuiqc89HY",
+                      "name": "Other",
+                      "color": "greenLight2"
+                    },
+                    {
+                      "id": "selwZM9bXe94mtept",
+                      "name": "Corporate",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selPmISQqVjOKBQx8",
+                      "name": "Individual",
+                      "color": "cyanLight2"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "fld3Ow1ZOXymHxplG",
+                "name": "Contact Email",
+                "type": "email"
+              },
+              {
+                "id": "fldELqONAAe0ta69a",
+                "name": "Role",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldnn1D5WCUUWeXsc",
+                "name": "Active",
+                "type": "checkbox",
+                "options": {
+                  "icon": "thumbsUp",
+                  "color": "greenBright"
+                }
+              },
+              {
+                "id": "fldFrakwZC9X8nnlR",
+                "name": "Last Run At",
+                "type": "dateTime",
+                "options": {
+                  "dateFormat": {
+                    "name": "iso",
+                    "format": "YYYY-MM-DD"
+                  },
+                  "timeFormat": {
+                    "name": "24hour",
+                    "format": "HH:mm"
+                  },
+                  "timeZone": "utc"
+                }
+              },
+              {
+                "id": "flddCfmBWFLkp71rB",
+                "name": "Notes",
+                "type": "multilineText"
+              },
+              {
+                "id": "fldjeLo4BRkJ4MYZY",
+                "name": "Related Runs",
+                "type": "multipleRecordLinks",
+                "options": {
+                  "linkedTableId": "tblx3eUdbMqyhGcOm",
+                  "isReversed": false,
+                  "prefersSingleRecordLink": false,
+                  "inverseLinkFieldId": "fldsQvaJuDu66GBnp"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seq": 14,
+      "ts": "2026-09-13T18:43:10.652+00:00",
+      "kind": "step",
+      "latency_ms": 1.7,
+      "name": "target_schema"
+    },
+    {
+      "seq": 15,
+      "ts": "2026-09-13T18:43:10.652+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.list_records",
+      "request": {
+        "method": "GET",
+        "table": "Opportunities",
+        "filterByFormula": null
+      },
+      "response": [
+        {
+          "id": "rec1EG2feKI1BHP5n",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Proposal",
+            "Type": "New Business",
+            "Name": "Theta Systems Pilot",
+            "Probability": 0.5,
+            "Amount": 18000
+          }
+        },
+        {
+          "id": "rec3gJaLQLnNkRqyS",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Type": "Upsell",
+            "Name": "Delta Enterprises Upgrade",
+            "Probability": 1,
+            "Amount": 80000,
+            "Discount": 0.1
+          }
+        },
+        {
+          "id": "recGe9mIRdzjfDwp1",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Qualification",
+            "Type": "Upsell",
+            "Name": "Iota Holdings Upgrade",
+            "Probability": 0.4,
+            "Amount": 40000
+          }
+        },
+        {
+          "id": "recQF3NTHzWb6WjOa",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Qualification",
+            "Type": "New Business",
+            "Name": "Gamma Inc Pilot",
+            "Probability": 0.3,
+            "Amount": 15000
+          }
+        },
+        {
+          "id": "recSMcEKZQzNDzVLc",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Loss Reason": "No Decision",
+            "Stage": "Closed Lost",
+            "Type": "New Business",
+            "Name": "Omicron Labs New Deal",
+            "Probability": 0,
+            "Amount": 30000
+          }
+        },
+        {
+          "id": "recZAFvRs8jNR8B5T",
+          "createdTime": "2026-09-13T17:14:09.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Name": "PROBE blank amount"
+          }
+        },
+        {
+          "id": "recahS2Dtpgbjvp1W",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Negotiation",
+            "Type": "Upsell",
+            "Name": "Xi Ventures Upgrade",
+            "Probability": 0.65,
+            "Amount": 70000,
+            "Discount": 0.07
+          }
+        },
+        {
+          "id": "recdWeDT6K5W8pluf",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Type": "Upsell",
+            "Name": "Lambda Solutions Expansion",
+            "Probability": 1,
+            "Amount": 110000,
+            "Discount": 0.08
+          }
+        },
+        {
+          "id": "recemYQko62Wj1Lxk",
+          "createdTime": "2026-09-13T17:14:09.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Name": "PROBE zero amount",
+            "Amount": 0
+          }
+        },
+        {
+          "id": "recflIXpbTSzMsAVU",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Negotiation",
+            "Type": "Renewal",
+            "Name": "Eta Technologies Renewal",
+            "Probability": 0.75,
+            "Amount": 60000,
+            "Discount": 0.05
+          }
+        },
+        {
+          "id": "rechYguLBQSYIzPFd",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Prospecting",
+            "Type": "New Business",
+            "Name": "Epsilon Ltd New Deal",
+            "Probability": 0.2,
+            "Amount": 25000
+          }
+        },
+        {
+          "id": "recjLmohA6lnVPorc",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Proposal",
+            "Type": "New Business",
+            "Name": "Nu Innovations Pilot",
+            "Probability": 0.55,
+            "Amount": 22000
+          }
+        },
+        {
+          "id": "reckTPhujBo9flmFz",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Loss Reason": "Competitor Chosen",
+            "Stage": "Closed Lost",
+            "Type": "Renewal",
+            "Name": "Mu Dynamics Renewal",
+            "Probability": 0,
+            "Amount": 55000
+          }
+        },
+        {
+          "id": "recko1l4GcrkHUSKx",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Loss Reason": "Budget Constraints",
+            "Stage": "Closed Lost",
+            "Type": "Upsell",
+            "Name": "Zeta Group Expansion",
+            "Probability": 0,
+            "Amount": 95000
+          }
+        },
+        {
+          "id": "recs9TC3Mr7481tC0",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Prospecting",
+            "Type": "New Business",
+            "Name": "Kappa Partners New Deal",
+            "Probability": 0.25,
+            "Amount": 35000
+          }
+        },
+        {
+          "id": "recsx03O67vjQdPge",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Negotiation",
+            "Type": "New Business",
+            "Name": "Acme Corp Expansion",
+            "Probability": 0.7,
+            "Amount": 120000,
+            "Discount": 0.05
+          }
+        },
+        {
+          "id": "recvd4GAsvRiiYOvq",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Proposal",
+            "Type": "Renewal",
+            "Name": "Beta Solutions Renewal",
+            "Probability": 0.6,
+            "Amount": 45000
+          }
+        }
+      ]
+    },
+    {
+      "seq": 16,
+      "ts": "2026-09-13T18:43:10.653+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.list_records",
+      "request": {
+        "method": "GET",
+        "table": "Migration_Rules",
+        "filterByFormula": null
+      },
+      "response": [
+        {
+          "id": "rec1MEw5MUHXoroYI",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.85,
+            "Guard Formula": "legacy_id IS NOT NULL",
+            "Source Object": "Product",
+            "LLM Confidence": 0.8,
+            "Trace Link": "TRC1004",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec4Fk1nEw7cPdphO"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Ignore deprecated field 'legacy_id'",
+            "Verdict": "Rejected"
+          }
+        },
+        {
+          "id": "rec5VbeaePdx4By9j",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.96,
+            "Guard Formula": "status IN ('pending','done')",
+            "Source Object": "Order",
+            "LLM Confidence": 0.94,
+            "Trace Link": "TRC1006",
+            "Source Formula": "CASE status WHEN 'pending' THEN 'awaiting' WHEN 'done' THEN 'completed' END",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recDPLJ7PqGper2Pp"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Map 'status' values to new enum",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "rec6lHwjsLPA0ug9D",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.91,
+            "Guard Formula": "gender IN ('male','female')",
+            "Source Object": "User",
+            "LLM Confidence": 0.87,
+            "Trace Link": "TRC1013",
+            "Source Formula": "CASE gender WHEN 'male' THEN 'M' WHEN 'female' THEN 'F' END",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recMZjBNFlas6SOl3"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Map 'gender' values to 'M'/'F'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recAflG4gXoUdvFpT",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.96,
+            "Guard Formula": "created_at IS NOT NULL",
+            "Source Object": "Order",
+            "LLM Confidence": 0.94,
+            "Trace Link": "TRC1011",
+            "Source Formula": "CONVERT_TZ(created_at, timezone, 'UTC')",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recpRWMPSBnckygf7"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Convert 'created_at' to UTC",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recIqqeKGlGhc2zoF",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.92,
+            "Guard Formula": "country IS NULL OR country = ''",
+            "Source Object": "Customer",
+            "LLM Confidence": 0.89,
+            "Trace Link": "TRC1009",
+            "Source Formula": "IF(country = '', 'USA', country)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec5EKysb6xRsobzG"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Set default 'country' to 'USA' if blank",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recKw1GjcNsiHzGDy",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.98,
+            "Guard Formula": "order_date IS NOT NULL",
+            "Source Object": "Order",
+            "LLM Confidence": 0.97,
+            "Trace Link": "TRC1002",
+            "Source Formula": "FORMAT(order_date, 'YYYY-MM-DD')",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recjDiysOlH5PMvvR"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Transform 'OrderDate' to ISO format",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recNjK1YUZN9BuOmR",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.94,
+            "Guard Formula": "address1 IS NOT NULL",
+            "Source Object": "Customer",
+            "LLM Confidence": 0.91,
+            "Trace Link": "TRC1008",
+            "Source Formula": "address1",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recBRmmebNhTTbV30"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Rename 'address1' to 'street_address'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recOZjzD6ZGeCJ9p9",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.97,
+            "Guard Formula": "price IS NOT NULL AND price != ''",
+            "Source Object": "Invoice",
+            "LLM Confidence": 0.95,
+            "Trace Link": "TRC1005",
+            "Source Formula": "CAST(price AS FLOAT)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recrJV0rWMlctn0lQ"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Convert 'price' to float",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recRhQ2iOLxbZnJqT",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.93,
+            "Guard Formula": "first_name IS NOT NULL AND last_name IS NOT NULL",
+            "Source Object": "User",
+            "LLM Confidence": 0.9,
+            "Trace Link": "TRC1003",
+            "Source Formula": "CONCAT(first_name, ' ', last_name)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recLj70m2LGp0kYOj"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Concatenate first and last name",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recZ8yp93dzYVDuII",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.88,
+            "Guard Formula": "discount_expiry < NOW()",
+            "Source Object": "Order",
+            "LLM Confidence": 0.85,
+            "Trace Link": "TRC1015",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recjjvDD1PtrUmhHK"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Drop 'discount_code' if expired",
+            "Verdict": "Rejected"
+          }
+        },
+        {
+          "id": "recbZfWDOGK29yg7s",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.93,
+            "Guard Formula": "last_login IS NOT NULL",
+            "Source Object": "User",
+            "LLM Confidence": 0.9,
+            "Trace Link": "TRC1014",
+            "Source Formula": "IF(DATEDIFF(NOW(), last_login) < 30, TRUE, FALSE)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec5Bi0DBVuAjQY4b"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Set 'is_active' to true if last_login < 30 days",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recnTcqKaoIprWUCf",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.9,
+            "Guard Formula": "email IS NULL",
+            "Source Object": "User",
+            "LLM Confidence": 0.88,
+            "Trace Link": "TRC1007",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recs3SFEhWWUjWJDH"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Drop records with null emails",
+            "Verdict": "Rejected"
+          }
+        },
+        {
+          "id": "recory5LWQeiI3IYa",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.95,
+            "Guard Formula": "status != 'inactive'",
+            "Source Object": "Customer",
+            "LLM Confidence": 0.92,
+            "Trace Link": "TRC1001",
+            "Source Formula": "IF(type = 'active', 'Client', NULL)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recuqZqo4CMyu94NZ"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Map 'Customer' to 'Client'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recsCiy2tOdGpgV2L",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.95,
+            "Guard Formula": "phone IS NOT NULL",
+            "Source Object": "Contact",
+            "LLM Confidence": 0.93,
+            "Trace Link": "TRC1010",
+            "Source Formula": "TRIM(phone)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recRyOF6OpvqIMjZ0"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Remove whitespace from 'phone'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recvDdbRg2KM7OC7l",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.8,
+            "Guard Formula": "notes IS NOT NULL",
+            "Source Object": "Invoice",
+            "LLM Confidence": 0.78,
+            "Trace Link": "TRC1012",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec649T97BAnjKfPb"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Ignore 'notes' field",
+            "Verdict": "Rejected"
+          }
+        }
+      ]
+    },
+    {
+      "seq": 17,
+      "ts": "2026-09-13T18:43:10.654+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.list_records",
+      "request": {
+        "method": "GET",
+        "table": "Migration_Agents",
+        "filterByFormula": null
+      },
+      "response": [
+        {
+          "id": "rec4Fk1nEw7cPdphO",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "hello@nextsteprelocation.com",
+            "Role": "Senior Agent",
+            "Last Run At": "2024-06-08T00:00:00.000Z",
+            "Agent Name": "NextStep Relocation",
+            "Notes": "Focuses on student and skilled worker visas.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "rec1MEw5MUHXoroYI"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "rec5Bi0DBVuAjQY4b",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "family@firstmigration.com",
+            "Role": "Family Consultant",
+            "Last Run At": "2024-05-31T00:00:00.000Z",
+            "Agent Name": "FamilyFirst Migration",
+            "Notes": "Expert in family reunification visas.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recbZfWDOGK29yg7s"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "rec5EKysb6xRsobzG",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "info@pacifichub.com",
+            "Role": "Team Lead",
+            "Last Run At": "2024-06-04T00:00:00.000Z",
+            "Agent Name": "Pacific Migration Hub",
+            "Notes": "Handles Pacific region migration cases.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recIqqeKGlGhc2zoF"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "rec649T97BAnjKfPb",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "students@studentpathway.com",
+            "Role": "Student Advisor",
+            "Last Run At": "2024-06-02T00:00:00.000Z",
+            "Agent Name": "StudentPathway Agency",
+            "Notes": "Specializes in student visa applications.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recvDdbRg2KM7OC7l"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recBRmmebNhTTbV30",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "urban@moveagents.com",
+            "Role": "Agent",
+            "Last Run At": "2024-06-05T00:00:00.000Z",
+            "Agent Name": "UrbanMove Agents",
+            "Notes": "Known for fast turnaround times.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recNjK1YUZN9BuOmR"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recDPLJ7PqGper2Pp",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "service@migratenow.com",
+            "Role": "Consultant",
+            "Last Run At": "2024-05-25T00:00:00.000Z",
+            "Agent Name": "MigrateNow Services",
+            "Notes": "Temporarily inactive due to staff shortage.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "rec5VbeaePdx4By9j"
+            ]
+          }
+        },
+        {
+          "id": "recLj70m2LGp0kYOj",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "support@aussiepath.com",
+            "Role": "Migration Agent",
+            "Last Run At": "2024-05-30T00:00:00.000Z",
+            "Agent Name": "AussiePath Migration",
+            "Notes": "Recently merged with another agency.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recRhQ2iOLxbZnJqT"
+            ]
+          }
+        },
+        {
+          "id": "recMZjBNFlas6SOl3",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "talent@globalmoves.com",
+            "Role": "HR Liaison",
+            "Last Run At": "2024-06-01T00:00:00.000Z",
+            "Agent Name": "Global Talent Moves",
+            "Notes": "Works with multinational companies.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "rec6lHwjsLPA0ug9D"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recRyOF6OpvqIMjZ0",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "ease@visa.com",
+            "Role": "Consultant",
+            "Last Run At": "2024-05-20T00:00:00.000Z",
+            "Agent Name": "VisaEase Consultants",
+            "Notes": "Recently completed a major client project.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recsCiy2tOdGpgV2L"
+            ]
+          }
+        },
+        {
+          "id": "recjDiysOlH5PMvvR",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "contact@easyvisa.com",
+            "Role": "Case Manager",
+            "Last Run At": "2024-06-09T00:00:00.000Z",
+            "Agent Name": "EasyVisa Experts",
+            "Notes": "Handles individual and family migration cases.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recKw1GjcNsiHzGDy"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recjjvDD1PtrUmhHK",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "work@visapros.com",
+            "Role": "Case Coordinator",
+            "Last Run At": "2024-05-28T00:00:00.000Z",
+            "Agent Name": "WorkVisa Pros",
+            "Notes": "Currently reviewing compliance procedures.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recZ8yp93dzYVDuII"
+            ]
+          }
+        },
+        {
+          "id": "recpRWMPSBnckygf7",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "elite@migrationadvisors.com",
+            "Role": "Advisor",
+            "Last Run At": "2024-06-03T00:00:00.000Z",
+            "Agent Name": "Elite Migration Advisors",
+            "Notes": "Focuses on executive relocations.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recAflG4gXoUdvFpT"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recrJV0rWMlctn0lQ",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "partners@visabridge.com",
+            "Role": "Director",
+            "Last Run At": "2024-06-07T00:00:00.000Z",
+            "Agent Name": "VisaBridge Partners",
+            "Notes": "Offers end-to-end migration project management.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recOZjzD6ZGeCJ9p9"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recs3SFEhWWUjWJDH",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "admin@pathwaygroup.com",
+            "Role": "Operations Manager",
+            "Last Run At": "2024-06-06T00:00:00.000Z",
+            "Agent Name": "Pathway Migration Group",
+            "Notes": "Specializes in IT sector migrations.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recnTcqKaoIprWUCf"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recuqZqo4CMyu94NZ",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "info@globalmove.com",
+            "Role": "Lead Consultant",
+            "Last Run At": "2024-06-10T00:00:00.000Z",
+            "Agent Name": "GlobalMove Solutions",
+            "Notes": "Specializes in large-scale corporate migrations.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recory5LWQeiI3IYa"
+            ],
+            "Active": true
+          }
+        }
+      ]
+    },
+    {
+      "seq": 18,
+      "ts": "2026-09-13T18:43:10.656+00:00",
+      "kind": "state_snapshot",
+      "phase": "before",
+      "tables": {
+        "Opportunities": {
+          "fields": [
+            "Amount",
+            "Discount",
+            "Loss Reason",
+            "Name",
+            "Probability",
+            "Stage",
+            "Type"
+          ],
+          "record_count": 17
+        },
+        "Migration_Rules": {
+          "fields": [
+            "Guard Formula",
+            "LLM Confidence",
+            "Migrated At",
+            "Migration_Agents",
+            "Rule",
+            "Run ID",
+            "Source Formula",
+            "Source Object",
+            "System Confidence",
+            "Trace Link",
+            "Verdict"
+          ],
+          "record_count": 15
+        },
+        "Migration_Agents": {
+          "fields": [
+            "Active",
+            "Agent Name",
+            "Agent Type",
+            "Contact Email",
+            "Last Run At",
+            "Notes",
+            "Related Runs",
+            "Role"
+          ],
+          "record_count": 15
+        }
+      },
+      "full": {
+        "Opportunities": {
+          "fields": [
+            "Amount",
+            "Discount",
+            "Loss Reason",
+            "Name",
+            "Probability",
+            "Stage",
+            "Type"
+          ],
+          "records": {
+            "rec1EG2feKI1BHP5n": {
+              "Stage": "Proposal",
+              "Type": "New Business",
+              "Name": "Theta Systems Pilot",
+              "Probability": 0.5,
+              "Amount": 18000
+            },
+            "rec3gJaLQLnNkRqyS": {
+              "Stage": "Closed Won",
+              "Type": "Upsell",
+              "Name": "Delta Enterprises Upgrade",
+              "Probability": 1,
+              "Amount": 80000,
+              "Discount": 0.1
+            },
+            "recGe9mIRdzjfDwp1": {
+              "Stage": "Qualification",
+              "Type": "Upsell",
+              "Name": "Iota Holdings Upgrade",
+              "Probability": 0.4,
+              "Amount": 40000
+            },
+            "recQF3NTHzWb6WjOa": {
+              "Stage": "Qualification",
+              "Type": "New Business",
+              "Name": "Gamma Inc Pilot",
+              "Probability": 0.3,
+              "Amount": 15000
+            },
+            "recSMcEKZQzNDzVLc": {
+              "Loss Reason": "No Decision",
+              "Stage": "Closed Lost",
+              "Type": "New Business",
+              "Name": "Omicron Labs New Deal",
+              "Probability": 0,
+              "Amount": 30000
+            },
+            "recZAFvRs8jNR8B5T": {
+              "Stage": "Closed Won",
+              "Name": "PROBE blank amount"
+            },
+            "recahS2Dtpgbjvp1W": {
+              "Stage": "Negotiation",
+              "Type": "Upsell",
+              "Name": "Xi Ventures Upgrade",
+              "Probability": 0.65,
+              "Amount": 70000,
+              "Discount": 0.07
+            },
+            "recdWeDT6K5W8pluf": {
+              "Stage": "Closed Won",
+              "Type": "Upsell",
+              "Name": "Lambda Solutions Expansion",
+              "Probability": 1,
+              "Amount": 110000,
+              "Discount": 0.08
+            },
+            "recemYQko62Wj1Lxk": {
+              "Stage": "Closed Won",
+              "Name": "PROBE zero amount",
+              "Amount": 0
+            },
+            "recflIXpbTSzMsAVU": {
+              "Stage": "Negotiation",
+              "Type": "Renewal",
+              "Name": "Eta Technologies Renewal",
+              "Probability": 0.75,
+              "Amount": 60000,
+              "Discount": 0.05
+            },
+            "rechYguLBQSYIzPFd": {
+              "Stage": "Prospecting",
+              "Type": "New Business",
+              "Name": "Epsilon Ltd New Deal",
+              "Probability": 0.2,
+              "Amount": 25000
+            },
+            "recjLmohA6lnVPorc": {
+              "Stage": "Proposal",
+              "Type": "New Business",
+              "Name": "Nu Innovations Pilot",
+              "Probability": 0.55,
+              "Amount": 22000
+            },
+            "reckTPhujBo9flmFz": {
+              "Loss Reason": "Competitor Chosen",
+              "Stage": "Closed Lost",
+              "Type": "Renewal",
+              "Name": "Mu Dynamics Renewal",
+              "Probability": 0,
+              "Amount": 55000
+            },
+            "recko1l4GcrkHUSKx": {
+              "Loss Reason": "Budget Constraints",
+              "Stage": "Closed Lost",
+              "Type": "Upsell",
+              "Name": "Zeta Group Expansion",
+              "Probability": 0,
+              "Amount": 95000
+            },
+            "recs9TC3Mr7481tC0": {
+              "Stage": "Prospecting",
+              "Type": "New Business",
+              "Name": "Kappa Partners New Deal",
+              "Probability": 0.25,
+              "Amount": 35000
+            },
+            "recsx03O67vjQdPge": {
+              "Stage": "Negotiation",
+              "Type": "New Business",
+              "Name": "Acme Corp Expansion",
+              "Probability": 0.7,
+              "Amount": 120000,
+              "Discount": 0.05
+            },
+            "recvd4GAsvRiiYOvq": {
+              "Stage": "Proposal",
+              "Type": "Renewal",
+              "Name": "Beta Solutions Renewal",
+              "Probability": 0.6,
+              "Amount": 45000
+            }
+          }
+        },
+        "Migration_Rules": {
+          "fields": [
+            "Guard Formula",
+            "LLM Confidence",
+            "Migrated At",
+            "Migration_Agents",
+            "Rule",
+            "Run ID",
+            "Source Formula",
+            "Source Object",
+            "System Confidence",
+            "Trace Link",
+            "Verdict"
+          ],
+          "records": {
+            "rec1MEw5MUHXoroYI": {
+              "System Confidence": 0.85,
+              "Guard Formula": "legacy_id IS NOT NULL",
+              "Source Object": "Product",
+              "LLM Confidence": 0.8,
+              "Trace Link": "TRC1004",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec4Fk1nEw7cPdphO"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Ignore deprecated field 'legacy_id'",
+              "Verdict": "Rejected"
+            },
+            "rec5VbeaePdx4By9j": {
+              "System Confidence": 0.96,
+              "Guard Formula": "status IN ('pending','done')",
+              "Source Object": "Order",
+              "LLM Confidence": 0.94,
+              "Trace Link": "TRC1006",
+              "Source Formula": "CASE status WHEN 'pending' THEN 'awaiting' WHEN 'done' THEN 'completed' END",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recDPLJ7PqGper2Pp"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Map 'status' values to new enum",
+              "Verdict": "Approved"
+            },
+            "rec6lHwjsLPA0ug9D": {
+              "System Confidence": 0.91,
+              "Guard Formula": "gender IN ('male','female')",
+              "Source Object": "User",
+              "LLM Confidence": 0.87,
+              "Trace Link": "TRC1013",
+              "Source Formula": "CASE gender WHEN 'male' THEN 'M' WHEN 'female' THEN 'F' END",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recMZjBNFlas6SOl3"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Map 'gender' values to 'M'/'F'",
+              "Verdict": "Approved"
+            },
+            "recAflG4gXoUdvFpT": {
+              "System Confidence": 0.96,
+              "Guard Formula": "created_at IS NOT NULL",
+              "Source Object": "Order",
+              "LLM Confidence": 0.94,
+              "Trace Link": "TRC1011",
+              "Source Formula": "CONVERT_TZ(created_at, timezone, 'UTC')",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recpRWMPSBnckygf7"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Convert 'created_at' to UTC",
+              "Verdict": "Approved"
+            },
+            "recIqqeKGlGhc2zoF": {
+              "System Confidence": 0.92,
+              "Guard Formula": "country IS NULL OR country = ''",
+              "Source Object": "Customer",
+              "LLM Confidence": 0.89,
+              "Trace Link": "TRC1009",
+              "Source Formula": "IF(country = '', 'USA', country)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec5EKysb6xRsobzG"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Set default 'country' to 'USA' if blank",
+              "Verdict": "Approved"
+            },
+            "recKw1GjcNsiHzGDy": {
+              "System Confidence": 0.98,
+              "Guard Formula": "order_date IS NOT NULL",
+              "Source Object": "Order",
+              "LLM Confidence": 0.97,
+              "Trace Link": "TRC1002",
+              "Source Formula": "FORMAT(order_date, 'YYYY-MM-DD')",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recjDiysOlH5PMvvR"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Transform 'OrderDate' to ISO format",
+              "Verdict": "Approved"
+            },
+            "recNjK1YUZN9BuOmR": {
+              "System Confidence": 0.94,
+              "Guard Formula": "address1 IS NOT NULL",
+              "Source Object": "Customer",
+              "LLM Confidence": 0.91,
+              "Trace Link": "TRC1008",
+              "Source Formula": "address1",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recBRmmebNhTTbV30"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Rename 'address1' to 'street_address'",
+              "Verdict": "Approved"
+            },
+            "recOZjzD6ZGeCJ9p9": {
+              "System Confidence": 0.97,
+              "Guard Formula": "price IS NOT NULL AND price != ''",
+              "Source Object": "Invoice",
+              "LLM Confidence": 0.95,
+              "Trace Link": "TRC1005",
+              "Source Formula": "CAST(price AS FLOAT)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recrJV0rWMlctn0lQ"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Convert 'price' to float",
+              "Verdict": "Approved"
+            },
+            "recRhQ2iOLxbZnJqT": {
+              "System Confidence": 0.93,
+              "Guard Formula": "first_name IS NOT NULL AND last_name IS NOT NULL",
+              "Source Object": "User",
+              "LLM Confidence": 0.9,
+              "Trace Link": "TRC1003",
+              "Source Formula": "CONCAT(first_name, ' ', last_name)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recLj70m2LGp0kYOj"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Concatenate first and last name",
+              "Verdict": "Approved"
+            },
+            "recZ8yp93dzYVDuII": {
+              "System Confidence": 0.88,
+              "Guard Formula": "discount_expiry < NOW()",
+              "Source Object": "Order",
+              "LLM Confidence": 0.85,
+              "Trace Link": "TRC1015",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recjjvDD1PtrUmhHK"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Drop 'discount_code' if expired",
+              "Verdict": "Rejected"
+            },
+            "recbZfWDOGK29yg7s": {
+              "System Confidence": 0.93,
+              "Guard Formula": "last_login IS NOT NULL",
+              "Source Object": "User",
+              "LLM Confidence": 0.9,
+              "Trace Link": "TRC1014",
+              "Source Formula": "IF(DATEDIFF(NOW(), last_login) < 30, TRUE, FALSE)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec5Bi0DBVuAjQY4b"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Set 'is_active' to true if last_login < 30 days",
+              "Verdict": "Approved"
+            },
+            "recnTcqKaoIprWUCf": {
+              "System Confidence": 0.9,
+              "Guard Formula": "email IS NULL",
+              "Source Object": "User",
+              "LLM Confidence": 0.88,
+              "Trace Link": "TRC1007",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recs3SFEhWWUjWJDH"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Drop records with null emails",
+              "Verdict": "Rejected"
+            },
+            "recory5LWQeiI3IYa": {
+              "System Confidence": 0.95,
+              "Guard Formula": "status != 'inactive'",
+              "Source Object": "Customer",
+              "LLM Confidence": 0.92,
+              "Trace Link": "TRC1001",
+              "Source Formula": "IF(type = 'active', 'Client', NULL)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recuqZqo4CMyu94NZ"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Map 'Customer' to 'Client'",
+              "Verdict": "Approved"
+            },
+            "recsCiy2tOdGpgV2L": {
+              "System Confidence": 0.95,
+              "Guard Formula": "phone IS NOT NULL",
+              "Source Object": "Contact",
+              "LLM Confidence": 0.93,
+              "Trace Link": "TRC1010",
+              "Source Formula": "TRIM(phone)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recRyOF6OpvqIMjZ0"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Remove whitespace from 'phone'",
+              "Verdict": "Approved"
+            },
+            "recvDdbRg2KM7OC7l": {
+              "System Confidence": 0.8,
+              "Guard Formula": "notes IS NOT NULL",
+              "Source Object": "Invoice",
+              "LLM Confidence": 0.78,
+              "Trace Link": "TRC1012",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec649T97BAnjKfPb"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Ignore 'notes' field",
+              "Verdict": "Rejected"
+            }
+          }
+        },
+        "Migration_Agents": {
+          "fields": [
+            "Active",
+            "Agent Name",
+            "Agent Type",
+            "Contact Email",
+            "Last Run At",
+            "Notes",
+            "Related Runs",
+            "Role"
+          ],
+          "records": {
+            "rec4Fk1nEw7cPdphO": {
+              "Contact Email": "hello@nextsteprelocation.com",
+              "Role": "Senior Agent",
+              "Last Run At": "2024-06-08T00:00:00.000Z",
+              "Agent Name": "NextStep Relocation",
+              "Notes": "Focuses on student and skilled worker visas.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "rec1MEw5MUHXoroYI"
+              ],
+              "Active": true
+            },
+            "rec5Bi0DBVuAjQY4b": {
+              "Contact Email": "family@firstmigration.com",
+              "Role": "Family Consultant",
+              "Last Run At": "2024-05-31T00:00:00.000Z",
+              "Agent Name": "FamilyFirst Migration",
+              "Notes": "Expert in family reunification visas.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recbZfWDOGK29yg7s"
+              ],
+              "Active": true
+            },
+            "rec5EKysb6xRsobzG": {
+              "Contact Email": "info@pacifichub.com",
+              "Role": "Team Lead",
+              "Last Run At": "2024-06-04T00:00:00.000Z",
+              "Agent Name": "Pacific Migration Hub",
+              "Notes": "Handles Pacific region migration cases.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recIqqeKGlGhc2zoF"
+              ],
+              "Active": true
+            },
+            "rec649T97BAnjKfPb": {
+              "Contact Email": "students@studentpathway.com",
+              "Role": "Student Advisor",
+              "Last Run At": "2024-06-02T00:00:00.000Z",
+              "Agent Name": "StudentPathway Agency",
+              "Notes": "Specializes in student visa applications.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recvDdbRg2KM7OC7l"
+              ],
+              "Active": true
+            },
+            "recBRmmebNhTTbV30": {
+              "Contact Email": "urban@moveagents.com",
+              "Role": "Agent",
+              "Last Run At": "2024-06-05T00:00:00.000Z",
+              "Agent Name": "UrbanMove Agents",
+              "Notes": "Known for fast turnaround times.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recNjK1YUZN9BuOmR"
+              ],
+              "Active": true
+            },
+            "recDPLJ7PqGper2Pp": {
+              "Contact Email": "service@migratenow.com",
+              "Role": "Consultant",
+              "Last Run At": "2024-05-25T00:00:00.000Z",
+              "Agent Name": "MigrateNow Services",
+              "Notes": "Temporarily inactive due to staff shortage.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "rec5VbeaePdx4By9j"
+              ]
+            },
+            "recLj70m2LGp0kYOj": {
+              "Contact Email": "support@aussiepath.com",
+              "Role": "Migration Agent",
+              "Last Run At": "2024-05-30T00:00:00.000Z",
+              "Agent Name": "AussiePath Migration",
+              "Notes": "Recently merged with another agency.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recRhQ2iOLxbZnJqT"
+              ]
+            },
+            "recMZjBNFlas6SOl3": {
+              "Contact Email": "talent@globalmoves.com",
+              "Role": "HR Liaison",
+              "Last Run At": "2024-06-01T00:00:00.000Z",
+              "Agent Name": "Global Talent Moves",
+              "Notes": "Works with multinational companies.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "rec6lHwjsLPA0ug9D"
+              ],
+              "Active": true
+            },
+            "recRyOF6OpvqIMjZ0": {
+              "Contact Email": "ease@visa.com",
+              "Role": "Consultant",
+              "Last Run At": "2024-05-20T00:00:00.000Z",
+              "Agent Name": "VisaEase Consultants",
+              "Notes": "Recently completed a major client project.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recsCiy2tOdGpgV2L"
+              ]
+            },
+            "recjDiysOlH5PMvvR": {
+              "Contact Email": "contact@easyvisa.com",
+              "Role": "Case Manager",
+              "Last Run At": "2024-06-09T00:00:00.000Z",
+              "Agent Name": "EasyVisa Experts",
+              "Notes": "Handles individual and family migration cases.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recKw1GjcNsiHzGDy"
+              ],
+              "Active": true
+            },
+            "recjjvDD1PtrUmhHK": {
+              "Contact Email": "work@visapros.com",
+              "Role": "Case Coordinator",
+              "Last Run At": "2024-05-28T00:00:00.000Z",
+              "Agent Name": "WorkVisa Pros",
+              "Notes": "Currently reviewing compliance procedures.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recZ8yp93dzYVDuII"
+              ]
+            },
+            "recpRWMPSBnckygf7": {
+              "Contact Email": "elite@migrationadvisors.com",
+              "Role": "Advisor",
+              "Last Run At": "2024-06-03T00:00:00.000Z",
+              "Agent Name": "Elite Migration Advisors",
+              "Notes": "Focuses on executive relocations.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recAflG4gXoUdvFpT"
+              ],
+              "Active": true
+            },
+            "recrJV0rWMlctn0lQ": {
+              "Contact Email": "partners@visabridge.com",
+              "Role": "Director",
+              "Last Run At": "2024-06-07T00:00:00.000Z",
+              "Agent Name": "VisaBridge Partners",
+              "Notes": "Offers end-to-end migration project management.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recOZjzD6ZGeCJ9p9"
+              ],
+              "Active": true
+            },
+            "recs3SFEhWWUjWJDH": {
+              "Contact Email": "admin@pathwaygroup.com",
+              "Role": "Operations Manager",
+              "Last Run At": "2024-06-06T00:00:00.000Z",
+              "Agent Name": "Pathway Migration Group",
+              "Notes": "Specializes in IT sector migrations.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recnTcqKaoIprWUCf"
+              ],
+              "Active": true
+            },
+            "recuqZqo4CMyu94NZ": {
+              "Contact Email": "info@globalmove.com",
+              "Role": "Lead Consultant",
+              "Last Run At": "2024-06-10T00:00:00.000Z",
+              "Agent Name": "GlobalMove Solutions",
+              "Notes": "Specializes in large-scale corporate migrations.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recory5LWQeiI3IYa"
+              ],
+              "Active": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "seq": 19,
+      "ts": "2026-09-13T18:43:10.659+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.1,
+      "tool": "airtable.mock.list_records",
+      "request": {
+        "method": "GET",
+        "table": "Migration_Rules",
+        "filterByFormula": "{Rule} = \"Discount_Cap\""
+      },
+      "response": []
+    },
+    {
+      "seq": 20,
+      "ts": "2026-09-13T18:43:10.662+00:00",
+      "kind": "llm_call",
+      "model": "anthropic/claude-sonnet-5",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record.\n"
+        },
+        {
+          "role": "user",
+          "content": "Salesforce object: Opportunity\nRule API name: Discount_Cap\nError condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):\nDiscount__c > 50\nError message shown to users: Discounts above 50% require a separate approval; enter 50 or less.\nAdmin description (business intent): Finance policy: maximum self-serve discount is 50 percent.\nActive: True\n\nSalesforce fields referenced or available:\n- Discount__c: percent\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent\n- Discount: percent\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+        }
+      ],
+      "response_format": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "proposal",
+          "strict": true,
+          "schema": {
+            "$defs": {
+              "TargetField": {
+                "properties": {
+                  "source_field": {
+                    "title": "Source Field",
+                    "type": "string"
+                  },
+                  "target_field": {
+                    "title": "Target Field",
+                    "type": "string"
+                  },
+                  "target_type": {
+                    "enum": [
+                      "singleSelect",
+                      "currency",
+                      "number",
+                      "percent",
+                      "singleLineText",
+                      "checkbox"
+                    ],
+                    "title": "Target Type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source_field",
+                  "target_field",
+                  "target_type"
+                ],
+                "title": "TargetField",
+                "type": "object",
+                "additionalProperties": false
+              }
+            },
+            "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+            "properties": {
+              "intent_statement": {
+                "description": "One sentence: the business reason this rule exists, in plain language.",
+                "title": "Intent Statement",
+                "type": "string"
+              },
+              "field_mapping": {
+                "items": {
+                  "$ref": "#/$defs/TargetField"
+                },
+                "title": "Field Mapping",
+                "type": "array"
+              },
+              "guard_field_name": {
+                "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+                "title": "Guard Field Name",
+                "type": "string"
+              },
+              "guard_formula": {
+                "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+                "title": "Guard Formula",
+                "type": "string"
+              },
+              "rationale": {
+                "title": "Rationale",
+                "type": "string"
+              },
+              "confidence": {
+                "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "title": "Confidence",
+                "type": "number"
+              },
+              "caveats": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Caveats",
+                "type": "array"
+              }
+            },
+            "required": [
+              "intent_statement",
+              "field_mapping",
+              "guard_field_name",
+              "guard_formula",
+              "rationale",
+              "confidence",
+              "caveats"
+            ],
+            "title": "Proposal",
+            "type": "object",
+            "additionalProperties": false
+          }
+        }
+      },
+      "raw_response": {
+        "id": "gen-1789323976-5PAShwrDf8PaSsyAoEge",
+        "object": "chat.completion",
+        "created": 1789323976,
+        "model": "anthropic/claude-sonnet-5",
+        "provider": "Claude Platform on AWS",
+        "system_fingerprint": null,
+        "service_tier": "default",
+        "choices": [
+          {
+            "index": 0,
+            "logprobs": null,
+            "finish_reason": "stop",
+            "native_finish_reason": "end_turn",
+            "message": {
+              "role": "assistant",
+              "content": "{\"intent_statement\":\"Prevent opportunities from being saved with a self-serve discount greater than 50% without separate approval.\",\"field_mapping\":[{\"source_field\":\"Discount__c\",\"target_field\":\"Discount\",\"target_type\":\"percent\"}],\"guard_field_name\":\"Guard: Discount Cap\",\"guard_formula\":\"IF({Discount} > 0.5, \\\"VIOLATION\\\", \\\"\\\")\",\"rationale\":\"Salesforce Discount__c is a percent field stored as a whole number (e.g., 50 for 50%), and the rule fires when it exceeds 50. Airtable's Discount percent field stores the same percentage as a decimal fraction (0.5 for 50%), so the equivalent threshold in Airtable formula logic is 0.5.\",\"confidence\":0.85,\"caveats\":[\"Assumes Airtable's Discount percent field internally represents 50% as 0.5 in formulas, consistent with standard Airtable percent field behavior.\",\"If the Discount field was manually configured to store raw numbers (e.g., 50 instead of 0.5) the threshold would need to be 50 instead of 0.5.\",\"Does not account for null/blank Discount values, which Salesforce treats as not greater than 50 and this formula also treats as not a violation since BLANK() compared numerically evaluates as 0.\"]}",
+              "refusal": null,
+              "reasoning": "I'm confirming that Airtable percent fields store as decimal fractions in formulas (50% = 0.5), so the comparison should use {Discount} > 0.5 to match Salesforce's Discount__c decimal storage.\n\n",
+              "reasoning_details": [
+                {
+                  "type": "reasoning.text",
+                  "text": "I'm confirming that Airtable percent fields store as decimal fractions in formulas (50% = 0.5), so the comparison should use {Discount} > 0.5 to match Salesforce's Discount__c decimal storage.\n\n",
+                  "format": "anthropic-claude-v1",
+                  "index": 0,
+                  "signature": "EtAHCrABCBEYAipA3gYjNToPGcKVC3vjuAq5gSrcFfYc0XuJU9kHYFX00f6DVDBRYpV+t7+Xx+ZxAScxns2hdbUSvFaHMjhEvYZlUjIPY2xhdWRlLXNvbm5ldC01OABCCHRoaW5raW5nWiQ0YzBmMDQ2Zi0yNWZkLTQ1ZmItYmZiMy1hMDhhOGUyNDljYTd6HnVwcm9mXzAxMUNlUmVjUlk5emQzOFV0Vlp3VHBrOKgBz9Wb1QYSDO9YPwt6CxujCCyGpxoM427AaN3a2lx8GOZmIjCK55Hn01vZ/YRiBH4qux/06KzU2ShFZMxIJKe9HOOKKHW/XNUfu+NIN4z3s2nWevcqzAUSJ6PhQCDDuTJPKWdNyQYZf1OWPH7gFldKs657x4l4p8vwHxLEP2NVXffr02AKwHg+UVW6+WmJYU/KY+ryoqOQ0gPRluvmWIRsYUk1NVSqQ9Fdh+TquWffVTQG+PIeNSxlDiaJZOzHvLFG1s9/qwR6wnN1XSPKysDFimf6arYpula9Iad/hkxBh+cyQhSfe4xzKMyl0CdRHyy6zfTtSj54m5y4RUhxztk2tZnufigNm9KLzUVkF+TuoVXArexAga9txiqDWc1/Of7wHMK4L1a+IaFOMdfywbSWvkKzJWnZFqDJGdZXUA1kDfqElGT/B8NIgCP5PYwICQYDcU3t5qBaWDU0K5pgQvHBPVafbUJPQBdFd+BSKHZf+Kc1NK46C6KgL65uwMaNf8US45uB4xu09fnDLidZMRJnJ8gNoZK0wIHEF/CJuVWQStGclh5o0W59Dcsn1xxWia64GCKQ8WDWVSxRAu8AzOsND5eRux5PNAhYkbS9kxGPNDIhe8R7It/+yy4IsYb4xBSgS0To23g2GFn3NibQv67XvYjWptXr611bciFfHMdA9kA630wLMT7i7lRgIzqrzASv2NXj2Su8S9DYKR1tFjyBtRtf14+DbxJRPOTkjEM4ypk0CvmlKzVoYlAmIdQ9hKxg+GN/jtLaZ0Xc6ABODloLB7v9vK3PiozRYvNjX1tZPnPPJvL15sUts1H+yi7Q+CinL8ADh9/toJcv0GPNOdJFcYjZFMkHn2BN+5X/ObSFZtfB+TOkQz07WTQAX+mDA1SwmGfuY9Bsfspx1NeNrcQ5Y3hzha6dMfMb6JKx8VnF9VhGV9dI+O760t/zFgcp/l5cZbly2Jts+VeJQJ02ar3xvQlWyKIJLUd1amKMYWWiYldVr5cDemxo9vi+mjwp8zCOa8RNntmFkdzD98pr1c0cnYw322faPzgYHp+CxuiXyeE3xBgB"
+                }
+              ]
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1667,
+          "completion_tokens": 714,
+          "total_tokens": 2381,
+          "cost": 0.010474,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0.010474,
+            "upstream_inference_prompt_cost": 0.003334,
+            "upstream_inference_completions_cost": 0.00714
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 277,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        }
+      },
+      "parsed": {
+        "intent_statement": "Prevent opportunities from being saved with a self-serve discount greater than 50% without separate approval.",
+        "field_mapping": [
+          {
+            "source_field": "Discount__c",
+            "target_field": "Discount",
+            "target_type": "percent"
+          }
+        ],
+        "guard_field_name": "Guard: Discount Cap",
+        "guard_formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")",
+        "rationale": "Salesforce Discount__c is a percent field stored as a whole number (e.g., 50 for 50%), and the rule fires when it exceeds 50. Airtable's Discount percent field stores the same percentage as a decimal fraction (0.5 for 50%), so the equivalent threshold in Airtable formula logic is 0.5.",
+        "confidence": 0.85,
+        "caveats": [
+          "Assumes Airtable's Discount percent field internally represents 50% as 0.5 in formulas, consistent with standard Airtable percent field behavior.",
+          "If the Discount field was manually configured to store raw numbers (e.g., 50 instead of 0.5) the threshold would need to be 50 instead of 0.5.",
+          "Does not account for null/blank Discount values, which Salesforce treats as not greater than 50 and this formula also treats as not a violation since BLANK() compared numerically evaluates as 0."
+        ]
+      },
+      "mode": "cassette",
+      "cassette_key": "trap_percent_units_naive_prompt",
+      "latency_ms": 0.7,
+      "error": null
+    },
+    {
+      "seq": 21,
+      "ts": "2026-09-13T18:43:10.663+00:00",
+      "kind": "note",
+      "message": "prompt variant: naive",
+      "prompt_variant": "naive"
+    },
+    {
+      "seq": 22,
+      "ts": "2026-09-13T18:43:10.664+00:00",
+      "kind": "note",
+      "message": "guard field name normalised from 'Guard: Discount Cap' to 'Guard: Discount_Cap'",
+      "llm_suggested_name": "Guard: Discount Cap"
+    },
+    {
+      "seq": 23,
+      "ts": "2026-09-13T18:43:10.665+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "Receipt",
+          "embeds": [
+            {
+              "title": "receipt · propose · Opportunity.Discount_Cap",
+              "description": "```IF({Discount} > 0.5, \"VIOLATION\", \"\")```",
+              "fields": [
+                {
+                  "name": "llm confidence",
+                  "value": "0.85",
+                  "inline": true
+                },
+                {
+                  "name": "intent",
+                  "value": "Prevent opportunities from being saved with a self-serve discount greater than 50% without separate approval.",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "run run_20260913T184310_bb6128cb · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-2"
+      }
+    },
+    {
+      "seq": 24,
+      "ts": "2026-09-13T18:43:10.679+00:00",
+      "kind": "solver",
+      "status": "equivalent",
+      "reason": "no record exists on which the two rules disagree",
+      "counterexample": null,
+      "source_fires": null,
+      "target_flags": null,
+      "unsat_core": [
+        "sides_disagree"
+      ],
+      "wellformed": {
+        "source": {
+          "can_fire": true,
+          "can_pass": true
+        },
+        "target": {
+          "can_fire": true,
+          "can_pass": true
+        }
+      },
+      "sexpr": "(declare-fun Discount__c.value () Real)\n(declare-fun Discount__c.present () Bool)\n(declare-fun sides_disagree () Bool)\n(assert (let ((a!1 (distinct (and Discount__c.present\n                          (< 50.0 (* Discount__c.value 100.0)))\n                     (< (/ 1.0 2.0)\n                        (ite Discount__c.present\n                             (* Discount__c.value 1.0)\n                             0.0)))))\n  (=> sides_disagree a!1)))\n",
+      "z3_result": "unsat",
+      "elapsed_ms": 12.4
+    },
+    {
+      "seq": 25,
+      "ts": "2026-09-13T18:43:10.680+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "Receipt",
+          "embeds": [
+            {
+              "title": "receipt · verify · Opportunity.Discount_Cap",
+              "description": "no record exists on which the two rules disagree",
+              "fields": [
+                {
+                  "name": "z3",
+                  "value": "unsat",
+                  "inline": true
+                },
+                {
+                  "name": "unsat core",
+                  "value": "sides_disagree",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "run run_20260913T184310_bb6128cb · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-3"
+      }
+    },
+    {
+      "seq": 26,
+      "ts": "2026-09-13T18:43:10.681+00:00",
+      "kind": "decision",
+      "verdict": "PASS",
+      "system_confidence": 0.95,
+      "llm_confidence": 0.85,
+      "overconfidence_gap": 0.0,
+      "reasons": [
+        "solver proved the guard equivalent to the source rule for every record",
+        "Airtable guard is advisory: a formula flag, bypassable by API and import (Airtable has no validation rules)"
+      ]
+    },
+    {
+      "seq": 27,
+      "ts": "2026-09-13T18:43:10.686+00:00",
+      "kind": "tool_call",
+      "latency_ms": 3.6,
+      "tool": "airtable.mock.create_field",
+      "request": {
+        "method": "POST",
+        "table": "Opportunities",
+        "body": {
+          "name": "Guard: Discount_Cap",
+          "type": "formula",
+          "options": {
+            "formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")"
+          },
+          "description": "Receipt guard for Salesforce rule Opportunity.Discount_Cap. Verified equivalent by Z3 in run run_20260913T184310_bb6128cb."
+        }
+      },
+      "response": {
+        "id": "fldMOCK0000000001",
+        "name": "Guard: Discount_Cap",
+        "type": "formula",
+        "options": {
+          "formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")"
+        },
+        "description": "Receipt guard for Salesforce rule Opportunity.Discount_Cap. Verified equivalent by Z3 in run run_20260913T184310_bb6128cb."
+      }
+    },
+    {
+      "seq": 28,
+      "ts": "2026-09-13T18:43:10.694+00:00",
+      "kind": "tool_call",
+      "latency_ms": 6.9,
+      "tool": "airtable.mock.create_record",
+      "request": {
+        "method": "POST",
+        "table": "Migration_Rules",
+        "body": {
+          "fields": {
+            "Rule": "Discount_Cap",
+            "Source Object": "Opportunity",
+            "Source Formula": "Discount__c > 50",
+            "Guard Formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")",
+            "Verdict": "PASS",
+            "System Confidence": 0.95,
+            "Run ID": "run_20260913T184310_bb6128cb",
+            "Trace Link": "https://github.com/sanalvre/offboard/blob/main/traces/run_20260913T184310_bb6128cb.json",
+            "Migrated At": "2026-09-13T18:43:10Z",
+            "LLM Confidence": 0.85
+          }
+        }
+      },
+      "response": {
+        "id": "recMOCK0000000002",
+        "createdTime": "2026-09-13T18:43:10.687Z",
+        "fields": {
+          "Rule": "Discount_Cap",
+          "Source Object": "Opportunity",
+          "Source Formula": "Discount__c > 50",
+          "Guard Formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")",
+          "Verdict": "PASS",
+          "System Confidence": 0.95,
+          "Run ID": "run_20260913T184310_bb6128cb",
+          "Trace Link": "https://github.com/sanalvre/offboard/blob/main/traces/run_20260913T184310_bb6128cb.json",
+          "Migrated At": "2026-09-13T18:43:10Z",
+          "LLM Confidence": 0.85
+        }
+      }
+    },
+    {
+      "seq": 29,
+      "ts": "2026-09-13T18:43:10.697+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.get_record",
+      "request": {
+        "method": "GET",
+        "table": "Migration_Rules",
+        "id": "recMOCK0000000002"
+      },
+      "response": {
+        "id": "recMOCK0000000002",
+        "createdTime": "2026-09-13T18:43:10.687Z",
+        "fields": {
+          "Rule": "Discount_Cap",
+          "Source Object": "Opportunity",
+          "Source Formula": "Discount__c > 50",
+          "Guard Formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")",
+          "Verdict": "PASS",
+          "System Confidence": 0.95,
+          "Run ID": "run_20260913T184310_bb6128cb",
+          "Trace Link": "https://github.com/sanalvre/offboard/blob/main/traces/run_20260913T184310_bb6128cb.json",
+          "Migrated At": "2026-09-13T18:43:10Z",
+          "LLM Confidence": 0.85
+        }
+      }
+    },
+    {
+      "seq": 30,
+      "ts": "2026-09-13T18:43:10.698+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.get_schema",
+      "request": {
+        "method": "GET",
+        "path": "/meta/bases/{base}/tables"
+      },
+      "response": {
+        "tables": [
+          {
+            "id": "tbl1kQWEAPtik3uTJ",
+            "name": "Opportunities",
+            "primaryFieldId": "fldbcl89dbYRYRTpK",
+            "fields": [
+              {
+                "id": "fldbcl89dbYRYRTpK",
+                "name": "Name",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldGnsAnaO6bq3WlJ",
+                "name": "Stage",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "selrbaWryao0L9cLt",
+                      "name": "Prospecting",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selhblXGu64wS3cly",
+                      "name": "Qualification",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selIQsMoTMLgcz0jk",
+                      "name": "Needs Analysis",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "sel5QREOY2bkXRRVp",
+                      "name": "Value Proposition",
+                      "color": "greenLight2"
+                    },
+                    {
+                      "id": "sel92v7KkCIjwo8SQ",
+                      "name": "Id. Decision Makers",
+                      "color": "yellowLight2"
+                    },
+                    {
+                      "id": "selLPFt8gtpTxwDvJ",
+                      "name": "Perception Analysis",
+                      "color": "orangeLight2"
+                    },
+                    {
+                      "id": "selQfK4AlBquANKM1",
+                      "name": "Proposal/Price Quote",
+                      "color": "redLight2"
+                    },
+                    {
+                      "id": "sel1RBdVA0GSKEFMu",
+                      "name": "Negotiation/Review",
+                      "color": "pinkLight2"
+                    },
+                    {
+                      "id": "seldEfTtpR8ImdsEY",
+                      "name": "Closed Won",
+                      "color": "purpleLight2"
+                    },
+                    {
+                      "id": "sel0qmoavhVLdljkl",
+                      "name": "Closed Lost",
+                      "color": "grayLight2"
+                    },
+                    {
+                      "id": "sel9QkXhGip7OIULg",
+                      "name": "Negotiation",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selobmb5Qh5ipN7bH",
+                      "name": "Proposal",
+                      "color": "cyanLight2"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "fldjyihYXcLajfpRc",
+                "name": "Amount",
+                "type": "currency",
+                "options": {
+                  "precision": 2,
+                  "symbol": "$"
+                }
+              },
+              {
+                "id": "fldhP2d5fh18rsivi",
+                "name": "Probability",
+                "type": "percent",
+                "options": {
+                  "precision": 2
+                }
+              },
+              {
+                "id": "fldp24iN9iB6zna6l",
+                "name": "Discount",
+                "type": "percent",
+                "options": {
+                  "precision": 2
+                }
+              },
+              {
+                "id": "fld7LEkyolZnHZe9R",
+                "name": "Loss Reason",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldaSIfAKPMtpmTws",
+                "name": "Type",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "selkFHANzxofHhYw6",
+                      "name": "New Customer",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selygt6wXIlFoTtYz",
+                      "name": "Existing Customer - Upgrade",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selrmzTIYfJ5uhxCt",
+                      "name": "Existing Customer - Replacement",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "seluRs11jzQGO5jiJ",
+                      "name": "Existing Customer - Downgrade",
+                      "color": "greenLight2"
+                    },
+                    {
+                      "id": "selKbECxdpWSCmLCX",
+                      "name": "New Business",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selg0faVjPfZgFN6v",
+                      "name": "Renewal",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selVmmCgDOohBkdIW",
+                      "name": "Upsell",
+                      "color": "tealLight2"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "fldMOCK0000000001",
+                "name": "Guard: Discount_Cap",
+                "type": "formula",
+                "options": {
+                  "formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")"
+                },
+                "description": "Receipt guard for Salesforce rule Opportunity.Discount_Cap. Verified equivalent by Z3 in run run_20260913T184310_bb6128cb."
+              }
+            ]
+          },
+          {
+            "id": "tblx3eUdbMqyhGcOm",
+            "name": "Migration_Rules",
+            "primaryFieldId": "fldv3L3n8r70uItW0",
+            "fields": [
+              {
+                "id": "fldv3L3n8r70uItW0",
+                "name": "Rule",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldKMr0z6eCyTIVRT",
+                "name": "Source Object",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldSVdX3mqbhBnUdc",
+                "name": "Source Formula",
+                "type": "multilineText"
+              },
+              {
+                "id": "fld4ybdHNjLahLnzg",
+                "name": "Guard Formula",
+                "type": "multilineText"
+              },
+              {
+                "id": "fldw2xBx22A7oYp35",
+                "name": "Verdict",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "sel2QZtIC3YlDqN3s",
+                      "name": "PASS",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "sel6Q06FaMHMNFcCW",
+                      "name": "FAIL",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selhkME77Rj1tM3FI",
+                      "name": "AMBIGUOUS",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "sel4UDw8CYPw0yDT0",
+                      "name": "Approved",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selv8NpfNHiZ3bZzP",
+                      "name": "Rejected",
+                      "color": "cyanLight2"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "fld4uk2vtqP3cEpZi",
+                "name": "System Confidence",
+                "type": "number",
+                "options": {
+                  "precision": 0
+                }
+              },
+              {
+                "id": "fldMpdDHQF6xUB61Y",
+                "name": "LLM Confidence",
+                "type": "number",
+                "options": {
+                  "precision": 0
+                }
+              },
+              {
+                "id": "fldsYbNAGIJdbl4ha",
+                "name": "Run ID",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldNH5xL91PWJjCFP",
+                "name": "Trace Link",
+                "type": "url"
+              },
+              {
+                "id": "fldVJBrlCOK7cHjw2",
+                "name": "Migrated At",
+                "type": "dateTime",
+                "options": {
+                  "dateFormat": {
+                    "name": "iso",
+                    "format": "YYYY-MM-DD"
+                  },
+                  "timeFormat": {
+                    "name": "24hour",
+                    "format": "HH:mm"
+                  },
+                  "timeZone": "utc"
+                }
+              },
+              {
+                "id": "fldsQvaJuDu66GBnp",
+                "name": "Migration_Agents",
+                "type": "multipleRecordLinks",
+                "options": {
+                  "linkedTableId": "tbli50VGGZ1JTh93i",
+                  "isReversed": false,
+                  "prefersSingleRecordLink": false,
+                  "inverseLinkFieldId": "fldjeLo4BRkJ4MYZY"
+                }
+              }
+            ]
+          },
+          {
+            "id": "tbli50VGGZ1JTh93i",
+            "name": "Migration_Agents",
+            "primaryFieldId": "fldGdcasfGXGz07QX",
+            "fields": [
+              {
+                "id": "fldGdcasfGXGz07QX",
+                "name": "Agent Name",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldjKTt5fOuJxBThY",
+                "name": "Agent Type",
+                "type": "singleSelect",
+                "options": {
+                  "choices": [
+                    {
+                      "id": "seluD8NjBUxDkUDdz",
+                      "name": "LLM",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selKxND0dKfPqoLvL",
+                      "name": "Heuristic",
+                      "color": "cyanLight2"
+                    },
+                    {
+                      "id": "selrrFE04Mm91VlBN",
+                      "name": "Hybrid",
+                      "color": "tealLight2"
+                    },
+                    {
+                      "id": "selDG7WFhuiqc89HY",
+                      "name": "Other",
+                      "color": "greenLight2"
+                    },
+                    {
+                      "id": "selwZM9bXe94mtept",
+                      "name": "Corporate",
+                      "color": "blueLight2"
+                    },
+                    {
+                      "id": "selPmISQqVjOKBQx8",
+                      "name": "Individual",
+                      "color": "cyanLight2"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "fld3Ow1ZOXymHxplG",
+                "name": "Contact Email",
+                "type": "email"
+              },
+              {
+                "id": "fldELqONAAe0ta69a",
+                "name": "Role",
+                "type": "singleLineText"
+              },
+              {
+                "id": "fldnn1D5WCUUWeXsc",
+                "name": "Active",
+                "type": "checkbox",
+                "options": {
+                  "icon": "thumbsUp",
+                  "color": "greenBright"
+                }
+              },
+              {
+                "id": "fldFrakwZC9X8nnlR",
+                "name": "Last Run At",
+                "type": "dateTime",
+                "options": {
+                  "dateFormat": {
+                    "name": "iso",
+                    "format": "YYYY-MM-DD"
+                  },
+                  "timeFormat": {
+                    "name": "24hour",
+                    "format": "HH:mm"
+                  },
+                  "timeZone": "utc"
+                }
+              },
+              {
+                "id": "flddCfmBWFLkp71rB",
+                "name": "Notes",
+                "type": "multilineText"
+              },
+              {
+                "id": "fldjeLo4BRkJ4MYZY",
+                "name": "Related Runs",
+                "type": "multipleRecordLinks",
+                "options": {
+                  "linkedTableId": "tblx3eUdbMqyhGcOm",
+                  "isReversed": false,
+                  "prefersSingleRecordLink": false,
+                  "inverseLinkFieldId": "fldsQvaJuDu66GBnp"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seq": 31,
+      "ts": "2026-09-13T18:43:10.699+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.list_records",
+      "request": {
+        "method": "GET",
+        "table": "Opportunities",
+        "filterByFormula": null
+      },
+      "response": [
+        {
+          "id": "rec1EG2feKI1BHP5n",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Proposal",
+            "Type": "New Business",
+            "Name": "Theta Systems Pilot",
+            "Probability": 0.5,
+            "Amount": 18000
+          }
+        },
+        {
+          "id": "rec3gJaLQLnNkRqyS",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Type": "Upsell",
+            "Name": "Delta Enterprises Upgrade",
+            "Probability": 1,
+            "Amount": 80000,
+            "Discount": 0.1
+          }
+        },
+        {
+          "id": "recGe9mIRdzjfDwp1",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Qualification",
+            "Type": "Upsell",
+            "Name": "Iota Holdings Upgrade",
+            "Probability": 0.4,
+            "Amount": 40000
+          }
+        },
+        {
+          "id": "recQF3NTHzWb6WjOa",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Qualification",
+            "Type": "New Business",
+            "Name": "Gamma Inc Pilot",
+            "Probability": 0.3,
+            "Amount": 15000
+          }
+        },
+        {
+          "id": "recSMcEKZQzNDzVLc",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Loss Reason": "No Decision",
+            "Stage": "Closed Lost",
+            "Type": "New Business",
+            "Name": "Omicron Labs New Deal",
+            "Probability": 0,
+            "Amount": 30000
+          }
+        },
+        {
+          "id": "recZAFvRs8jNR8B5T",
+          "createdTime": "2026-09-13T17:14:09.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Name": "PROBE blank amount"
+          }
+        },
+        {
+          "id": "recahS2Dtpgbjvp1W",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Negotiation",
+            "Type": "Upsell",
+            "Name": "Xi Ventures Upgrade",
+            "Probability": 0.65,
+            "Amount": 70000,
+            "Discount": 0.07
+          }
+        },
+        {
+          "id": "recdWeDT6K5W8pluf",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Type": "Upsell",
+            "Name": "Lambda Solutions Expansion",
+            "Probability": 1,
+            "Amount": 110000,
+            "Discount": 0.08
+          }
+        },
+        {
+          "id": "recemYQko62Wj1Lxk",
+          "createdTime": "2026-09-13T17:14:09.000Z",
+          "fields": {
+            "Stage": "Closed Won",
+            "Name": "PROBE zero amount",
+            "Amount": 0
+          }
+        },
+        {
+          "id": "recflIXpbTSzMsAVU",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Negotiation",
+            "Type": "Renewal",
+            "Name": "Eta Technologies Renewal",
+            "Probability": 0.75,
+            "Amount": 60000,
+            "Discount": 0.05
+          }
+        },
+        {
+          "id": "rechYguLBQSYIzPFd",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Prospecting",
+            "Type": "New Business",
+            "Name": "Epsilon Ltd New Deal",
+            "Probability": 0.2,
+            "Amount": 25000
+          }
+        },
+        {
+          "id": "recjLmohA6lnVPorc",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Proposal",
+            "Type": "New Business",
+            "Name": "Nu Innovations Pilot",
+            "Probability": 0.55,
+            "Amount": 22000
+          }
+        },
+        {
+          "id": "reckTPhujBo9flmFz",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Loss Reason": "Competitor Chosen",
+            "Stage": "Closed Lost",
+            "Type": "Renewal",
+            "Name": "Mu Dynamics Renewal",
+            "Probability": 0,
+            "Amount": 55000
+          }
+        },
+        {
+          "id": "recko1l4GcrkHUSKx",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Loss Reason": "Budget Constraints",
+            "Stage": "Closed Lost",
+            "Type": "Upsell",
+            "Name": "Zeta Group Expansion",
+            "Probability": 0,
+            "Amount": 95000
+          }
+        },
+        {
+          "id": "recs9TC3Mr7481tC0",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Prospecting",
+            "Type": "New Business",
+            "Name": "Kappa Partners New Deal",
+            "Probability": 0.25,
+            "Amount": 35000
+          }
+        },
+        {
+          "id": "recsx03O67vjQdPge",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Negotiation",
+            "Type": "New Business",
+            "Name": "Acme Corp Expansion",
+            "Probability": 0.7,
+            "Amount": 120000,
+            "Discount": 0.05
+          }
+        },
+        {
+          "id": "recvd4GAsvRiiYOvq",
+          "createdTime": "2026-09-13T17:01:38.000Z",
+          "fields": {
+            "Stage": "Proposal",
+            "Type": "Renewal",
+            "Name": "Beta Solutions Renewal",
+            "Probability": 0.6,
+            "Amount": 45000
+          }
+        }
+      ]
+    },
+    {
+      "seq": 32,
+      "ts": "2026-09-13T18:43:10.701+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.list_records",
+      "request": {
+        "method": "GET",
+        "table": "Migration_Rules",
+        "filterByFormula": null
+      },
+      "response": [
+        {
+          "id": "rec1MEw5MUHXoroYI",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.85,
+            "Guard Formula": "legacy_id IS NOT NULL",
+            "Source Object": "Product",
+            "LLM Confidence": 0.8,
+            "Trace Link": "TRC1004",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec4Fk1nEw7cPdphO"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Ignore deprecated field 'legacy_id'",
+            "Verdict": "Rejected"
+          }
+        },
+        {
+          "id": "rec5VbeaePdx4By9j",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.96,
+            "Guard Formula": "status IN ('pending','done')",
+            "Source Object": "Order",
+            "LLM Confidence": 0.94,
+            "Trace Link": "TRC1006",
+            "Source Formula": "CASE status WHEN 'pending' THEN 'awaiting' WHEN 'done' THEN 'completed' END",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recDPLJ7PqGper2Pp"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Map 'status' values to new enum",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "rec6lHwjsLPA0ug9D",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.91,
+            "Guard Formula": "gender IN ('male','female')",
+            "Source Object": "User",
+            "LLM Confidence": 0.87,
+            "Trace Link": "TRC1013",
+            "Source Formula": "CASE gender WHEN 'male' THEN 'M' WHEN 'female' THEN 'F' END",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recMZjBNFlas6SOl3"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Map 'gender' values to 'M'/'F'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recAflG4gXoUdvFpT",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.96,
+            "Guard Formula": "created_at IS NOT NULL",
+            "Source Object": "Order",
+            "LLM Confidence": 0.94,
+            "Trace Link": "TRC1011",
+            "Source Formula": "CONVERT_TZ(created_at, timezone, 'UTC')",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recpRWMPSBnckygf7"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Convert 'created_at' to UTC",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recIqqeKGlGhc2zoF",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.92,
+            "Guard Formula": "country IS NULL OR country = ''",
+            "Source Object": "Customer",
+            "LLM Confidence": 0.89,
+            "Trace Link": "TRC1009",
+            "Source Formula": "IF(country = '', 'USA', country)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec5EKysb6xRsobzG"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Set default 'country' to 'USA' if blank",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recKw1GjcNsiHzGDy",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.98,
+            "Guard Formula": "order_date IS NOT NULL",
+            "Source Object": "Order",
+            "LLM Confidence": 0.97,
+            "Trace Link": "TRC1002",
+            "Source Formula": "FORMAT(order_date, 'YYYY-MM-DD')",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recjDiysOlH5PMvvR"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Transform 'OrderDate' to ISO format",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recNjK1YUZN9BuOmR",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.94,
+            "Guard Formula": "address1 IS NOT NULL",
+            "Source Object": "Customer",
+            "LLM Confidence": 0.91,
+            "Trace Link": "TRC1008",
+            "Source Formula": "address1",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recBRmmebNhTTbV30"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Rename 'address1' to 'street_address'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recOZjzD6ZGeCJ9p9",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.97,
+            "Guard Formula": "price IS NOT NULL AND price != ''",
+            "Source Object": "Invoice",
+            "LLM Confidence": 0.95,
+            "Trace Link": "TRC1005",
+            "Source Formula": "CAST(price AS FLOAT)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recrJV0rWMlctn0lQ"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Convert 'price' to float",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recRhQ2iOLxbZnJqT",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.93,
+            "Guard Formula": "first_name IS NOT NULL AND last_name IS NOT NULL",
+            "Source Object": "User",
+            "LLM Confidence": 0.9,
+            "Trace Link": "TRC1003",
+            "Source Formula": "CONCAT(first_name, ' ', last_name)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recLj70m2LGp0kYOj"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Concatenate first and last name",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recZ8yp93dzYVDuII",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.88,
+            "Guard Formula": "discount_expiry < NOW()",
+            "Source Object": "Order",
+            "LLM Confidence": 0.85,
+            "Trace Link": "TRC1015",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recjjvDD1PtrUmhHK"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Drop 'discount_code' if expired",
+            "Verdict": "Rejected"
+          }
+        },
+        {
+          "id": "recbZfWDOGK29yg7s",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.93,
+            "Guard Formula": "last_login IS NOT NULL",
+            "Source Object": "User",
+            "LLM Confidence": 0.9,
+            "Trace Link": "TRC1014",
+            "Source Formula": "IF(DATEDIFF(NOW(), last_login) < 30, TRUE, FALSE)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec5Bi0DBVuAjQY4b"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Set 'is_active' to true if last_login < 30 days",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recnTcqKaoIprWUCf",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.9,
+            "Guard Formula": "email IS NULL",
+            "Source Object": "User",
+            "LLM Confidence": 0.88,
+            "Trace Link": "TRC1007",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recs3SFEhWWUjWJDH"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Drop records with null emails",
+            "Verdict": "Rejected"
+          }
+        },
+        {
+          "id": "recory5LWQeiI3IYa",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.95,
+            "Guard Formula": "status != 'inactive'",
+            "Source Object": "Customer",
+            "LLM Confidence": 0.92,
+            "Trace Link": "TRC1001",
+            "Source Formula": "IF(type = 'active', 'Client', NULL)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recuqZqo4CMyu94NZ"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Map 'Customer' to 'Client'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recsCiy2tOdGpgV2L",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.95,
+            "Guard Formula": "phone IS NOT NULL",
+            "Source Object": "Contact",
+            "LLM Confidence": 0.93,
+            "Trace Link": "TRC1010",
+            "Source Formula": "TRIM(phone)",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "recRyOF6OpvqIMjZ0"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Remove whitespace from 'phone'",
+            "Verdict": "Approved"
+          }
+        },
+        {
+          "id": "recvDdbRg2KM7OC7l",
+          "createdTime": "2026-09-13T17:01:41.000Z",
+          "fields": {
+            "System Confidence": 0.8,
+            "Guard Formula": "notes IS NOT NULL",
+            "Source Object": "Invoice",
+            "LLM Confidence": 0.78,
+            "Trace Link": "TRC1012",
+            "Source Formula": "NULL",
+            "Migrated At": "2024-06-01T00:00:00.000Z",
+            "Migration_Agents": [
+              "rec649T97BAnjKfPb"
+            ],
+            "Run ID": "RUN20240601A",
+            "Rule": "Ignore 'notes' field",
+            "Verdict": "Rejected"
+          }
+        },
+        {
+          "id": "recMOCK0000000002",
+          "createdTime": "2026-09-13T18:43:10.687Z",
+          "fields": {
+            "Rule": "Discount_Cap",
+            "Source Object": "Opportunity",
+            "Source Formula": "Discount__c > 50",
+            "Guard Formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")",
+            "Verdict": "PASS",
+            "System Confidence": 0.95,
+            "Run ID": "run_20260913T184310_bb6128cb",
+            "Trace Link": "https://github.com/sanalvre/offboard/blob/main/traces/run_20260913T184310_bb6128cb.json",
+            "Migrated At": "2026-09-13T18:43:10Z",
+            "LLM Confidence": 0.85
+          }
+        }
+      ]
+    },
+    {
+      "seq": 33,
+      "ts": "2026-09-13T18:43:10.702+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "airtable.mock.list_records",
+      "request": {
+        "method": "GET",
+        "table": "Migration_Agents",
+        "filterByFormula": null
+      },
+      "response": [
+        {
+          "id": "rec4Fk1nEw7cPdphO",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "hello@nextsteprelocation.com",
+            "Role": "Senior Agent",
+            "Last Run At": "2024-06-08T00:00:00.000Z",
+            "Agent Name": "NextStep Relocation",
+            "Notes": "Focuses on student and skilled worker visas.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "rec1MEw5MUHXoroYI"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "rec5Bi0DBVuAjQY4b",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "family@firstmigration.com",
+            "Role": "Family Consultant",
+            "Last Run At": "2024-05-31T00:00:00.000Z",
+            "Agent Name": "FamilyFirst Migration",
+            "Notes": "Expert in family reunification visas.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recbZfWDOGK29yg7s"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "rec5EKysb6xRsobzG",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "info@pacifichub.com",
+            "Role": "Team Lead",
+            "Last Run At": "2024-06-04T00:00:00.000Z",
+            "Agent Name": "Pacific Migration Hub",
+            "Notes": "Handles Pacific region migration cases.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recIqqeKGlGhc2zoF"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "rec649T97BAnjKfPb",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "students@studentpathway.com",
+            "Role": "Student Advisor",
+            "Last Run At": "2024-06-02T00:00:00.000Z",
+            "Agent Name": "StudentPathway Agency",
+            "Notes": "Specializes in student visa applications.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recvDdbRg2KM7OC7l"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recBRmmebNhTTbV30",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "urban@moveagents.com",
+            "Role": "Agent",
+            "Last Run At": "2024-06-05T00:00:00.000Z",
+            "Agent Name": "UrbanMove Agents",
+            "Notes": "Known for fast turnaround times.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recNjK1YUZN9BuOmR"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recDPLJ7PqGper2Pp",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "service@migratenow.com",
+            "Role": "Consultant",
+            "Last Run At": "2024-05-25T00:00:00.000Z",
+            "Agent Name": "MigrateNow Services",
+            "Notes": "Temporarily inactive due to staff shortage.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "rec5VbeaePdx4By9j"
+            ]
+          }
+        },
+        {
+          "id": "recLj70m2LGp0kYOj",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "support@aussiepath.com",
+            "Role": "Migration Agent",
+            "Last Run At": "2024-05-30T00:00:00.000Z",
+            "Agent Name": "AussiePath Migration",
+            "Notes": "Recently merged with another agency.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recRhQ2iOLxbZnJqT"
+            ]
+          }
+        },
+        {
+          "id": "recMZjBNFlas6SOl3",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "talent@globalmoves.com",
+            "Role": "HR Liaison",
+            "Last Run At": "2024-06-01T00:00:00.000Z",
+            "Agent Name": "Global Talent Moves",
+            "Notes": "Works with multinational companies.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "rec6lHwjsLPA0ug9D"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recRyOF6OpvqIMjZ0",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "ease@visa.com",
+            "Role": "Consultant",
+            "Last Run At": "2024-05-20T00:00:00.000Z",
+            "Agent Name": "VisaEase Consultants",
+            "Notes": "Recently completed a major client project.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recsCiy2tOdGpgV2L"
+            ]
+          }
+        },
+        {
+          "id": "recjDiysOlH5PMvvR",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "contact@easyvisa.com",
+            "Role": "Case Manager",
+            "Last Run At": "2024-06-09T00:00:00.000Z",
+            "Agent Name": "EasyVisa Experts",
+            "Notes": "Handles individual and family migration cases.",
+            "Agent Type": "Individual",
+            "Related Runs": [
+              "recKw1GjcNsiHzGDy"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recjjvDD1PtrUmhHK",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "work@visapros.com",
+            "Role": "Case Coordinator",
+            "Last Run At": "2024-05-28T00:00:00.000Z",
+            "Agent Name": "WorkVisa Pros",
+            "Notes": "Currently reviewing compliance procedures.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recZ8yp93dzYVDuII"
+            ]
+          }
+        },
+        {
+          "id": "recpRWMPSBnckygf7",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "elite@migrationadvisors.com",
+            "Role": "Advisor",
+            "Last Run At": "2024-06-03T00:00:00.000Z",
+            "Agent Name": "Elite Migration Advisors",
+            "Notes": "Focuses on executive relocations.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recAflG4gXoUdvFpT"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recrJV0rWMlctn0lQ",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "partners@visabridge.com",
+            "Role": "Director",
+            "Last Run At": "2024-06-07T00:00:00.000Z",
+            "Agent Name": "VisaBridge Partners",
+            "Notes": "Offers end-to-end migration project management.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recOZjzD6ZGeCJ9p9"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recs3SFEhWWUjWJDH",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "admin@pathwaygroup.com",
+            "Role": "Operations Manager",
+            "Last Run At": "2024-06-06T00:00:00.000Z",
+            "Agent Name": "Pathway Migration Group",
+            "Notes": "Specializes in IT sector migrations.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recnTcqKaoIprWUCf"
+            ],
+            "Active": true
+          }
+        },
+        {
+          "id": "recuqZqo4CMyu94NZ",
+          "createdTime": "2026-09-13T17:01:39.000Z",
+          "fields": {
+            "Contact Email": "info@globalmove.com",
+            "Role": "Lead Consultant",
+            "Last Run At": "2024-06-10T00:00:00.000Z",
+            "Agent Name": "GlobalMove Solutions",
+            "Notes": "Specializes in large-scale corporate migrations.",
+            "Agent Type": "Corporate",
+            "Related Runs": [
+              "recory5LWQeiI3IYa"
+            ],
+            "Active": true
+          }
+        }
+      ]
+    },
+    {
+      "seq": 34,
+      "ts": "2026-09-13T18:43:10.704+00:00",
+      "kind": "state_snapshot",
+      "phase": "after",
+      "tables": {
+        "Opportunities": {
+          "fields": [
+            "Amount",
+            "Discount",
+            "Guard: Discount_Cap",
+            "Loss Reason",
+            "Name",
+            "Probability",
+            "Stage",
+            "Type"
+          ],
+          "record_count": 17
+        },
+        "Migration_Rules": {
+          "fields": [
+            "Guard Formula",
+            "LLM Confidence",
+            "Migrated At",
+            "Migration_Agents",
+            "Rule",
+            "Run ID",
+            "Source Formula",
+            "Source Object",
+            "System Confidence",
+            "Trace Link",
+            "Verdict"
+          ],
+          "record_count": 16
+        },
+        "Migration_Agents": {
+          "fields": [
+            "Active",
+            "Agent Name",
+            "Agent Type",
+            "Contact Email",
+            "Last Run At",
+            "Notes",
+            "Related Runs",
+            "Role"
+          ],
+          "record_count": 15
+        }
+      },
+      "full": {
+        "Opportunities": {
+          "fields": [
+            "Amount",
+            "Discount",
+            "Guard: Discount_Cap",
+            "Loss Reason",
+            "Name",
+            "Probability",
+            "Stage",
+            "Type"
+          ],
+          "records": {
+            "rec1EG2feKI1BHP5n": {
+              "Stage": "Proposal",
+              "Type": "New Business",
+              "Name": "Theta Systems Pilot",
+              "Probability": 0.5,
+              "Amount": 18000
+            },
+            "rec3gJaLQLnNkRqyS": {
+              "Stage": "Closed Won",
+              "Type": "Upsell",
+              "Name": "Delta Enterprises Upgrade",
+              "Probability": 1,
+              "Amount": 80000,
+              "Discount": 0.1
+            },
+            "recGe9mIRdzjfDwp1": {
+              "Stage": "Qualification",
+              "Type": "Upsell",
+              "Name": "Iota Holdings Upgrade",
+              "Probability": 0.4,
+              "Amount": 40000
+            },
+            "recQF3NTHzWb6WjOa": {
+              "Stage": "Qualification",
+              "Type": "New Business",
+              "Name": "Gamma Inc Pilot",
+              "Probability": 0.3,
+              "Amount": 15000
+            },
+            "recSMcEKZQzNDzVLc": {
+              "Loss Reason": "No Decision",
+              "Stage": "Closed Lost",
+              "Type": "New Business",
+              "Name": "Omicron Labs New Deal",
+              "Probability": 0,
+              "Amount": 30000
+            },
+            "recZAFvRs8jNR8B5T": {
+              "Stage": "Closed Won",
+              "Name": "PROBE blank amount"
+            },
+            "recahS2Dtpgbjvp1W": {
+              "Stage": "Negotiation",
+              "Type": "Upsell",
+              "Name": "Xi Ventures Upgrade",
+              "Probability": 0.65,
+              "Amount": 70000,
+              "Discount": 0.07
+            },
+            "recdWeDT6K5W8pluf": {
+              "Stage": "Closed Won",
+              "Type": "Upsell",
+              "Name": "Lambda Solutions Expansion",
+              "Probability": 1,
+              "Amount": 110000,
+              "Discount": 0.08
+            },
+            "recemYQko62Wj1Lxk": {
+              "Stage": "Closed Won",
+              "Name": "PROBE zero amount",
+              "Amount": 0
+            },
+            "recflIXpbTSzMsAVU": {
+              "Stage": "Negotiation",
+              "Type": "Renewal",
+              "Name": "Eta Technologies Renewal",
+              "Probability": 0.75,
+              "Amount": 60000,
+              "Discount": 0.05
+            },
+            "rechYguLBQSYIzPFd": {
+              "Stage": "Prospecting",
+              "Type": "New Business",
+              "Name": "Epsilon Ltd New Deal",
+              "Probability": 0.2,
+              "Amount": 25000
+            },
+            "recjLmohA6lnVPorc": {
+              "Stage": "Proposal",
+              "Type": "New Business",
+              "Name": "Nu Innovations Pilot",
+              "Probability": 0.55,
+              "Amount": 22000
+            },
+            "reckTPhujBo9flmFz": {
+              "Loss Reason": "Competitor Chosen",
+              "Stage": "Closed Lost",
+              "Type": "Renewal",
+              "Name": "Mu Dynamics Renewal",
+              "Probability": 0,
+              "Amount": 55000
+            },
+            "recko1l4GcrkHUSKx": {
+              "Loss Reason": "Budget Constraints",
+              "Stage": "Closed Lost",
+              "Type": "Upsell",
+              "Name": "Zeta Group Expansion",
+              "Probability": 0,
+              "Amount": 95000
+            },
+            "recs9TC3Mr7481tC0": {
+              "Stage": "Prospecting",
+              "Type": "New Business",
+              "Name": "Kappa Partners New Deal",
+              "Probability": 0.25,
+              "Amount": 35000
+            },
+            "recsx03O67vjQdPge": {
+              "Stage": "Negotiation",
+              "Type": "New Business",
+              "Name": "Acme Corp Expansion",
+              "Probability": 0.7,
+              "Amount": 120000,
+              "Discount": 0.05
+            },
+            "recvd4GAsvRiiYOvq": {
+              "Stage": "Proposal",
+              "Type": "Renewal",
+              "Name": "Beta Solutions Renewal",
+              "Probability": 0.6,
+              "Amount": 45000
+            }
+          }
+        },
+        "Migration_Rules": {
+          "fields": [
+            "Guard Formula",
+            "LLM Confidence",
+            "Migrated At",
+            "Migration_Agents",
+            "Rule",
+            "Run ID",
+            "Source Formula",
+            "Source Object",
+            "System Confidence",
+            "Trace Link",
+            "Verdict"
+          ],
+          "records": {
+            "rec1MEw5MUHXoroYI": {
+              "System Confidence": 0.85,
+              "Guard Formula": "legacy_id IS NOT NULL",
+              "Source Object": "Product",
+              "LLM Confidence": 0.8,
+              "Trace Link": "TRC1004",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec4Fk1nEw7cPdphO"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Ignore deprecated field 'legacy_id'",
+              "Verdict": "Rejected"
+            },
+            "rec5VbeaePdx4By9j": {
+              "System Confidence": 0.96,
+              "Guard Formula": "status IN ('pending','done')",
+              "Source Object": "Order",
+              "LLM Confidence": 0.94,
+              "Trace Link": "TRC1006",
+              "Source Formula": "CASE status WHEN 'pending' THEN 'awaiting' WHEN 'done' THEN 'completed' END",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recDPLJ7PqGper2Pp"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Map 'status' values to new enum",
+              "Verdict": "Approved"
+            },
+            "rec6lHwjsLPA0ug9D": {
+              "System Confidence": 0.91,
+              "Guard Formula": "gender IN ('male','female')",
+              "Source Object": "User",
+              "LLM Confidence": 0.87,
+              "Trace Link": "TRC1013",
+              "Source Formula": "CASE gender WHEN 'male' THEN 'M' WHEN 'female' THEN 'F' END",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recMZjBNFlas6SOl3"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Map 'gender' values to 'M'/'F'",
+              "Verdict": "Approved"
+            },
+            "recAflG4gXoUdvFpT": {
+              "System Confidence": 0.96,
+              "Guard Formula": "created_at IS NOT NULL",
+              "Source Object": "Order",
+              "LLM Confidence": 0.94,
+              "Trace Link": "TRC1011",
+              "Source Formula": "CONVERT_TZ(created_at, timezone, 'UTC')",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recpRWMPSBnckygf7"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Convert 'created_at' to UTC",
+              "Verdict": "Approved"
+            },
+            "recIqqeKGlGhc2zoF": {
+              "System Confidence": 0.92,
+              "Guard Formula": "country IS NULL OR country = ''",
+              "Source Object": "Customer",
+              "LLM Confidence": 0.89,
+              "Trace Link": "TRC1009",
+              "Source Formula": "IF(country = '', 'USA', country)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec5EKysb6xRsobzG"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Set default 'country' to 'USA' if blank",
+              "Verdict": "Approved"
+            },
+            "recKw1GjcNsiHzGDy": {
+              "System Confidence": 0.98,
+              "Guard Formula": "order_date IS NOT NULL",
+              "Source Object": "Order",
+              "LLM Confidence": 0.97,
+              "Trace Link": "TRC1002",
+              "Source Formula": "FORMAT(order_date, 'YYYY-MM-DD')",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recjDiysOlH5PMvvR"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Transform 'OrderDate' to ISO format",
+              "Verdict": "Approved"
+            },
+            "recNjK1YUZN9BuOmR": {
+              "System Confidence": 0.94,
+              "Guard Formula": "address1 IS NOT NULL",
+              "Source Object": "Customer",
+              "LLM Confidence": 0.91,
+              "Trace Link": "TRC1008",
+              "Source Formula": "address1",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recBRmmebNhTTbV30"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Rename 'address1' to 'street_address'",
+              "Verdict": "Approved"
+            },
+            "recOZjzD6ZGeCJ9p9": {
+              "System Confidence": 0.97,
+              "Guard Formula": "price IS NOT NULL AND price != ''",
+              "Source Object": "Invoice",
+              "LLM Confidence": 0.95,
+              "Trace Link": "TRC1005",
+              "Source Formula": "CAST(price AS FLOAT)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recrJV0rWMlctn0lQ"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Convert 'price' to float",
+              "Verdict": "Approved"
+            },
+            "recRhQ2iOLxbZnJqT": {
+              "System Confidence": 0.93,
+              "Guard Formula": "first_name IS NOT NULL AND last_name IS NOT NULL",
+              "Source Object": "User",
+              "LLM Confidence": 0.9,
+              "Trace Link": "TRC1003",
+              "Source Formula": "CONCAT(first_name, ' ', last_name)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recLj70m2LGp0kYOj"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Concatenate first and last name",
+              "Verdict": "Approved"
+            },
+            "recZ8yp93dzYVDuII": {
+              "System Confidence": 0.88,
+              "Guard Formula": "discount_expiry < NOW()",
+              "Source Object": "Order",
+              "LLM Confidence": 0.85,
+              "Trace Link": "TRC1015",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recjjvDD1PtrUmhHK"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Drop 'discount_code' if expired",
+              "Verdict": "Rejected"
+            },
+            "recbZfWDOGK29yg7s": {
+              "System Confidence": 0.93,
+              "Guard Formula": "last_login IS NOT NULL",
+              "Source Object": "User",
+              "LLM Confidence": 0.9,
+              "Trace Link": "TRC1014",
+              "Source Formula": "IF(DATEDIFF(NOW(), last_login) < 30, TRUE, FALSE)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec5Bi0DBVuAjQY4b"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Set 'is_active' to true if last_login < 30 days",
+              "Verdict": "Approved"
+            },
+            "recnTcqKaoIprWUCf": {
+              "System Confidence": 0.9,
+              "Guard Formula": "email IS NULL",
+              "Source Object": "User",
+              "LLM Confidence": 0.88,
+              "Trace Link": "TRC1007",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recs3SFEhWWUjWJDH"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Drop records with null emails",
+              "Verdict": "Rejected"
+            },
+            "recory5LWQeiI3IYa": {
+              "System Confidence": 0.95,
+              "Guard Formula": "status != 'inactive'",
+              "Source Object": "Customer",
+              "LLM Confidence": 0.92,
+              "Trace Link": "TRC1001",
+              "Source Formula": "IF(type = 'active', 'Client', NULL)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recuqZqo4CMyu94NZ"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Map 'Customer' to 'Client'",
+              "Verdict": "Approved"
+            },
+            "recsCiy2tOdGpgV2L": {
+              "System Confidence": 0.95,
+              "Guard Formula": "phone IS NOT NULL",
+              "Source Object": "Contact",
+              "LLM Confidence": 0.93,
+              "Trace Link": "TRC1010",
+              "Source Formula": "TRIM(phone)",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "recRyOF6OpvqIMjZ0"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Remove whitespace from 'phone'",
+              "Verdict": "Approved"
+            },
+            "recvDdbRg2KM7OC7l": {
+              "System Confidence": 0.8,
+              "Guard Formula": "notes IS NOT NULL",
+              "Source Object": "Invoice",
+              "LLM Confidence": 0.78,
+              "Trace Link": "TRC1012",
+              "Source Formula": "NULL",
+              "Migrated At": "2024-06-01T00:00:00.000Z",
+              "Migration_Agents": [
+                "rec649T97BAnjKfPb"
+              ],
+              "Run ID": "RUN20240601A",
+              "Rule": "Ignore 'notes' field",
+              "Verdict": "Rejected"
+            },
+            "recMOCK0000000002": {
+              "Rule": "Discount_Cap",
+              "Source Object": "Opportunity",
+              "Source Formula": "Discount__c > 50",
+              "Guard Formula": "IF({Discount} > 0.5, \"VIOLATION\", \"\")",
+              "Verdict": "PASS",
+              "System Confidence": 0.95,
+              "Run ID": "run_20260913T184310_bb6128cb",
+              "Trace Link": "https://github.com/sanalvre/offboard/blob/main/traces/run_20260913T184310_bb6128cb.json",
+              "Migrated At": "2026-09-13T18:43:10Z",
+              "LLM Confidence": 0.85
+            }
+          }
+        },
+        "Migration_Agents": {
+          "fields": [
+            "Active",
+            "Agent Name",
+            "Agent Type",
+            "Contact Email",
+            "Last Run At",
+            "Notes",
+            "Related Runs",
+            "Role"
+          ],
+          "records": {
+            "rec4Fk1nEw7cPdphO": {
+              "Contact Email": "hello@nextsteprelocation.com",
+              "Role": "Senior Agent",
+              "Last Run At": "2024-06-08T00:00:00.000Z",
+              "Agent Name": "NextStep Relocation",
+              "Notes": "Focuses on student and skilled worker visas.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "rec1MEw5MUHXoroYI"
+              ],
+              "Active": true
+            },
+            "rec5Bi0DBVuAjQY4b": {
+              "Contact Email": "family@firstmigration.com",
+              "Role": "Family Consultant",
+              "Last Run At": "2024-05-31T00:00:00.000Z",
+              "Agent Name": "FamilyFirst Migration",
+              "Notes": "Expert in family reunification visas.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recbZfWDOGK29yg7s"
+              ],
+              "Active": true
+            },
+            "rec5EKysb6xRsobzG": {
+              "Contact Email": "info@pacifichub.com",
+              "Role": "Team Lead",
+              "Last Run At": "2024-06-04T00:00:00.000Z",
+              "Agent Name": "Pacific Migration Hub",
+              "Notes": "Handles Pacific region migration cases.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recIqqeKGlGhc2zoF"
+              ],
+              "Active": true
+            },
+            "rec649T97BAnjKfPb": {
+              "Contact Email": "students@studentpathway.com",
+              "Role": "Student Advisor",
+              "Last Run At": "2024-06-02T00:00:00.000Z",
+              "Agent Name": "StudentPathway Agency",
+              "Notes": "Specializes in student visa applications.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recvDdbRg2KM7OC7l"
+              ],
+              "Active": true
+            },
+            "recBRmmebNhTTbV30": {
+              "Contact Email": "urban@moveagents.com",
+              "Role": "Agent",
+              "Last Run At": "2024-06-05T00:00:00.000Z",
+              "Agent Name": "UrbanMove Agents",
+              "Notes": "Known for fast turnaround times.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recNjK1YUZN9BuOmR"
+              ],
+              "Active": true
+            },
+            "recDPLJ7PqGper2Pp": {
+              "Contact Email": "service@migratenow.com",
+              "Role": "Consultant",
+              "Last Run At": "2024-05-25T00:00:00.000Z",
+              "Agent Name": "MigrateNow Services",
+              "Notes": "Temporarily inactive due to staff shortage.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "rec5VbeaePdx4By9j"
+              ]
+            },
+            "recLj70m2LGp0kYOj": {
+              "Contact Email": "support@aussiepath.com",
+              "Role": "Migration Agent",
+              "Last Run At": "2024-05-30T00:00:00.000Z",
+              "Agent Name": "AussiePath Migration",
+              "Notes": "Recently merged with another agency.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recRhQ2iOLxbZnJqT"
+              ]
+            },
+            "recMZjBNFlas6SOl3": {
+              "Contact Email": "talent@globalmoves.com",
+              "Role": "HR Liaison",
+              "Last Run At": "2024-06-01T00:00:00.000Z",
+              "Agent Name": "Global Talent Moves",
+              "Notes": "Works with multinational companies.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "rec6lHwjsLPA0ug9D"
+              ],
+              "Active": true
+            },
+            "recRyOF6OpvqIMjZ0": {
+              "Contact Email": "ease@visa.com",
+              "Role": "Consultant",
+              "Last Run At": "2024-05-20T00:00:00.000Z",
+              "Agent Name": "VisaEase Consultants",
+              "Notes": "Recently completed a major client project.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recsCiy2tOdGpgV2L"
+              ]
+            },
+            "recjDiysOlH5PMvvR": {
+              "Contact Email": "contact@easyvisa.com",
+              "Role": "Case Manager",
+              "Last Run At": "2024-06-09T00:00:00.000Z",
+              "Agent Name": "EasyVisa Experts",
+              "Notes": "Handles individual and family migration cases.",
+              "Agent Type": "Individual",
+              "Related Runs": [
+                "recKw1GjcNsiHzGDy"
+              ],
+              "Active": true
+            },
+            "recjjvDD1PtrUmhHK": {
+              "Contact Email": "work@visapros.com",
+              "Role": "Case Coordinator",
+              "Last Run At": "2024-05-28T00:00:00.000Z",
+              "Agent Name": "WorkVisa Pros",
+              "Notes": "Currently reviewing compliance procedures.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recZ8yp93dzYVDuII"
+              ]
+            },
+            "recpRWMPSBnckygf7": {
+              "Contact Email": "elite@migrationadvisors.com",
+              "Role": "Advisor",
+              "Last Run At": "2024-06-03T00:00:00.000Z",
+              "Agent Name": "Elite Migration Advisors",
+              "Notes": "Focuses on executive relocations.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recAflG4gXoUdvFpT"
+              ],
+              "Active": true
+            },
+            "recrJV0rWMlctn0lQ": {
+              "Contact Email": "partners@visabridge.com",
+              "Role": "Director",
+              "Last Run At": "2024-06-07T00:00:00.000Z",
+              "Agent Name": "VisaBridge Partners",
+              "Notes": "Offers end-to-end migration project management.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recOZjzD6ZGeCJ9p9"
+              ],
+              "Active": true
+            },
+            "recs3SFEhWWUjWJDH": {
+              "Contact Email": "admin@pathwaygroup.com",
+              "Role": "Operations Manager",
+              "Last Run At": "2024-06-06T00:00:00.000Z",
+              "Agent Name": "Pathway Migration Group",
+              "Notes": "Specializes in IT sector migrations.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recnTcqKaoIprWUCf"
+              ],
+              "Active": true
+            },
+            "recuqZqo4CMyu94NZ": {
+              "Contact Email": "info@globalmove.com",
+              "Role": "Lead Consultant",
+              "Last Run At": "2024-06-10T00:00:00.000Z",
+              "Agent Name": "GlobalMove Solutions",
+              "Notes": "Specializes in large-scale corporate migrations.",
+              "Agent Type": "Corporate",
+              "Related Runs": [
+                "recory5LWQeiI3IYa"
+              ],
+              "Active": true
+            }
+          }
+        }
+      },
+      "diff": {
+        "fields_added": {
+          "Opportunities": [
+            "Guard: Discount_Cap"
+          ]
+        },
+        "records_added": {
+          "Migration_Rules": [
+            "recMOCK0000000002"
+          ]
+        },
+        "records_changed": {},
+        "records_removed": {}
+      }
+    },
+    {
+      "seq": 35,
+      "ts": "2026-09-13T18:43:10.706+00:00",
+      "kind": "claims",
+      "claims": [
+        {
+          "kind": "field_created",
+          "detail": "Opportunities.Guard: Discount_Cap created as formula field fldMOCK0000000001",
+          "verified": true,
+          "evidence_seq": null
+        },
+        {
+          "kind": "record_written",
+          "detail": "Migration_Rules record recMOCK0000000002 for Discount_Cap with verdict PASS",
+          "verified": true,
+          "evidence_seq": 29
+        },
+        {
+          "kind": "rule_verified_equivalent",
+          "detail": "Z3 proved the written guard equivalent to the source rule",
+          "verified": true,
+          "evidence_seq": null
+        }
+      ],
+      "unsupported_claims": 0,
+      "unexpected_changes": []
+    },
+    {
+      "seq": 36,
+      "ts": "2026-09-13T18:43:10.707+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "Receipt",
+          "embeds": [
+            {
+              "title": "receipt · result · Opportunity.Discount_Cap",
+              "description": "• field_created: Opportunities.Guard: Discount_Cap created as formula field fldMOCK0000000001\n• record_written: Migration_Rules record recMOCK0000000002 for Discount_Cap with verdict PASS\n• rule_verified_equivalent: Z3 proved the written guard equivalent to the source rule",
+              "fields": [
+                {
+                  "name": "unsupported claims",
+                  "value": "0/3",
+                  "inline": true
+                },
+                {
+                  "name": "unexpected state changes",
+                  "value": "0",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "run run_20260913T184310_bb6128cb · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-4"
+      }
+    }
+  ]
+}

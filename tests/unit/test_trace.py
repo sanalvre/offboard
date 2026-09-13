@@ -87,9 +87,9 @@ def test_canonical_hash_ignores_volatile_fields_but_not_content(tmp_path):
 def test_canonical_hash_is_sha256_of_sorted_json():
     # independent recomputation of the hash for a tiny fixed input
     import hashlib
-    entries = [{"seq": 1, "ts": "T", "kind": "note", "message": "m"}]
-    header = {"run_id": "x", "mode": "test"}
-    expected = hashlib.sha256(json.dumps({"header": {"mode": "test"}, "entries": [{"kind": "note", "message": "m", "seq": 1}]},
+    entries = [{"seq": 1, "ts": "T", "kind": "note", "message": "run run_20260913T120000_abc12345 after run_20260913T115959_deadbeef", "createdTime": "2026-01-01"}]
+    header = {"run_id": "run_20260913T120000_abc12345", "mode": "test"}
+    expected = hashlib.sha256(json.dumps({"header": {"mode": "test"}, "entries": [{"kind": "note", "message": "run <run_id> after <run_id>", "seq": 1}]},
                                          sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     assert canonical_hash(entries, header) == expected
 

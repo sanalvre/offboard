@@ -4,7 +4,8 @@ Working name: **Receipt** (a migration agent that leaves a receipt for every dec
 Hackathon: Multi-App Agent Hackathon, 2026-09-13. Solo, Python 3.10 / FastAPI.
 Judging: 30% technical, 25% reliability & eval, 20% usefulness, 15% originality, 10% demo.
 
-Status: PLAN ONLY. No implementation code written yet. Awaiting go-ahead.
+Status: BUILT on 2026-09-13. Sections 1 to 9 are the plan as it evolved during the day; section 10 lists what
+changed versus the plan. Feature docs live beside this file in `skills/`.
 
 ---
 
@@ -649,3 +650,25 @@ API result. Two independent sources agreeing is evidence in Arga's sense. Device
 verification codes on fresh cloud browsers remain the friction; the setup prompt in
 `skills/setup-prompts.md` asks Browserbase for a persisted context to reduce it. Optional,
 block 9 only.
+
+
+---
+
+## 10. What changed versus the plan (written at the end of the build, 2026-09-13)
+
+- **Auth:** SOAP login is disabled by default on new Dev orgs; the Salesforce CLI refresh token is the transport,
+  invoked as `sf api request rest` from Python (the token the CLI exposes is rejected by REST directly).
+- **Airtable:** formula fields *can* be created via API (Constraint A was wrong); precision cannot be changed.
+- **FLS:** fields created via the Tooling API needed `FieldPermissions` rows before `describe` showed them.
+- **Eval design:** LLM-dependent cases are graded `SOLVER_TRUTH` (verdict must follow the proof) and the model's
+  accuracy is reported. The traps are demonstrated three ways: informed prompt, naive-prompt ablation, and
+  hand-edited cassettes that guarantee a wrong proposal reaches the solver. 17 cases, not 13.
+- **Rule descriptions** in the org were rewritten as plain business intent after the first cassette recording
+  showed my own descriptions leaking the traps to the model.
+- **Guard field name** is fixed by convention (`Guard: <rule>`), not taken from the model, so reruns are idempotent
+  against the field that already exists in the real base.
+- **Model:** Sonnet 5 by measurement; an accidental Opus 5 recording showed the two behave differently on the same
+  prompt, recorded in `skills/eval-harness.md`.
+- **Confidence** stayed as a secondary signal; the headline reliability metrics are pass/fail/unsafe, reproducible
+  or mixed, unsupported claims, and wrong proposals written (0).
+- **Not built:** Browserbase second witness, model comparison stretch, HubSpot target.

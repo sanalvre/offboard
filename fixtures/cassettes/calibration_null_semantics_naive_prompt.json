@@ -1,0 +1,163 @@
+{
+  "key": "calibration_null_semantics_naive_prompt",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T18:26:11Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record.\n"
+      },
+      {
+        "role": "user",
+        "content": "Salesforce object: Opportunity\nRule API name: ClosedWon_Amount_Naive\nError condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):\nISPICKVAL(StageName,\"Closed Won\") && Amount <= 0\nError message shown to users: A Closed Won opportunity must have a positive amount.\nAdmin description (business intent): Finance: no deal may be booked as won with zero or negative revenue.\nActive: True\n\nSalesforce fields referenced or available:\n- StageName: picklist, required options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\"]\n- Amount: currency\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent\n- Discount: percent\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789323964-K9GdWNPEhUpB9c8kISLG",
+    "object": "chat.completion",
+    "created": 1789323965,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\":\"Prevent an Opportunity from being marked Closed Won unless it has a positive Amount, ensuring revenue is booked accurately.\",\"field_mapping\":[{\"source_field\":\"StageName\",\"target_field\":\"Stage\",\"target_type\":\"singleSelect\"},{\"source_field\":\"Amount\",\"target_field\":\"Amount\",\"target_type\":\"currency\"}],\"guard_field_name\":\"Guard: ClosedWon_Amount_Naive\",\"guard_formula\":\"IF(AND({Stage} = \\\"Closed Won\\\", {Amount} <= 0), \\\"VIOLATION\\\", \\\"\\\")\",\"rationale\":\"Directly mirrors the Salesforce rule: fires when Stage is Closed Won and Amount is zero or negative, using equivalent Airtable fields and numeric comparison.\",\"confidence\":0.95,\"caveats\":[\"Assumes Amount is never blank when Stage is Closed Won; if Amount is BLANK(), Airtable numeric comparison treats it as 0, which would still correctly trigger VIOLATION, matching Salesforce behavior where a null Amount also satisfies <=0 in most orgs.\",\"Does not account for the extra Airtable-only Stage options 'Negotiation' and 'Proposal' since they don't correspond to 'Closed Won' and are irrelevant to this rule.\"]}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1789,
+      "completion_tokens": 445,
+      "total_tokens": 2234,
+      "cost": 0.008028,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.008028,
+        "upstream_inference_prompt_cost": 0.003578,
+        "upstream_inference_completions_cost": 0.00445
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

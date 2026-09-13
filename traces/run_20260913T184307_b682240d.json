@@ -1,0 +1,287 @@
+{
+  "header": {
+    "run_id": "run_20260913T184307_b682240d",
+    "mode": "test",
+    "rule": "Opportunity.Does_Not_Exist",
+    "case_id": "record_not_found",
+    "attempt": 1,
+    "started_at": "2026-09-13T18:43:07.715+00:00",
+    "schema": "receipt-trace/1",
+    "finished_at": "2026-09-13T18:43:07.738+00:00"
+  },
+  "summary": {
+    "verdict": "NOT_FOUND",
+    "decision": {
+      "verdict": "NOT_FOUND",
+      "system_confidence": 0.0,
+      "llm_confidence": null,
+      "overconfidence_gap": null,
+      "reasons": [
+        "no validation rule named 'Does_Not_Exist' on Opportunity"
+      ]
+    },
+    "claims": [
+      {
+        "kind": "no_write",
+        "detail": "nothing was written to Airtable",
+        "verified": true,
+        "evidence_seq": null
+      }
+    ],
+    "unsupported_claims": 0,
+    "unexpected_changes": [],
+    "state_diff": {},
+    "airtable_calls": 0
+  },
+  "canonical_hash": "246da1380fe587ca578e94dc5718a6e146738eee84a80fea43f66ab55b64ae01",
+  "entries": [
+    {
+      "seq": 1,
+      "ts": "2026-09-13T18:43:07.729+00:00",
+      "kind": "assumption",
+      "name": "sf_blank_number_is_null",
+      "statement": "In a Salesforce validation rule a blank number is null and any numeric comparison on it is false.",
+      "evidence": "Dev org probe 2026-09-13 (scripts/seed_salesforce.py): blank Amount saved under `Amount <= 0`, Amount 0 rejected.",
+      "verified": true
+    },
+    {
+      "seq": 2,
+      "ts": "2026-09-13T18:43:07.730+00:00",
+      "kind": "assumption",
+      "name": "at_blank_number_is_zero",
+      "statement": "In Airtable a blank number behaves as 0 in comparisons.",
+      "evidence": "Real base probe 2026-09-13 (scripts/smoke_airtable_naive.py): `{Amount}<=0` matched the blank record, `{Amount}<0` did not.",
+      "verified": true
+    },
+    {
+      "seq": 3,
+      "ts": "2026-09-13T18:43:07.731+00:00",
+      "kind": "assumption",
+      "name": "sf_percent_scale_100",
+      "statement": "Salesforce percent fields store 50 for 50%; formula literals are in the same units.",
+      "evidence": "Opportunity describe: Probability type percent precision 3 scale 0; Salesforce field-type docs.",
+      "verified": true
+    },
+    {
+      "seq": 4,
+      "ts": "2026-09-13T18:43:07.731+00:00",
+      "kind": "assumption",
+      "name": "at_percent_scale_1",
+      "statement": "Airtable percent fields store 0.5 for 50%.",
+      "evidence": "Airtable field model docs; base schema percent precision 2.",
+      "verified": true
+    },
+    {
+      "seq": 5,
+      "ts": "2026-09-13T18:43:07.732+00:00",
+      "kind": "assumption",
+      "name": "picklist_eq_on_blank_false",
+      "statement": "ISPICKVAL / select equality on a blank value is false in both systems; <> is its negation.",
+      "evidence": "Salesforce formula docs; Airtable formula behaviour. Not probed empirically.",
+      "verified": false
+    },
+    {
+      "seq": 6,
+      "ts": "2026-09-13T18:43:07.733+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.1,
+      "tool": "salesforce.mock.rest",
+      "request": {
+        "method": "GET",
+        "url": "/services/data/v67.0/tooling/query?q=SELECT%20Id%2C%20ValidationName%2C%20Active%2C%20ErrorMessage%2C%20Description%2C%20ErrorDisplayField%20FROM%20ValidationRule%20WHERE%20EntityDefinition.QualifiedApiName%20%3D%20%27Opportunity%27%20ORDER%20BY%20ValidationName",
+        "body": null
+      },
+      "response": {
+        "size": 8,
+        "totalSize": 8,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptSjAAI",
+            "ValidationName": "ClosedLost_Requires_Reason",
+            "Active": true,
+            "ErrorMessage": "Enter a loss reason before closing as lost.",
+            "Description": "Sales ops: win/loss analysis needs a reason on every lost deal.",
+            "ErrorDisplayField": "Loss Reason"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptPVAAY",
+            "ValidationName": "ClosedWon_Amount_Naive",
+            "Active": true,
+            "ErrorMessage": "A Closed Won opportunity must have a positive amount.",
+            "Description": "Finance: no deal may be booked as won with zero or negative revenue.",
+            "ErrorDisplayField": "Amount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptR7AAI",
+            "ValidationName": "ClosedWon_Requires_Amount",
+            "Active": true,
+            "ErrorMessage": "A Closed Won opportunity must have a positive amount.",
+            "Description": "Finance: revenue recognition depends on every won deal carrying a real amount.",
+            "ErrorDisplayField": "Amount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002puAHAAY",
+            "ValidationName": "Discount_Cap",
+            "Active": true,
+            "ErrorMessage": "Discounts above 50% require a separate approval; enter 50 or less.",
+            "Description": "Finance policy: maximum self-serve discount is 50 percent.",
+            "ErrorDisplayField": "Discount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002pua5AAA",
+            "ValidationName": "EMEA_Requires_Amount",
+            "Active": true,
+            "ErrorMessage": "EMEA opportunities must carry an amount at creation.",
+            "Description": "EMEA partner routing needs an amount at creation to pick the partner tier.",
+            "ErrorDisplayField": "Amount"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptfdAAA",
+            "ValidationName": "Large_Deal_Type_Guard",
+            "Active": true,
+            "ErrorMessage": "Deals over $1M must be typed as New Customer for exec review.",
+            "Description": "Exec review: every seven-figure deal is routed as new business regardless of account history.",
+            "ErrorDisplayField": "Type"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002ptZBAAY",
+            "ValidationName": "Negotiation_Min_Probability",
+            "Active": true,
+            "ErrorMessage": "Deals in Negotiation/Review must have probability of at least 50%.",
+            "Description": "Forecasting: negotiation-stage deals below 50% distort the weighted pipeline.",
+            "ErrorDisplayField": "Probability (%)"
+          },
+          {
+            "attributes": {
+              "type": "ValidationRule"
+            },
+            "Id": "03dg7000002pqcwAAA",
+            "ValidationName": "Stage_Regression_Blocked",
+            "Active": true,
+            "ErrorMessage": "A Closed Won opportunity cannot be reopened; clone it instead.",
+            "Description": "Revenue integrity: booked deals are immutable; a reopened deal must be cloned instead.",
+            "ErrorDisplayField": "Stage"
+          }
+        ]
+      }
+    },
+    {
+      "seq": 7,
+      "ts": "2026-09-13T18:43:07.734+00:00",
+      "kind": "step",
+      "latency_ms": 1.1,
+      "name": "extract"
+    },
+    {
+      "seq": 8,
+      "ts": "2026-09-13T18:43:07.735+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "Receipt",
+          "embeds": [
+            {
+              "title": "receipt · extract · Opportunity.Does_Not_Exist",
+              "description": "`Opportunity.Does_Not_Exist` is not a validation rule on Opportunity. No LLM call, no write.",
+              "footer": {
+                "text": "run run_20260913T184307_b682240d · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-1"
+      }
+    },
+    {
+      "seq": 9,
+      "ts": "2026-09-13T18:43:07.735+00:00",
+      "kind": "decision",
+      "verdict": "NOT_FOUND",
+      "system_confidence": 0.0,
+      "llm_confidence": null,
+      "overconfidence_gap": null,
+      "reasons": [
+        "no validation rule named 'Does_Not_Exist' on Opportunity"
+      ]
+    },
+    {
+      "seq": 10,
+      "ts": "2026-09-13T18:43:07.736+00:00",
+      "kind": "claims",
+      "claims": [
+        {
+          "kind": "no_write",
+          "detail": "nothing was written to Airtable",
+          "verified": true,
+          "evidence_seq": null
+        }
+      ],
+      "unsupported_claims": 0,
+      "unexpected_changes": []
+    },
+    {
+      "seq": 11,
+      "ts": "2026-09-13T18:43:07.737+00:00",
+      "kind": "tool_call",
+      "latency_ms": 0.0,
+      "tool": "discord.mock.post",
+      "request": {
+        "payload": {
+          "username": "Receipt",
+          "embeds": [
+            {
+              "title": "receipt · result · Opportunity.Does_Not_Exist",
+              "description": "• no_write: nothing was written to Airtable",
+              "fields": [
+                {
+                  "name": "unsupported claims",
+                  "value": "0/1",
+                  "inline": true
+                },
+                {
+                  "name": "unexpected state changes",
+                  "value": "0",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "run run_20260913T184307_b682240d · mode test"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "message_id": "mock-2"
+      }
+    }
+  ]
+}

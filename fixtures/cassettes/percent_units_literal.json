@@ -1,0 +1,175 @@
+{
+  "key": "percent_units_literal",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T18:26:17Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nBe precise about semantics; they differ between systems:\n- Salesforce validation rules: a blank number is null; any numeric comparison on a blank is FALSE. ISPICKVAL compares\n  the picklist API name. Percent fields store 50 for 50%.\n- Airtable: a blank number is treated as 0 in comparisons; {Percent} stores 0.5 for 50%; a single select compares\n  against its option label.\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed. If a Salesforce field has no Airtable counterpart, say so in caveats and still\nproduce your best mapping.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record. Do not round up.\n"
+      },
+      {
+        "role": "user",
+        "content": "Salesforce object: Opportunity\nRule API name: Discount_Cap\nError condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):\nDiscount__c > 50\nError message shown to users: Discounts above 50% require a separate approval; enter 50 or less.\nAdmin description (business intent): Finance policy: maximum self-serve discount is 50 percent.\nActive: True\n\nSalesforce fields referenced or available:\n- Discount__c: percent (stores 50 for 50%)\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent (stores 0.5 for 50%)\n- Discount: percent (stores 0.5 for 50%)\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789323970-nnRr7OwxitdXOphlGinc",
+    "object": "chat.completion",
+    "created": 1789323970,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\": \"Self-serve discounts above 50% must be blocked without separate approval, per Finance policy.\", \"field_mapping\": [{\"source_field\": \"Discount__c\", \"target_field\": \"Discount\", \"target_type\": \"percent\"}], \"guard_field_name\": \"Guard: Discount Cap\", \"guard_formula\": \"IF({Discount} > 50, \\\"VIOLATION\\\", \\\"\\\")\", \"rationale\": \"[HAND-EDITED CASSETTE: Salesforce literal copied without rescaling for eval case solver_catches_percent_units; original guard was 'IF({Discount} > 0.5, \\\"VIOLATION\\\", \\\"\\\")'] Salesforce Discount__c stores 50 for 50%, so the rule fires when the raw value exceeds 50 (i.e., >50%). Airtable's Discount field stores the equivalent percentage as a decimal (0.5 for 50%), so the equivalent threshold is 0.5. The guard flags records where the discount exceeds 50%.\", \"confidence\": 0.9, \"caveats\": [\"Assumes Airtable Discount field always stores fractional values consistent with percent formatting (0.5 = 50%), matching Salesforce's 50 for 50%.\", \"If Discount is blank in Airtable, it is treated as 0, which will not trigger the violation\\u2014consistent with Salesforce's null behavior where blank comparisons are false.\", \"No separate approval workflow field exists in Airtable to represent the 'requires approval' exception mentioned in the error message; only the raw cap is enforced.\"]}",
+          "refusal": null,
+          "reasoning": "Since Salesforce stores the discount as 50 for 50% while Airtable stores it as 0.5, I need to adjust the comparison threshold accordingly to {Discount} > 0.5 in Airtable.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Since Salesforce stores the discount as 50 for 50% while Airtable stores it as 0.5, I need to adjust the comparison threshold accordingly to {Discount} > 0.5 in Airtable.\n\n",
+              "format": "anthropic-claude-v1",
+              "index": 0,
+              "signature": "Ep8DCrABCBEYAipAQYjUXDt6vsriaRwG0i9uv1Mg0rksm0eSVFpQADuEu+ukXLkfc8j2tgbyJsm8aG8FEA4da/bT8prZmG41mdJB+TIPY2xhdWRlLXNvbm5ldC01OABCCHRoaW5raW5nWiQ0YzBmMDQ2Zi0yNWZkLTQ1ZmItYmZiMy1hMDhhOGUyNDljYTd6HnVwcm9mXzAxMUNlUmVjUlk5emQzOFV0Vlp3VHBrOKgBxtWb1QYSDFNzxUYbb9ZjUAsevRoMlDKzsafYquEqyMHUIjDjDmsntMtTKAuHYsDp4rsIWiGigbjGOo7NJpTTFKEPuFWLuwlWERxnRCD2sWGxvKQqmwGl/dPUWZc5DmRsHR/u4zbJGpy8ZAuC/ehq2MZgIzjaypOcgDMsfLAqD3snvACPTjjWrg0LT7AvMU6qft20Q38UgeJxZG865n9zvS7A/GFUZ0fRRTtNHLH3dHKNnCMP4iG84a9RxjZFAQXPsVoxIoUYPxik8gkaRXyfa23DsBWf5Z9X1eAiUD//z79MAAoODCUUGOmYgCOWWETFoxgB"
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1885,
+      "completion_tokens": 498,
+      "total_tokens": 2383,
+      "cost": 0.00875,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00875,
+        "upstream_inference_prompt_cost": 0.00377,
+        "upstream_inference_completions_cost": 0.00498
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 66,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "derived_from": "trap_percent_units",
+  "hand_edited": true,
+  "hand_edit_note": "Salesforce literal copied without rescaling for eval case solver_catches_percent_units"
+}

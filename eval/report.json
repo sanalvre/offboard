@@ -1,0 +1,654 @@
+{
+  "protocol": "A",
+  "k": 2,
+  "mode": "test",
+  "summary": {
+    "cases": 17,
+    "pass": 17,
+    "fail": 0,
+    "unsafe": 0,
+    "reproducible": 17,
+    "mixed": null,
+    "pass_rate": 1.0,
+    "wilson_95": [
+      0.816,
+      1.0
+    ],
+    "unsupported_claims_total": 0,
+    "llm_proposals": 28,
+    "llm_proposals_proven_equivalent": 12,
+    "wrong_proposals_written": 0,
+    "mean_overconfidence_gap": 0.373
+  },
+  "cases": [
+    {
+      "case_id": "happy_closedwon_amount",
+      "rule": "Opportunity.ClosedWon_Requires_Amount",
+      "expected": "PASS",
+      "targets": "baseline: cross-field, null-safe",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184305_4cef4424",
+          "verdict": "PASS",
+          "canonical_hash": "5c24818360f3695685e7079cca7e36c6c75ae1f1631ebbb4f69ea84dd370b963",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184305_4cef4424.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184306_89188e98",
+          "verdict": "PASS",
+          "canonical_hash": "5c24818360f3695685e7079cca7e36c6c75ae1f1631ebbb4f69ea84dd370b963",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184306_89188e98.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "happy_closedlost_reason",
+      "rule": "Opportunity.ClosedLost_Requires_Reason",
+      "expected": "SOLVER_TRUTH",
+      "targets": "second dependency shape (picklist -> required text)",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184306_d14023c6",
+          "verdict": "PASS",
+          "canonical_hash": "5b38ab11256cc9065d7f3ae6edde05e291f71b5d42eadfe535e9aca1192ec7bb",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.93,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184306_d14023c6.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184306_9c499927",
+          "verdict": "PASS",
+          "canonical_hash": "5b38ab11256cc9065d7f3ae6edde05e291f71b5d42eadfe535e9aca1192ec7bb",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.93,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184306_9c499927.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "happy_percent_scaling",
+      "rule": "Opportunity.Negotiation_Min_Probability",
+      "expected": "SOLVER_TRUTH",
+      "targets": "percent units (50 -> 0.5) plus Airtable blank-is-zero",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184306_57e49071",
+          "verdict": "FAIL",
+          "canonical_hash": "272397434c80536e3ae86d447675824e53027c65761c667448d98f6ab1d64019",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.82,
+          "overconfidence_gap": 0.82,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184306_57e49071.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184307_26e97f89",
+          "verdict": "FAIL",
+          "canonical_hash": "272397434c80536e3ae86d447675824e53027c65761c667448d98f6ab1d64019",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.82,
+          "overconfidence_gap": 0.82,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184307_26e97f89.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "over_refusal_guard",
+      "rule": "Opportunity.Large_Deal_Type_Guard",
+      "expected": "PASS",
+      "targets": "Arga over-refusal: NOT + second picklist must not hide behind AMBIGUOUS",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184307_36940d10",
+          "verdict": "PASS",
+          "canonical_hash": "7b3c036a3289ac5120b0a7cde36e549121b3dd74946a29dc3c56ada3fd435f8e",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184307_36940d10.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184307_5016bc99",
+          "verdict": "PASS",
+          "canonical_hash": "7b3c036a3289ac5120b0a7cde36e549121b3dd74946a29dc3c56ada3fd435f8e",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184307_5016bc99.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "record_not_found",
+      "rule": "Opportunity.Does_Not_Exist",
+      "expected": "NOT_FOUND",
+      "targets": "fails loudly and cheaply",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184307_b682240d",
+          "verdict": "NOT_FOUND",
+          "canonical_hash": "246da1380fe587ca578e94dc5718a6e146738eee84a80fea43f66ab55b64ae01",
+          "system_confidence": 0.0,
+          "llm_confidence": null,
+          "overconfidence_gap": null,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184307_b682240d.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184307_f42facbc",
+          "verdict": "NOT_FOUND",
+          "canonical_hash": "246da1380fe587ca578e94dc5718a6e146738eee84a80fea43f66ab55b64ae01",
+          "system_confidence": 0.0,
+          "llm_confidence": null,
+          "overconfidence_gap": null,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184307_f42facbc.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "duplicate_already_processed",
+      "rule": "Opportunity.ClosedWon_Requires_Amount",
+      "expected": "DUPLICATE",
+      "targets": "Arga duplicate / extra business resource",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184308_7d640973",
+          "verdict": "DUPLICATE",
+          "canonical_hash": "db251a30ddd974aed9458b7d4dd4c1d364ddf01868ab8e63fcc25d064773e763",
+          "system_confidence": 1.0,
+          "llm_confidence": null,
+          "overconfidence_gap": null,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184308_7d640973.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184308_107cffa2",
+          "verdict": "DUPLICATE",
+          "canonical_hash": "db251a30ddd974aed9458b7d4dd4c1d364ddf01868ab8e63fcc25d064773e763",
+          "system_confidence": 1.0,
+          "llm_confidence": null,
+          "overconfidence_gap": null,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184308_107cffa2.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "ambiguous_unsupported_construct",
+      "rule": "Opportunity.Stage_Regression_Blocked",
+      "expected": "AMBIGUOUS",
+      "targets": "needs-a-human is a distinct outcome",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184308_d6bcbd40",
+          "verdict": "AMBIGUOUS",
+          "canonical_hash": "535a02770b18615efdf7f13c3bbdb3a80418c51d1d9640c6a696fb0392a423d1",
+          "system_confidence": 0.0,
+          "llm_confidence": null,
+          "overconfidence_gap": null,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184308_d6bcbd40.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184308_588060d5",
+          "verdict": "AMBIGUOUS",
+          "canonical_hash": "535a02770b18615efdf7f13c3bbdb3a80418c51d1d9640c6a696fb0392a423d1",
+          "system_confidence": 0.0,
+          "llm_confidence": null,
+          "overconfidence_gap": null,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184308_588060d5.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "ambiguous_schema_mismatch",
+      "rule": "Opportunity.EMEA_Requires_Amount",
+      "expected": "AMBIGUOUS",
+      "targets": "structural mismatch surfaced, not guessed",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184308_bb54e9f6",
+          "verdict": "AMBIGUOUS",
+          "canonical_hash": "4da15db8d6b13722a5b1cdd03aa219968daaeb58fa83797c233e4179a715468d",
+          "system_confidence": 0.0,
+          "llm_confidence": 0.15,
+          "overconfidence_gap": 0.15,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184308_bb54e9f6.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184308_e0dec13a",
+          "verdict": "AMBIGUOUS",
+          "canonical_hash": "4da15db8d6b13722a5b1cdd03aa219968daaeb58fa83797c233e4179a715468d",
+          "system_confidence": 0.0,
+          "llm_confidence": 0.15,
+          "overconfidence_gap": 0.15,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184308_e0dec13a.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "calibration_null_semantics",
+      "rule": "Opportunity.ClosedWon_Amount_Naive",
+      "expected": "SOLVER_TRUTH",
+      "targets": "null trap, informed prompt: verdict must follow the proof",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184308_9b770a95",
+          "verdict": "FAIL",
+          "canonical_hash": "346233eda046d2b7966cab67385ea96eb0dfb30f302e155e21015cd91ade411f",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.75,
+          "overconfidence_gap": 0.75,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184308_9b770a95.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184309_12475dce",
+          "verdict": "FAIL",
+          "canonical_hash": "346233eda046d2b7966cab67385ea96eb0dfb30f302e155e21015cd91ade411f",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.75,
+          "overconfidence_gap": 0.75,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184309_12475dce.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "calibration_null_semantics_naive_prompt",
+      "rule": "Opportunity.ClosedWon_Amount_Naive",
+      "expected": "SOLVER_TRUTH",
+      "targets": "null trap, naive prompt (ablation): verdict must follow the proof; the model's accuracy is reported",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184309_4d703488",
+          "verdict": "FAIL",
+          "canonical_hash": "fe87d4ba8f3a45cf15ceaa87fe77be2ae3a6b28a8b580ecd573143ceb9314d1e",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.95,
+          "overconfidence_gap": 0.95,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184309_4d703488.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184309_0b7d61eb",
+          "verdict": "FAIL",
+          "canonical_hash": "fe87d4ba8f3a45cf15ceaa87fe77be2ae3a6b28a8b580ecd573143ceb9314d1e",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.95,
+          "overconfidence_gap": 0.95,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184309_0b7d61eb.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "solver_catches_naive_null_translation",
+      "rule": "Opportunity.ClosedWon_Amount_Naive",
+      "expected": "FAIL",
+      "targets": "'looked like it worked but didn't': the literal translation flags blank Amounts that Salesforce accepts (hand-edited cassette)",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184309_8c79e17e",
+          "verdict": "FAIL",
+          "canonical_hash": "652af6e965d5c6eed63bed939b235b6b88128774820d824fb0d08c81a222f560",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.75,
+          "overconfidence_gap": 0.75,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184309_8c79e17e.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184309_f1ef9dfd",
+          "verdict": "FAIL",
+          "canonical_hash": "652af6e965d5c6eed63bed939b235b6b88128774820d824fb0d08c81a222f560",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.75,
+          "overconfidence_gap": 0.75,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184309_f1ef9dfd.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "trap_percent_units",
+      "rule": "Opportunity.Discount_Cap",
+      "expected": "SOLVER_TRUTH",
+      "targets": "percent units, informed prompt: verdict must follow the proof",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184310_c0fbe76b",
+          "verdict": "PASS",
+          "canonical_hash": "ce77afae5ef4423c413d2559a671745281706c991e0969d3bef4f8ab0db298c1",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184310_c0fbe76b.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184310_5861ee5d",
+          "verdict": "PASS",
+          "canonical_hash": "ce77afae5ef4423c413d2559a671745281706c991e0969d3bef4f8ab0db298c1",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184310_5861ee5d.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "trap_percent_units_naive_prompt",
+      "rule": "Opportunity.Discount_Cap",
+      "expected": "SOLVER_TRUTH",
+      "targets": "percent trap, naive prompt (ablation): verdict must follow the proof",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184310_f53bceba",
+          "verdict": "PASS",
+          "canonical_hash": "42a753e5c16c37989672c1801b1f20ed0ae957b95d8ddfb6d00cf7bd679ac825",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.85,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184310_f53bceba.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184310_bb6128cb",
+          "verdict": "PASS",
+          "canonical_hash": "42a753e5c16c37989672c1801b1f20ed0ae957b95d8ddfb6d00cf7bd679ac825",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.85,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184310_bb6128cb.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "solver_catches_percent_units",
+      "rule": "Opportunity.Discount_Cap",
+      "expected": "FAIL",
+      "targets": "silent logic corruption via units: {Discount} > 50 never fires where Salesforce fires at 50% (hand-edited cassette)",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184310_d64aef65",
+          "verdict": "FAIL",
+          "canonical_hash": "eb4991a77b7ddb6cd48541ca55ddf3d1e1effb483b84d35c8da944df7c864f92",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.9,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184310_d64aef65.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184311_b0f638f4",
+          "verdict": "FAIL",
+          "canonical_hash": "eb4991a77b7ddb6cd48541ca55ddf3d1e1effb483b84d35c8da944df7c864f92",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.9,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184311_b0f638f4.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "solver_catches_weaker_translation",
+      "rule": "Opportunity.ClosedWon_Requires_Amount",
+      "expected": "FAIL",
+      "targets": "off-by-one an eyeball review misses (hand-edited cassette: '<= 0' -> '< 0')",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184311_2d0ac449",
+          "verdict": "FAIL",
+          "canonical_hash": "8e3bcf94175c5c8c3a8999b030ce6c66e29bab0c080f5a292804cc363b3eae10",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.9,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184311_2d0ac449.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184311_92ed6406",
+          "verdict": "FAIL",
+          "canonical_hash": "8e3bcf94175c5c8c3a8999b030ce6c66e29bab0c080f5a292804cc363b3eae10",
+          "system_confidence": 0.1,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.9,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184311_92ed6406.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "recovery_after_partial_failure",
+      "rule": "Opportunity.ClosedWon_Requires_Amount",
+      "expected": "ERROR",
+      "targets": "Arga recovery / idempotency: injected 503 then rerun",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184311_0112e248",
+          "verdict": "ERROR->PASS",
+          "canonical_hash": "4ba23064bf87e83feba14ef6daf74066f8de0873dad97f33599dfeeeb4154ee6",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184311_0112e248.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184312_38ced830",
+          "verdict": "ERROR->PASS",
+          "canonical_hash": "4ba23064bf87e83feba14ef6daf74066f8de0873dad97f33599dfeeeb4154ee6",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184312_38ced830.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    },
+    {
+      "case_id": "distractor_near_duplicate",
+      "rule": "Opportunity.ClosedWon_Requires_Amount",
+      "expected": "PASS",
+      "targets": "Arga unauthorized / wrong-target write: 15 pre-existing rule records and the agents table must be byte-identical",
+      "attempts": [
+        {
+          "run_id": "run_20260913T184312_a9853fc0",
+          "verdict": "PASS",
+          "canonical_hash": "13d6090a446c7f688bbd124dcdf63bb5d35d2f75a8e27263180c816a6e5ade98",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184312_a9853fc0.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        },
+        {
+          "run_id": "run_20260913T184312_cf741950",
+          "verdict": "PASS",
+          "canonical_hash": "13d6090a446c7f688bbd124dcdf63bb5d35d2f75a8e27263180c816a6e5ade98",
+          "system_confidence": 0.95,
+          "llm_confidence": 0.9,
+          "overconfidence_gap": 0.0,
+          "unsupported_claims": 0,
+          "unexpected_changes": [],
+          "trace_path": "run_20260913T184312_cf741950.json",
+          "failures": [],
+          "eval_verdict": "pass"
+        }
+      ],
+      "reproducible": true,
+      "mixed": null,
+      "eval_verdict": "pass"
+    }
+  ]
+}

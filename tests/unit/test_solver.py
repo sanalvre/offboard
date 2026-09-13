@@ -148,3 +148,12 @@ def test_reference_interpreter_semantics_by_hand():
     assert evaluate(Node(op="gt", field="Discount", value=50), {"Discount": 0.6}, AT_FIELDS, "at") is False
     assert evaluate(Node(op="eq", field="StageName", value="Closed Won"), {"StageName": None}, SF_FIELDS, "sf") is False
     assert evaluate(Node(op="ne", field="StageName", value="Closed Won"), {"StageName": None}, SF_FIELDS, "sf") is True
+
+
+def test_placeholder_mapping_target_is_a_schema_mismatch_not_a_crash():
+    """Recorded 2026-09-13: the model mapped Region__c -> "(no counterpart)" and dropped the condition."""
+    sf = parse_sf_formula('ISPICKVAL(Region__c,"EMEA") && ISBLANK(Amount)', SF_FIELDS).node
+    at = parse_at_formula('IF({Amount} = BLANK(), "VIOLATION", "")', AT_FIELDS).node
+    fmap = {"Amount": "Amount", "(no counterpart)": "Region__c"}
+    with pytest.raises(SchemaMismatch, match="Region__c"):
+        check_equivalence(sf, SF_FIELDS, at, AT_FIELDS, fmap)

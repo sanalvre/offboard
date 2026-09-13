@@ -1,0 +1,163 @@
+{
+  "key": "happy_percent_scaling",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T18:25:29Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nBe precise about semantics; they differ between systems:\n- Salesforce validation rules: a blank number is null; any numeric comparison on a blank is FALSE. ISPICKVAL compares\n  the picklist API name. Percent fields store 50 for 50%.\n- Airtable: a blank number is treated as 0 in comparisons; {Percent} stores 0.5 for 50%; a single select compares\n  against its option label.\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed. If a Salesforce field has no Airtable counterpart, say so in caveats and still\nproduce your best mapping.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record. Do not round up.\n"
+      },
+      {
+        "role": "user",
+        "content": "Salesforce object: Opportunity\nRule API name: Negotiation_Min_Probability\nError condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):\nISPICKVAL(StageName,\"Negotiation/Review\") && Probability < 50\nError message shown to users: Deals in Negotiation/Review must have probability of at least 50%.\nAdmin description (business intent): Forecasting: negotiation-stage deals below 50% distort the weighted pipeline.\nActive: True\n\nSalesforce fields referenced or available:\n- StageName: picklist, required options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\"]\n- Probability: percent (stores 50 for 50%)\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent (stores 0.5 for 50%)\n- Discount: percent (stores 0.5 for 50%)\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789323920-9KDa2R7hja5Cu3fgWEV9",
+    "object": "chat.completion",
+    "created": 1789323920,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\":\"Prevent negotiation-stage deals from being saved with a forecast probability below 50%, since these distort weighted pipeline reporting.\",\"field_mapping\":[{\"source_field\":\"StageName\",\"target_field\":\"Stage\",\"target_type\":\"singleSelect\"},{\"source_field\":\"Probability\",\"target_field\":\"Probability\",\"target_type\":\"percent\"}],\"guard_field_name\":\"Guard: Negotiation Min Probability\",\"guard_formula\":\"IF(AND({Stage} = \\\"Negotiation/Review\\\", {Probability} < 0.5), \\\"VIOLATION\\\", \\\"\\\")\",\"rationale\":\"The Salesforce rule fires when StageName is exactly 'Negotiation/Review' and Probability (as a percent, 0-100 scale) is less than 50. Airtable's Probability field stores 0.5 for 50%, so the equivalent numeric threshold is 0.5. The Stage picklist in Airtable includes an exact matching option 'Negotiation/Review', so ISPICKVAL maps directly to a single select equality check. Blank Probability in Airtable is treated as 0, which is < 0.5, matching Salesforce's behavior where a blank percent is null and the numeric comparison Probability < 50 evaluates to FALSE in Salesforce (since null comparisons are false) — this is a semantic mismatch that could cause a false VIOLATION in Airtable for blank probability records that wouldn't have blocked save in Salesforce.\",\"confidence\":0.82,\"caveats\":[\"Airtable treats blank Probability as 0, which is < 0.5, triggering VIOLATION; Salesforce treats blank Probability as null, and null < 50 is FALSE, so no violation would fire in Salesforce for a blank Probability with Stage = Negotiation/Review. This creates a behavioral difference for records with blank Probability.\",\"Airtable's Stage picklist contains an extra 'Negotiation' option (distinct from 'Negotiation/Review') that has no Salesforce equivalent; the guard only checks the exact label 'Negotiation/Review' as specified, so 'Negotiation' records are unaffected by this rule, consistent with Salesforce's picklist having no such option.\",\"Assumes the Airtable Probability field's underlying decimal value is used in the formula comparison (0.5 for 50%), not the displayed integer percentage.\"]}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2019,
+      "completion_tokens": 791,
+      "total_tokens": 2810,
+      "cost": 0.011948,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.011948,
+        "upstream_inference_prompt_cost": 0.004038,
+        "upstream_inference_completions_cost": 0.00791
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

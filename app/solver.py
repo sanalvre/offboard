@@ -152,11 +152,13 @@ def check_equivalence(
             raise SchemaMismatch(f"target field {f!r} is not mapped to a source field")
         if f not in at_fields:
             raise SchemaMismatch(f"target field {f!r} does not exist in the target schema")
+    # keep only mapping entries whose target really exists; an LLM may emit placeholders like "(no counterpart)"
+    field_map = {at: sf for at, sf in field_map.items() if at in at_fields}
     for f in sf_node.fields():
         if f not in sf_fields:
             raise SchemaMismatch(f"source field {f!r} has no metadata")
         if f not in field_map.values():
-            raise SchemaMismatch(f"source field {f!r} has no target field")
+            raise SchemaMismatch(f"source field {f!r} has no target field in the Airtable schema")
     inv = {sf: at for at, sf in field_map.items()}
     for sf_name, spec in sf_fields.items():
         if sf_name not in sf_node.fields() or spec.type != "picklist":
@@ -176,7 +178,8 @@ def check_equivalence(
     at_fields_src = {field_map[k]: v for k, v in at_fields.items() if k in field_map}
     used = sf_node.fields() | at_on_source.fields()
     merged_fields = {k: sf_fields[k] for k in sf_fields if k in used}  # only fields the rules mention
-    v = _build_vars(merged_fields, [sf_node, at_on_source], name_prefix=f"c{next(_CHECK_IDS)}_")
+    prefix = f"c{next(_CHECK_IDS)}_"
+    v = _build_vars(merged_fields, [sf_node, at_on_source], name_prefix=prefix)
     for name in at_fields_src:
         if name in merged_fields and at_fields_src[name].type != merged_fields[name].type and \
            {at_fields_src[name].type, merged_fields[name].type} - {"currency", "number", "percent"}:
@@ -200,13 +203,13 @@ def check_equivalence(
     for i, d in enumerate(v.domain):
         s.assert_and_track(d, f"domain_{i}")
     s.assert_and_track(sf_expr != at_expr, "sides_disagree")
-    sexpr = s.sexpr()
+    sexpr = s.sexpr().replace(prefix, "")  # the per-check prefix only exists to keep z3's global sort names unique; strip it so traces are reproducible
     res = s.check()
     elapsed = round((time.perf_counter() - t0) * 1000, 1)
 
     if res == z3.unsat:
         return SolverResult(status="equivalent", reason="no record exists on which the two rules disagree",
-                            unsat_core=[str(c) for c in s.unsat_core()], wellformed=wellformed, sexpr=sexpr,
+                            unsat_core=sorted(str(c) for c in s.unsat_core()), wellformed=wellformed, sexpr=sexpr,
                             z3_result="unsat", elapsed_ms=elapsed)
     if res == z3.sat:
         m = s.model()

@@ -166,6 +166,7 @@ class RunRequest(BaseModel):
     # eval-only knobs, ignored in live mode unless explicitly allowed
     inject_fault: Optional[str] = None  # e.g. "airtable.write_record:503"
     cassette: Optional[str] = None  # cassette key override (test mode)
+    prompt_variant: Literal["informed", "naive"] = "informed"  # "naive" drops the cross-system semantics hints (eval ablation)
 
 
 class RunSummary(BaseModel):

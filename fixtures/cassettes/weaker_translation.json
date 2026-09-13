@@ -1,0 +1,175 @@
+{
+  "key": "weaker_translation",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T18:25:15Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nBe precise about semantics; they differ between systems:\n- Salesforce validation rules: a blank number is null; any numeric comparison on a blank is FALSE. ISPICKVAL compares\n  the picklist API name. Percent fields store 50 for 50%.\n- Airtable: a blank number is treated as 0 in comparisons; {Percent} stores 0.5 for 50%; a single select compares\n  against its option label.\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed. If a Salesforce field has no Airtable counterpart, say so in caveats and still\nproduce your best mapping.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record. Do not round up.\n"
+      },
+      {
+        "role": "user",
+        "content": "Salesforce object: Opportunity\nRule API name: ClosedWon_Requires_Amount\nError condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):\nISPICKVAL(StageName,\"Closed Won\") && (ISBLANK(Amount) || Amount <= 0)\nError message shown to users: A Closed Won opportunity must have a positive amount.\nAdmin description (business intent): Finance: revenue recognition depends on every won deal carrying a real amount.\nActive: True\n\nSalesforce fields referenced or available:\n- StageName: picklist, required options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\"]\n- Amount: currency\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent (stores 0.5 for 50%)\n- Discount: percent (stores 0.5 for 50%)\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789323906-YrzFVtGYJVZ8BlRXBjey",
+    "object": "chat.completion",
+    "created": 1789323906,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\": \"Ensure every Closed Won opportunity has a positive amount so revenue recognition is accurate.\", \"field_mapping\": [{\"source_field\": \"StageName\", \"target_field\": \"Stage\", \"target_type\": \"singleSelect\"}, {\"source_field\": \"Amount\", \"target_field\": \"Amount\", \"target_type\": \"currency\"}], \"guard_field_name\": \"Guard: ClosedWon_Requires_Amount\", \"guard_formula\": \"IF(AND({Stage} = \\\"Closed Won\\\", {Amount} < 0), \\\"VIOLATION\\\", \\\"\\\")\", \"rationale\": \"[HAND-EDITED CASSETTE: boundary weakened from <= 0 to < 0 for eval case solver_catches_weaker_translation; original guard was 'IF(AND({Stage} = \\\"Closed Won\\\", {Amount} <= 0), \\\"VIOLATION\\\", \\\"\\\")'] In Salesforce the rule fires when Stage is Closed Won and Amount is blank or <=0. In Airtable, blank numeric fields evaluate to 0 in comparisons, so a single condition {Amount} <= 0 captures both blank and non-positive values, matching the combined ISBLANK/<=0 check in the original formula.\", \"confidence\": 0.9, \"caveats\": [\"Airtable's 'Closed Won' option label must exactly match the Salesforce API value for the picklist comparison to be valid.\", \"Airtable treats blank Amount as 0, which numerically coincides with Salesforce's ISBLANK check only because the guard also checks <=0; if Amount is negative in Salesforce it's also blank-safe here, preserving equivalence.\", \"No direct Airtable field for Salesforce's required picklist constraint was needed since Stage mapping already covers all values.\"]}",
+          "refusal": null,
+          "reasoning": "Since a blank Amount field reads as 0 in Airtable, checking Amount<=0 naturally catches both empty and non-positive values, so I can build the guard as Stage equals \"Closed Won\" AND Amount<=0.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Since a blank Amount field reads as 0 in Airtable, checking Amount<=0 naturally catches both empty and non-positive values, so I can build the guard as Stage equals \"Closed Won\" AND Amount<=0.\n\n",
+              "format": "anthropic-claude-v1",
+              "index": 0,
+              "signature": "Ep4DCrABCBEYAipAJIsn6WzXruwv31uk/KiBMw3qJz7G2Wr7W4gPVUxp/bCp/0ejSvbkRAadIl8UuGQgdHkpfn+565M1zPsQCD3NljIPY2xhdWRlLXNvbm5ldC01OABCCHRoaW5raW5nWiQ0YzBmMDQ2Zi0yNWZkLTQ1ZmItYmZiMy1hMDhhOGUyNDljYTd6HnVwcm9mXzAxMUNlUmVjUlk5emQzOFV0Vlp3VHBrOKgBh9Wb1QYSDDQ6m+ronKx0mCutthoMvQcs+2sqUisM1lLFIjBpvFX5TyA8/e8bl8K3i6c37deRtuGRdhb8RS0qZrdCiHdTwRwLA7SjEDUstSjuBdsqmgGBfDMPuDl8nI2o+1eEdng0YxNxWWDqoP1tfGIKDBtgnwWpGZYyPu7Lc/0DW66V8tKZWhn4ykzlArzxZD+pL9jdzrW5plUoimO4Cy1+Popr4dUELnmPVmSULa9wfr31Vf8e4VGtq0qRFXNCJTAHcCDAbrMsqsHLsLxOIByIRJ3V5TGuL7H+xtzZuMwD7vw2OryheV2lD3iykmfMGAE="
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2012,
+      "completion_tokens": 550,
+      "total_tokens": 2562,
+      "cost": 0.009524,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.009524,
+        "upstream_inference_prompt_cost": 0.004024,
+        "upstream_inference_completions_cost": 0.0055
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 65,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "derived_from": "happy_closedwon_amount",
+  "hand_edited": true,
+  "hand_edit_note": "boundary weakened from <= 0 to < 0 for eval case solver_catches_weaker_translation"
+}

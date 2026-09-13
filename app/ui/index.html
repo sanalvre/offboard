@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Receipt</title>
+<style>
+  :root { --ink:#000; --paper:#fff; --rule:#000; --mute:#666; --faint:#e6e6e6; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--paper); color:var(--ink); font:13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  a { color:inherit; text-decoration:none; border-bottom:1px solid var(--ink); }
+  a:hover { background:var(--ink); color:var(--paper); }
+  header { display:flex; align-items:baseline; gap:24px; padding:18px 28px 14px; border-bottom:1px solid var(--rule); }
+  header h1 { margin:0; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+  header nav a { margin-right:18px; border:0; text-transform:uppercase; letter-spacing:.08em; font-size:11px; padding:2px 0; }
+  header nav a.on { border-bottom:2px solid var(--ink); }
+  header .mode { margin-left:auto; font-size:11px; color:var(--mute); }
+  header .mode input { font:inherit; border:1px solid var(--ink); background:var(--paper); padding:2px 6px; width:200px; }
+  main { padding:20px 28px 60px; max-width:1400px; }
+  h2 { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; margin:26px 0 10px; color:var(--mute); }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:7px 10px 7px 0; border-bottom:1px solid var(--faint); vertical-align:top; }
+  th { font-weight:400; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); border-bottom:1px solid var(--ink); }
+  tr.row:hover { background:#f4f4f4; cursor:pointer; }
+  .badge { display:inline-block; padding:1px 7px; border:1px solid var(--ink); font-size:11px; letter-spacing:.06em; }
+  .badge.PASS { background:var(--paper); }
+  .badge.FAIL, .badge.AMBIGUOUS, .badge.ERROR, .badge.unsafe, .badge.fail { background:var(--ink); color:var(--paper); }
+  .badge.NOT_FOUND, .badge.DUPLICATE { border-style:dashed; }
+  .num { font-variant-numeric:tabular-nums; }
+  .mute { color:var(--mute); }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0; border:1px solid var(--ink); }
+  .kpi { padding:12px 14px; border-right:1px solid var(--ink); }
+  .kpi:last-child { border-right:0; }
+  .kpi b { display:block; font-size:22px; font-weight:400; }
+  .kpi span { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); }
+  .step { border-left:2px solid var(--ink); margin:0 0 14px; padding:0 0 0 14px; }
+  .step .hd { display:flex; gap:14px; align-items:baseline; }
+  .step .hd .seq { color:var(--mute); width:34px; }
+  .step .hd .kind { text-transform:uppercase; letter-spacing:.1em; font-size:11px; font-weight:700; }
+  .step .hd .lat { margin-left:auto; color:var(--mute); font-size:11px; }
+  .step .sum { margin:3px 0 4px; }
+  details summary { cursor:pointer; color:var(--mute); font-size:11px; letter-spacing:.06em; text-transform:uppercase; }
+  pre { margin:6px 0 0; padding:10px 12px; background:#f6f6f6; border:1px solid var(--faint); overflow:auto; max-height:420px; font-size:12px; white-space:pre-wrap; word-break:break-word; }
+  .ce { border:1px solid var(--ink); padding:8px 12px; display:inline-block; margin-top:6px; }
+  .empty { color:var(--mute); padding:30px 0; }
+  button { font:inherit; border:1px solid var(--ink); background:var(--paper); padding:4px 12px; cursor:pointer; text-transform:uppercase; letter-spacing:.08em; font-size:11px; }
+  button:hover { background:var(--ink); color:var(--paper); }
+  .toolbar { display:flex; gap:10px; align-items:center; margin-bottom:14px; }
+  .toolbar select, .toolbar input { font:inherit; border:1px solid var(--ink); padding:3px 6px; background:var(--paper); }
+  .assump { display:grid; grid-template-columns: 22px 1fr; gap:6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Receipt</h1>
+  <nav><a href="#runs" id="nav-runs">Runs</a><a href="#eval" id="nav-eval">Eval</a><a href="#inventory" id="nav-inv">Inventory</a></nav>
+  <div class="mode">api key <input id="key" value="sk_test_receipt_demo" spellcheck="false"></div>
+</header>
+<main id="main"></main>
+<script>
+const $ = s => document.querySelector(s);
+const key = () => $('#key').value.trim();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const badge = v => `<span class="badge ${esc(v)}">${esc(v)}</span>`;
+const num = (x, d=2) => x == null ? '<span class="mute">—</span>' : `<span class="num">${Number(x).toFixed(d)}</span>`;
+const j = (o, max=6000) => { const s = JSON.stringify(o, null, 2); return esc(s.length > max ? s.slice(0, max) + '\n… (' + (s.length - max) + ' more chars in the trace file)' : s); };
+
+async function api(path, opts={}) {
+  const r = await fetch(path, {...opts, headers: {'Content-Type':'application/json', 'X-API-Key': key(), ...(opts.headers||{})}});
+  if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+  return r.json();
+}
+
+function route() {
+  const h = location.hash || '#runs';
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', h.startsWith(a.getAttribute('href'))));
+  if (h.startsWith('#run/')) return viewRun(h.slice(5));
+  if (h.startsWith('#eval')) return viewEval();
+  if (h.startsWith('#inventory')) return viewInventory();
+  return viewRuns();
+}
+window.addEventListener('hashchange', route);
+
+async function viewRuns() {
+  const runs = await api('/runs');
+  const rules = ['Opportunity.ClosedWon_Requires_Amount','Opportunity.ClosedWon_Amount_Naive','Opportunity.ClosedLost_Requires_Reason','Opportunity.Negotiation_Min_Probability','Opportunity.Large_Deal_Type_Guard','Opportunity.Discount_Cap','Opportunity.Stage_Regression_Blocked','Opportunity.EMEA_Requires_Amount'];
+  $('#main').innerHTML = `
+    <div class="toolbar">
+      <select id="rule">${rules.map(r => `<option>${r}</option>`).join('')}</select>
+      <select id="variant"><option value="informed">informed prompt</option><option value="naive">naive prompt</option></select>
+      <button id="go">Run</button>
+      <button id="reset">Reset test state</button>
+      <span id="status" class="mute"></span>
+    </div>
+    <h2>Runs · ${runs.length}</h2>
+    ${runs.length ? `<table><thead><tr><th>started</th><th>mode</th><th>rule</th><th>case</th><th>verdict</th><th>sys conf</th><th>llm conf</th><th>unsupported claims</th><th>hash</th></tr></thead><tbody>
+      ${runs.map(r => `<tr class="row" onclick="location.hash='#run/${esc(r.run_id)}'">
+        <td class="mute">${esc((r.started_at||'').replace('T',' ').slice(0,19))}</td><td>${esc(r.mode)}</td><td>${esc(r.rule)}</td><td class="mute">${esc(r.case_id||'')}</td>
+        <td>${badge(r.verdict)}</td><td>${num(r.system_confidence)}</td><td>${num(r.llm_confidence)}</td><td class="num">${r.unsupported_claims ?? '—'}</td>
+        <td class="mute">${esc((r.canonical_hash||'').slice(0,12))}</td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">no runs yet</div>'}`;
+  $('#go').onclick = async () => {
+    $('#status').textContent = 'running…';
+    try {
+      const rule = $('#rule').value, variant = $('#variant').value;
+      const s = await api('/runs', {method:'POST', body: JSON.stringify({rule, prompt_variant: variant, cassette: cassetteFor(rule, variant)})});
+      location.hash = '#run/' + s.run_id;
+    } catch (e) { $('#status').textContent = e.message; }
+  };
+  $('#reset').onclick = async () => { $('#status').textContent = (await api('/state/reset', {method:'POST'})).status; };
+}
+
+// test mode needs a cassette key per rule; live mode ignores it
+function cassetteFor(rule, variant) {
+  const m = {'Opportunity.ClosedWon_Requires_Amount':'happy_closedwon_amount','Opportunity.ClosedWon_Amount_Naive':'calibration_null_semantics',
+    'Opportunity.ClosedLost_Requires_Reason':'happy_closedlost_reason','Opportunity.Negotiation_Min_Probability':'happy_percent_scaling',
+    'Opportunity.Large_Deal_Type_Guard':'over_refusal_guard','Opportunity.Discount_Cap':'trap_percent_units','Opportunity.EMEA_Requires_Amount':'ambiguous_schema_mismatch'};
+  let k = m[rule]; if (k && variant === 'naive' && (k === 'calibration_null_semantics' || k === 'trap_percent_units')) k += '_naive_prompt';
+  return k;
+}
+
+function summarize(e) {
+  switch (e.kind) {
+    case 'assumption': return `<span class="mute">${e.verified ? '✓ verified' : '○ unverified'}</span> ${esc(e.statement)} <span class="mute">— ${esc(e.evidence)}</span>`;
+    case 'tool_call': return `<b>${esc(e.tool)}</b> ${e.error ? `<span class="badge FAIL">error</span> ${esc(e.error.message || JSON.stringify(e.error)).slice(0,200)}` : esc(shortReq(e))}`;
+    case 'llm_call': return `<b>${esc(e.model)}</b> · ${esc(e.mode)}${e.cassette_key ? ' · cassette ' + esc(e.cassette_key) : ''}${e.parsed ? ` · confidence ${Number(e.parsed.confidence).toFixed(2)}<br><code>${esc(e.parsed.guard_formula)}</code>` : ''}${e.error ? ' · ' + esc(JSON.stringify(e.error)) : ''}`;
+    case 'solver': return `<b>${esc(e.status)}</b> · z3 <b>${esc(e.z3_result)}</b> · ${esc(e.reason)}${e.counterexample ? `<div class="ce">counterexample ${esc(JSON.stringify(e.counterexample))} → source ${e.source_fires ? 'fires' : 'does not fire'}, target ${e.target_flags ? 'flags' : 'does not flag'}</div>` : ''}`;
+    case 'decision': return `${badge(e.verdict)} system ${num(e.system_confidence)} · llm ${num(e.llm_confidence)} · gap ${num(e.overconfidence_gap)}<br><span class="mute">${e.reasons.map(esc).join(' · ')}</span>`;
+    case 'state_snapshot': return `${esc(e.phase)} · ${Object.entries(e.tables).map(([t,v]) => `${esc(t)}: ${v.fields.length} fields, ${v.record_count} records`).join(' · ')}${e.diff ? `<br>diff: fields+ ${esc(JSON.stringify(e.diff.fields_added))} records+ ${esc(JSON.stringify(e.diff.records_added))} changed ${Object.keys(e.diff.records_changed).length} removed ${Object.keys(e.diff.records_removed).length}` : ''}`;
+    case 'claims': return `${e.unsupported_claims} unsupported of ${e.claims.length} · unexpected changes ${e.unexpected_changes.length}<br>${e.claims.map(c => `<span class="mute">${c.verified === true ? '✓' : c.verified === false ? '✗' : '·'}</span> ${esc(c.kind)}: ${esc(c.detail)}`).join('<br>')}`;
+    case 'rule_ir': return `fields ${esc(JSON.stringify(e.fields_used))}${e.ir.unsupported.length ? ` · <b>unsupported ${esc(JSON.stringify(e.ir.unsupported))}</b>` : ''}${e.ir.dependency.trigger_field ? ` · ${esc(e.ir.dependency.trigger_field)} → ${esc(e.ir.dependency.constrained_field)}` : ''}`;
+    case 'step': return `${esc(e.name)}${e.error ? ' · ' + esc(JSON.stringify(e.error)) : ''}`;
+    case 'error': return `<span class="badge FAIL">${esc(e.type)}</span> ${esc(e.message)}`;
+    default: return esc(e.message || '');
+  }
+}
+function shortReq(e) {
+  const r = e.request || {};
+  if (r.url) return `${r.method} ${r.url}`.slice(0, 140);
+  if (r.table) return `${r.method} ${r.table}${r.filterByFormula ? ' where ' + r.filterByFormula : ''}${r.body ? ' ' + JSON.stringify(r.body).slice(0, 90) : ''}`;
+  if (r.payload) return r.payload.embeds?.[0]?.title || '';
+  return JSON.stringify(r).slice(0, 120);
+}
+
+async function viewRun(id) {
+  const d = await api('/runs/' + encodeURIComponent(id));
+  const s = d.summary || {}, dec = s.decision || {};
+  $('#main').innerHTML = `
+    <div class="toolbar"><a href="#runs">← runs</a><span class="mute">${esc(id)} · ${esc(d.header.mode)} · ${esc(d.header.rule)}${d.header.case_id ? ' · ' + esc(d.header.case_id) : ''}</span>
+      <a style="margin-left:auto" href="/runs/${esc(id)}" target="_blank">raw json ↗</a></div>
+    <div class="kpis">
+      <div class="kpi"><b>${badge(s.verdict)}</b><span>verdict</span></div>
+      <div class="kpi"><b>${num(dec.system_confidence)}</b><span>system confidence</span></div>
+      <div class="kpi"><b>${num(dec.llm_confidence)}</b><span>llm confidence</span></div>
+      <div class="kpi"><b>${num(dec.overconfidence_gap)}</b><span>overconfidence gap</span></div>
+      <div class="kpi"><b>${s.unsupported_claims ?? '—'}/${(s.claims||[]).length}</b><span>unsupported claims</span></div>
+      <div class="kpi"><b>${(s.unexpected_changes||[]).length}</b><span>unexpected state changes</span></div>
+      <div class="kpi"><b style="font-size:13px;word-break:break-all">${esc(d.canonical_hash)}</b><span>canonical hash</span></div>
+    </div>
+    <h2>Trace · ${d.entries.length} entries</h2>
+    ${d.entries.map(e => `<div class="step">
+      <div class="hd"><span class="seq">${e.seq}</span><span class="kind">${esc(e.kind)}</span><span class="lat">${e.latency_ms != null ? e.latency_ms + ' ms · ' : ''}${esc(e.ts.slice(11,23))}</span></div>
+      <div class="sum">${summarize(e)}</div>
+      <details><summary>raw entry</summary><pre>${j(e)}</pre></details>
+      ${e.kind === 'solver' && e.sexpr ? `<details><summary>smt-lib as posed to z3</summary><pre>${esc(e.sexpr)}</pre></details>` : ''}
+      ${e.kind === 'llm_call' && e.messages ? `<details><summary>exact prompt sent</summary><pre>${esc(e.messages.map(m => `[${m.role}]\n${m.content}`).join('\n\n'))}</pre></details>` : ''}
+    </div>`).join('')}`;
+}
+
+async function viewEval() {
+  let rep;
+  try { rep = await api('/eval/report'); } catch (e) { $('#main').innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+  const s = rep.summary;
+  $('#main').innerHTML = `
+    <h2>Protocol ${esc(rep.protocol)} · ${esc(rep.mode)} mode · k=${rep.k}</h2>
+    <div class="kpis">
+      <div class="kpi"><b>${s.pass}/${s.cases}</b><span>pass</span></div>
+      <div class="kpi"><b>${s.fail}</b><span>fail</span></div>
+      <div class="kpi"><b>${s.unsafe}</b><span>unsafe</span></div>
+      <div class="kpi"><b>${rep.protocol === 'A' ? s.reproducible + '/' + s.cases : s.mixed + '/' + s.cases}</b><span>${rep.protocol === 'A' ? 'reproducible by hash' : 'mixed (same seed, different outcome)'}</span></div>
+      <div class="kpi"><b>${s.wilson_95[0]}–${s.wilson_95[1]}</b><span>wilson 95% pass rate</span></div>
+      <div class="kpi"><b>${s.unsupported_claims_total}</b><span>unsupported claims</span></div>
+      <div class="kpi"><b>${s.llm_proposals_proven_equivalent}/${s.llm_proposals}</b><span>llm proposals proven</span></div>
+      <div class="kpi"><b>${s.wrong_proposals_written}</b><span>wrong proposals written</span></div>
+    </div>
+    <h2>Cases</h2>
+    <table><thead><tr><th>case</th><th>targets</th><th>expected</th><th>attempts</th><th>eval</th><th>sys</th><th>llm</th><th>gap</th><th>traces</th></tr></thead><tbody>
+    ${rep.cases.map(c => { const a = c.attempts[c.attempts.length-1]; return `<tr>
+      <td><b>${esc(c.case_id)}</b>${a.failures.length ? `<br><span class="mute">${a.failures.map(esc).join('; ')}</span>` : ''}</td>
+      <td class="mute">${esc(c.targets)}</td><td>${esc(c.expected)}</td>
+      <td>${c.attempts.map(x => badge(x.verdict)).join(' ')}</td><td>${badge(c.eval_verdict)}</td>
+      <td>${num(a.system_confidence)}</td><td>${num(a.llm_confidence)}</td><td>${num(a.overconfidence_gap)}</td>
+      <td>${c.attempts.map((x,i) => `<a href="#run/${esc(x.trace_path.replace('.json',''))}">${i+1}</a>`).join(' ')}</td></tr>`; }).join('')}
+    </tbody></table>`;
+}
+
+async function viewInventory() {
+  const inv = await api('/inventory');
+  $('#main').innerHTML = `
+    <h2>Coverage · ${esc(inv.object)} · ${esc(inv.mode)} mode</h2>
+    <div class="kpis">${['proven','blocked','ambiguous','not_attempted','error'].map(k => `<div class="kpi"><b>${inv.counts[k]||0}</b><span>${k.replace('_',' ')}</span></div>`).join('')}</div>
+    <h2>Rules</h2>
+    <table><thead><tr><th>rule</th><th>active</th><th>business intent</th><th>status</th><th>last run</th></tr></thead><tbody>
+    ${inv.rules.map(r => `<tr><td><b>${esc(r.rule)}</b></td><td>${r.active}</td><td class="mute">${esc(r.description)}</td>
+      <td>${badge(r.status)}</td><td>${r.last_run ? `<a href="#run/${esc(r.last_run.run_id)}">${badge(r.last_run.verdict)}</a>` : '<span class="mute">—</span>'}</td></tr>`).join('')}
+    </tbody></table>`;
+}
+route();
+</script>
+</body>
+</html>

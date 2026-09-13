@@ -1,0 +1,172 @@
+{
+  "key": "trap_percent_units_naive_prompt",
+  "model": "anthropic/claude-sonnet-5",
+  "recorded_at": "2026-09-13T18:26:26Z",
+  "request": {
+    "model": "anthropic/claude-sonnet-5",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CRM migration engineer translating ONE Salesforce validation rule into an Airtable guard formula.\n\nAirtable has no validation rules. The guard is a formula field that returns the text \"VIOLATION\" when a record\nviolates the business rule and \"\" otherwise. Use exactly this shape: IF(<condition>, \"VIOLATION\", \"\").\nInside <condition> use only: AND(), OR(), NOT(), {Field} = \"text\", {Field} = BLANK(), {Field} != BLANK(),\nnumeric comparisons (= != < <= > >=) against literals, TRUE(), FALSE(). Nothing else (no FIND, LEN, IF nesting, dates).\n\nField names differ between systems; map each Salesforce field to the Airtable field with the same meaning, using\nonly the Airtable fields listed.\n\nReturn JSON only, matching the schema. Your confidence is the probability that your guard is EXACTLY equivalent\nto the Salesforce rule for every possible record.\n"
+      },
+      {
+        "role": "user",
+        "content": "Salesforce object: Opportunity\nRule API name: Discount_Cap\nError condition formula (the rule FIRES, i.e. blocks the save, when this is TRUE):\nDiscount__c > 50\nError message shown to users: Discounts above 50% require a separate approval; enter 50 or less.\nAdmin description (business intent): Finance policy: maximum self-serve discount is 50 percent.\nActive: True\n\nSalesforce fields referenced or available:\n- Discount__c: percent\n\nAirtable table \"Opportunities\" fields available:\n- Name: text\n- Stage: picklist options=[\"Prospecting\", \"Qualification\", \"Needs Analysis\", \"Value Proposition\", \"Id. Decision Makers\", \"Perception Analysis\", \"Proposal/Price Quote\", \"Negotiation/Review\", \"Closed Won\", \"Closed Lost\", \"Negotiation\", \"Proposal\"]\n- Amount: currency\n- Probability: percent\n- Discount: percent\n- Loss Reason: text\n- Type: picklist options=[\"New Customer\", \"Existing Customer - Upgrade\", \"Existing Customer - Replacement\", \"Existing Customer - Downgrade\", \"New Business\", \"Renewal\", \"Upsell\"]\n\nProduce the Airtable guard."
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "proposal",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "TargetField": {
+              "properties": {
+                "source_field": {
+                  "title": "Source Field",
+                  "type": "string"
+                },
+                "target_field": {
+                  "title": "Target Field",
+                  "type": "string"
+                },
+                "target_type": {
+                  "enum": [
+                    "singleSelect",
+                    "currency",
+                    "number",
+                    "percent",
+                    "singleLineText",
+                    "checkbox"
+                  ],
+                  "title": "Target Type",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_field",
+                "target_field",
+                "target_type"
+              ],
+              "title": "TargetField",
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "description": "What the LLM proposes for the Airtable side. Verified by the parser + solver, never trusted.",
+          "properties": {
+            "intent_statement": {
+              "description": "One sentence: the business reason this rule exists, in plain language.",
+              "title": "Intent Statement",
+              "type": "string"
+            },
+            "field_mapping": {
+              "items": {
+                "$ref": "#/$defs/TargetField"
+              },
+              "title": "Field Mapping",
+              "type": "array"
+            },
+            "guard_field_name": {
+              "description": "Name of the Airtable formula field to create, e.g. 'Guard: <rule>'.",
+              "title": "Guard Field Name",
+              "type": "string"
+            },
+            "guard_formula": {
+              "description": "Airtable formula returning 'VIOLATION' when the record violates the rule, else ''.",
+              "title": "Guard Formula",
+              "type": "string"
+            },
+            "rationale": {
+              "title": "Rationale",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Self-assessed probability that guard_formula is exactly equivalent for every possible record.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "caveats": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Caveats",
+              "type": "array"
+            }
+          },
+          "required": [
+            "intent_statement",
+            "field_mapping",
+            "guard_field_name",
+            "guard_formula",
+            "rationale",
+            "confidence",
+            "caveats"
+          ],
+          "title": "Proposal",
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_tokens": 4000
+  },
+  "raw_response": {
+    "id": "gen-1789323976-5PAShwrDf8PaSsyAoEge",
+    "object": "chat.completion",
+    "created": 1789323976,
+    "model": "anthropic/claude-sonnet-5",
+    "provider": "Claude Platform on AWS",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\"intent_statement\":\"Prevent opportunities from being saved with a self-serve discount greater than 50% without separate approval.\",\"field_mapping\":[{\"source_field\":\"Discount__c\",\"target_field\":\"Discount\",\"target_type\":\"percent\"}],\"guard_field_name\":\"Guard: Discount Cap\",\"guard_formula\":\"IF({Discount} > 0.5, \\\"VIOLATION\\\", \\\"\\\")\",\"rationale\":\"Salesforce Discount__c is a percent field stored as a whole number (e.g., 50 for 50%), and the rule fires when it exceeds 50. Airtable's Discount percent field stores the same percentage as a decimal fraction (0.5 for 50%), so the equivalent threshold in Airtable formula logic is 0.5.\",\"confidence\":0.85,\"caveats\":[\"Assumes Airtable's Discount percent field internally represents 50% as 0.5 in formulas, consistent with standard Airtable percent field behavior.\",\"If the Discount field was manually configured to store raw numbers (e.g., 50 instead of 0.5) the threshold would need to be 50 instead of 0.5.\",\"Does not account for null/blank Discount values, which Salesforce treats as not greater than 50 and this formula also treats as not a violation since BLANK() compared numerically evaluates as 0.\"]}",
+          "refusal": null,
+          "reasoning": "I'm confirming that Airtable percent fields store as decimal fractions in formulas (50% = 0.5), so the comparison should use {Discount} > 0.5 to match Salesforce's Discount__c decimal storage.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "I'm confirming that Airtable percent fields store as decimal fractions in formulas (50% = 0.5), so the comparison should use {Discount} > 0.5 to match Salesforce's Discount__c decimal storage.\n\n",
+              "format": "anthropic-claude-v1",
+              "index": 0,
+              "signature": "EtAHCrABCBEYAipA3gYjNToPGcKVC3vjuAq5gSrcFfYc0XuJU9kHYFX00f6DVDBRYpV+t7+Xx+ZxAScxns2hdbUSvFaHMjhEvYZlUjIPY2xhdWRlLXNvbm5ldC01OABCCHRoaW5raW5nWiQ0YzBmMDQ2Zi0yNWZkLTQ1ZmItYmZiMy1hMDhhOGUyNDljYTd6HnVwcm9mXzAxMUNlUmVjUlk5emQzOFV0Vlp3VHBrOKgBz9Wb1QYSDO9YPwt6CxujCCyGpxoM427AaN3a2lx8GOZmIjCK55Hn01vZ/YRiBH4qux/06KzU2ShFZMxIJKe9HOOKKHW/XNUfu+NIN4z3s2nWevcqzAUSJ6PhQCDDuTJPKWdNyQYZf1OWPH7gFldKs657x4l4p8vwHxLEP2NVXffr02AKwHg+UVW6+WmJYU/KY+ryoqOQ0gPRluvmWIRsYUk1NVSqQ9Fdh+TquWffVTQG+PIeNSxlDiaJZOzHvLFG1s9/qwR6wnN1XSPKysDFimf6arYpula9Iad/hkxBh+cyQhSfe4xzKMyl0CdRHyy6zfTtSj54m5y4RUhxztk2tZnufigNm9KLzUVkF+TuoVXArexAga9txiqDWc1/Of7wHMK4L1a+IaFOMdfywbSWvkKzJWnZFqDJGdZXUA1kDfqElGT/B8NIgCP5PYwICQYDcU3t5qBaWDU0K5pgQvHBPVafbUJPQBdFd+BSKHZf+Kc1NK46C6KgL65uwMaNf8US45uB4xu09fnDLidZMRJnJ8gNoZK0wIHEF/CJuVWQStGclh5o0W59Dcsn1xxWia64GCKQ8WDWVSxRAu8AzOsND5eRux5PNAhYkbS9kxGPNDIhe8R7It/+yy4IsYb4xBSgS0To23g2GFn3NibQv67XvYjWptXr611bciFfHMdA9kA630wLMT7i7lRgIzqrzASv2NXj2Su8S9DYKR1tFjyBtRtf14+DbxJRPOTkjEM4ypk0CvmlKzVoYlAmIdQ9hKxg+GN/jtLaZ0Xc6ABODloLB7v9vK3PiozRYvNjX1tZPnPPJvL15sUts1H+yi7Q+CinL8ADh9/toJcv0GPNOdJFcYjZFMkHn2BN+5X/ObSFZtfB+TOkQz07WTQAX+mDA1SwmGfuY9Bsfspx1NeNrcQ5Y3hzha6dMfMb6JKx8VnF9VhGV9dI+O760t/zFgcp/l5cZbly2Jts+VeJQJ02ar3xvQlWyKIJLUd1amKMYWWiYldVr5cDemxo9vi+mjwp8zCOa8RNntmFkdzD98pr1c0cnYw322faPzgYHp+CxuiXyeE3xBgB"
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1667,
+      "completion_tokens": 714,
+      "total_tokens": 2381,
+      "cost": 0.010474,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.010474,
+        "upstream_inference_prompt_cost": 0.003334,
+        "upstream_inference_completions_cost": 0.00714
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 277,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

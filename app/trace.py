@@ -25,7 +25,8 @@ from typing import Any, Iterator, Optional
 
 from .config import settings
 
-VOLATILE_KEYS = {"ts", "latency_ms", "run_id", "attempt", "elapsed_ms", "started_at", "finished_at"}
+_RUN_ID_RE = re.compile(r"run_\d{8}T\d{6}_[0-9a-f]{8}")
+VOLATILE_KEYS = {"ts", "latency_ms", "run_id", "attempt", "elapsed_ms", "started_at", "finished_at", "createdTime", "Migrated At", "recorded_at"}
 
 _TOKEN_PATTERNS = [
     re.compile(r"sk-or-v1-[A-Za-z0-9]{20,}"),
@@ -62,8 +63,12 @@ def strip_volatile(value: Any) -> Any:
 
 
 def canonical_hash(entries: list[dict], header: dict) -> str:
+    """SHA-256 over header + entries with volatile keys removed and the run id (which leaks into audit records,
+    field descriptions and Discord footers as plain text) replaced by a placeholder."""
     payload = {"header": strip_volatile(header), "entries": strip_volatile(entries)}
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+    # any run id (this run's, or an earlier run's that is now part of the observed state) is a placeholder
+    blob = _RUN_ID_RE.sub("<run_id>", blob)
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
