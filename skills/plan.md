@@ -69,20 +69,26 @@ s.check()  # unsat => equivalent; sat => s.model() is the counterexample record
   Tooling API guide v68.0 (Winter '27, updated 2026-09-11).
 - **Metadata API (SOAP zip retrieve): DROPPED.** Works, but zip build + async poll + XML
   parse for the same three fields. Not the efficient route.
-- **Auth, in order of friction (all available on Developer Edition):**
-  1. `simple_salesforce` with username + password + security token. This is the SOAP
-     `login()` call, **not** the OAuth username-password flow that Salesforce has blocked
-     for new orgs (greyed out for Summer '26+ orgs). API logins are exempt from the UI
-     MFA requirement. One caveat to smoke-test: Winter '27 requires the user to hold the
-     "Use Any API Auth" permission for SOAP login; on `INSUFFICIENT_ACCESS`, grant it on
-     the System Administrator profile (one checkbox). About 10 min.
-  2. Fallback: Salesforce CLI `sf org login web`, then `sf org display --json` to read
-     `accessToken` + `instanceUrl` from Python via subprocess. CLI is not installed here
-     (Node 24 is), so about 15 min extra if needed.
-  3. Fallback: External Client App with OAuth Client Credentials flow. 20 to 30 min of
-     Setup clicking. Only if 1 and 2 both fail.
-  - Do **not** use `simple_salesforce`'s `consumer_key`+`consumer_secret`+password path;
-    that is the blocked OAuth flow.
+- **Auth, as actually verified against the new Dev org on 2026-09-13:**
+  1. ~~SOAP `login()` via `simple_salesforce` username + password + token~~ **DEAD for new
+     orgs.** The org returns `INVALID_OPERATION: SOAP API login() is disabled by default
+     in this org` on API 64.0 and below, and `The SOAP Login operation is not available in
+     the API version specified` on 66.0 and above. This is stricter than the Winter '27
+     docs suggested (they described a permission, not a default-off switch). The
+     `INVALID_LOGIN` errors before this were a stale security token after password
+     resets; the real blocker only surfaced once credentials were right.
+  2. **Primary: Salesforce CLI refresh token.** `sf org login web --alias dev` once
+     (human completes the OAuth consent in a browser; the first attempt timed out because
+     the login was not completed in time, and this CLI build has no device flow). Then
+     the app reads `accessToken` + `instanceUrl` from `sf org display --target-org dev
+     --json` via subprocess; the CLI refreshes the token itself. `simple_salesforce`
+     accepts `instance` + `session_id`. CLI 2.150.6 is installed via npm at
+     `C:\Users\User\AppData\Roaming\npm\sf.cmd` (not on PATH in existing shells).
+  3. **Headless alternative for a deployed server:** External Client App with the OAuth
+     Client Credentials flow (20 to 30 min of Setup). Not needed for the demo, which runs
+     on this machine with the CLI installed.
+  - The API version fallback (68.0 then 67.0) stays in the adapter; the org may still be
+    on 67.0 until the October upgrade waves.
 - `simple_salesforce` exposes `sf.toolingexecute(...)` and `sf.restful(...)`, so no raw
   token plumbing. Pin `version="68.0"` after checking `GET /services/data/`; a fresh Dev
   org may still be on 67.0 until the October upgrade waves.
