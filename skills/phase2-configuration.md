@@ -44,6 +44,16 @@ are reported by name.
 - Non-verifiable artefacts (non-record flows, workflow field updates, Apex) get an audit record and AMBIGUOUS with
   the reason; no model call.
 
+## Schema mapping report (`app/mapping.py`, `GET /mapping`, Mapping tab)
+For every source field that a verifiable artefact references, a target is proposed by label or alias (no model) and
+checked: types must be the same family; picklist options are checked with Z3 over the union enum (a source option with
+no target option is the counterexample); a nullable source into a required target is lossy with the blank as the
+counterexample; numeric decimals are checked with Z3 using `IsInt` (a source value with `scale` decimals in source
+units whose value in target units needs more than the target's precision). Scale differences (percent 100 vs 1) are
+lossless with a recorded transform. On the demo org: 5 lossless, 1 lossy (`Discount__c`: 0.01 in Salesforce percent
+units is 0.0001 as a fraction, four decimals against Airtable's two), 1 blocked (`Region__c`, no target field).
+The first version used a quantified `Exists` for the decimal check and did not terminate; `IsInt` is decidable.
+
 ## What the recordings and live runs showed
 | artefact | model (Sonnet 5, informed prompt) | solver |
 |---|---|---|

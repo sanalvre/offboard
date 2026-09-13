@@ -75,6 +75,65 @@ def inventory_endpoint(object: str = "Opportunity", mode: Mode = Depends(mode_de
     return inventory(mode, [object])
 
 
+@app.get("/mapping")
+def mapping_endpoint(object: str = "Opportunity", mode: Mode = Depends(mode_dep)) -> dict[str, Any]:
+    """Schema-mapping report: for every source field a verifiable artefact touches, can every legal value land in Airtable?"""
+    from .adapters.schema import at_fields as at_specs, sf_fields as sf_specs
+    from .inventory import parse_metadata, retrieve_live, seed_dir
+    from .mapping import mapping_report
+    tracer = Tracer(mode=mode, rule=f"{object}.mapping", case_id="mapping")
+    sf = MockSalesforce(tracer) if mode == "test" else LiveSalesforce(tracer)
+    at = MockAirtable(tracer) if mode == "test" else LiveAirtable(tracer)
+    desc = sf.call(f"sobjects/{object}/describe")
+    sfields = sf_specs(desc)
+    labels = {f["name"]: f.get("label", f["name"]) for f in desc["fields"]}
+    sf_meta = {f["name"]: {"scale": f.get("scale"), "precision": f.get("precision"), "length": f.get("length")} for f in desc["fields"]}
+    schema = at.schema()
+    table = at.raw_table(schema, "Opportunities")
+    afields = at_specs(table)
+    at_meta = {f["name"]: {"precision": (f.get("options") or {}).get("precision")} for f in table["fields"]}
+    src = seed_dir() if mode == "test" else retrieve_live([object])
+    used: set[str] = set()
+    for a in parse_metadata(src):
+        if a.object == object and a.verifiable:
+            for e in (a.details.get("formula"), ):
+                pass
+            used |= set(_fields_in(a, sfields))
+    rep = mapping_report(sfields, afields, labels, sf_meta, at_meta, only=used or None)
+    tracer.add("mapping_report", **rep)
+    tracer.finalize({"verdict": None, "mapping": rep["counts"]})
+    return {"object": object, "mode": mode, "fields_considered": sorted(used), **rep}
+
+
+def _fields_in(a, sfields) -> set[str]:
+    """Fields referenced by an artefact: from its lowered condition, its formula text, or its flow details."""
+    import re
+    names = set()
+    if a.condition:
+        stack = [a.condition]
+        while stack:
+            n = stack.pop()
+            if n.get("field"):
+                names.add(n["field"])
+            stack.extend(n.get("args", []))
+    for d in a.details.get("decisions", []) or []:
+        c = d.get("condition")
+        stack = [c] if c else []
+        while stack:
+            n = stack.pop()
+            if n.get("field"):
+                names.add(n["field"])
+            stack.extend(n.get("args", []))
+    for act in a.details.get("actions", []) or []:
+        if act.get("field"):
+            names.add(act["field"])
+    formula = a.details.get("formula") or ""
+    for tok in re.findall(r"[A-Za-z_][A-Za-z0-9_]*", formula):
+        if tok in sfields:
+            names.add(tok)
+    return names
+
+
 @app.post("/state/reset")
 def reset_state(mode: Mode = Depends(mode_dep)) -> dict[str, str]:
     if mode != "test":

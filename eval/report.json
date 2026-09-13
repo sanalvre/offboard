@@ -25,10 +25,10 @@
       "case_id": "happy_closedwon_amount",
       "rule": "Opportunity.ClosedWon_Requires_Amount",
       "expected": "PASS",
-      "targets": "baseline: cross-field, null-safe",
+      "targets": "A clean rule that should migrate: Closed Won deals need an amount. Proves the happy path end to end.",
       "attempts": [
         {
-          "run_id": "run_20260913T213339_cc8916f9",
+          "run_id": "run_20260913T215745_8801ed9b",
           "verdict": "PASS",
           "canonical_hash": "16da5f1d3465e2a13707b6cdf1e324cd9924e50caf1d3d8c5daa1b263bf401b1",
           "system_confidence": 0.95,
@@ -36,12 +36,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213339_cc8916f9.json",
+          "trace_path": "run_20260913T215745_8801ed9b.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213339_481e1de8",
+          "run_id": "run_20260913T215746_e3ab3d43",
           "verdict": "PASS",
           "canonical_hash": "16da5f1d3465e2a13707b6cdf1e324cd9924e50caf1d3d8c5daa1b263bf401b1",
           "system_confidence": 0.95,
@@ -49,7 +49,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213339_481e1de8.json",
+          "trace_path": "run_20260913T215746_e3ab3d43.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -62,10 +62,10 @@
       "case_id": "happy_closedlost_reason",
       "rule": "Opportunity.ClosedLost_Requires_Reason",
       "expected": "SOLVER_TRUTH",
-      "targets": "second dependency shape (picklist -> required text)",
+      "targets": "A different shape of rule: a text field becomes required at a certain stage. Checks the system is not tuned to one example.",
       "attempts": [
         {
-          "run_id": "run_20260913T213339_a7ad6a3b",
+          "run_id": "run_20260913T215746_a1acf8c2",
           "verdict": "PASS",
           "canonical_hash": "d5facaea0e29e48f1a61491496888f7697a5ed1653bc288a214e317e4e21e5a5",
           "system_confidence": 0.95,
@@ -73,12 +73,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213339_a7ad6a3b.json",
+          "trace_path": "run_20260913T215746_a1acf8c2.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213340_c86acb84",
+          "run_id": "run_20260913T215746_b5a70ad6",
           "verdict": "PASS",
           "canonical_hash": "d5facaea0e29e48f1a61491496888f7697a5ed1653bc288a214e317e4e21e5a5",
           "system_confidence": 0.95,
@@ -86,7 +86,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213340_c86acb84.json",
+          "trace_path": "run_20260913T215746_b5a70ad6.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -99,10 +99,10 @@
       "case_id": "happy_percent_scaling",
       "rule": "Opportunity.Negotiation_Min_Probability",
       "expected": "SOLVER_TRUTH",
-      "targets": "percent units (50 -> 0.5) plus Airtable blank-is-zero",
+      "targets": "Percent stored as 50 in Salesforce and 0.5 in Airtable, plus a blank value. Two ways to get it subtly wrong at once.",
       "attempts": [
         {
-          "run_id": "run_20260913T213340_2d3b1e7e",
+          "run_id": "run_20260913T215747_b6c683cc",
           "verdict": "FAIL",
           "canonical_hash": "d40e1537a0b92ceac9ed9f6e0e7c1bc229f33f7981fc41ccda39db9eb23094bc",
           "system_confidence": 0.1,
@@ -110,12 +110,12 @@
           "overconfidence_gap": 0.82,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213340_2d3b1e7e.json",
+          "trace_path": "run_20260913T215747_b6c683cc.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213340_5330bb8b",
+          "run_id": "run_20260913T215747_c60c5ac7",
           "verdict": "FAIL",
           "canonical_hash": "d40e1537a0b92ceac9ed9f6e0e7c1bc229f33f7981fc41ccda39db9eb23094bc",
           "system_confidence": 0.1,
@@ -123,7 +123,7 @@
           "overconfidence_gap": 0.82,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213340_5330bb8b.json",
+          "trace_path": "run_20260913T215747_c60c5ac7.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -136,10 +136,10 @@
       "case_id": "over_refusal_guard",
       "rule": "Opportunity.Large_Deal_Type_Guard",
       "expected": "PASS",
-      "targets": "Arga over-refusal: NOT + second picklist must not hide behind AMBIGUOUS",
+      "targets": "A valid, slightly unusual rule. The system must migrate it rather than play safe and hand it to a human.",
       "attempts": [
         {
-          "run_id": "run_20260913T213340_3b0fb179",
+          "run_id": "run_20260913T215747_9ddf426d",
           "verdict": "PASS",
           "canonical_hash": "17ca9a3976799469b14c40e34ab30957a5f158a0a99226479641679e16c389ee",
           "system_confidence": 0.95,
@@ -147,12 +147,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213340_3b0fb179.json",
+          "trace_path": "run_20260913T215747_9ddf426d.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213340_84893b5d",
+          "run_id": "run_20260913T215747_259453ee",
           "verdict": "PASS",
           "canonical_hash": "17ca9a3976799469b14c40e34ab30957a5f158a0a99226479641679e16c389ee",
           "system_confidence": 0.95,
@@ -160,7 +160,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213340_84893b5d.json",
+          "trace_path": "run_20260913T215747_259453ee.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -173,10 +173,10 @@
       "case_id": "record_not_found",
       "rule": "Opportunity.Does_Not_Exist",
       "expected": "NOT_FOUND",
-      "targets": "fails loudly and cheaply",
+      "targets": "A rule that does not exist. Must stop immediately: no model call, nothing written.",
       "attempts": [
         {
-          "run_id": "run_20260913T213341_933d9b89",
+          "run_id": "run_20260913T215748_8ccf705b",
           "verdict": "NOT_FOUND",
           "canonical_hash": "d97dc1ab78d0fd78e98d25c9ebbfb3ca04dbdec326abd42b46f557a43a780918",
           "system_confidence": 0.0,
@@ -184,12 +184,12 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213341_933d9b89.json",
+          "trace_path": "run_20260913T215748_8ccf705b.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213341_303a24a9",
+          "run_id": "run_20260913T215749_2b3bba62",
           "verdict": "NOT_FOUND",
           "canonical_hash": "d97dc1ab78d0fd78e98d25c9ebbfb3ca04dbdec326abd42b46f557a43a780918",
           "system_confidence": 0.0,
@@ -197,7 +197,7 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213341_303a24a9.json",
+          "trace_path": "run_20260913T215749_2b3bba62.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -210,10 +210,10 @@
       "case_id": "duplicate_already_processed",
       "rule": "Opportunity.ClosedWon_Requires_Amount",
       "expected": "DUPLICATE",
-      "targets": "Arga duplicate / extra business resource",
+      "targets": "Running the same rule twice. The second run must notice it was already migrated and write nothing.",
       "attempts": [
         {
-          "run_id": "run_20260913T213341_e5f7cc36",
+          "run_id": "run_20260913T215750_65beac2c",
           "verdict": "DUPLICATE",
           "canonical_hash": "9aacc040b93cac29e880453ee3a2dab045138339b0020d0327404bbd695171a9",
           "system_confidence": 1.0,
@@ -221,12 +221,12 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213341_e5f7cc36.json",
+          "trace_path": "run_20260913T215750_65beac2c.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213341_d08ce1d7",
+          "run_id": "run_20260913T215752_eecac6bd",
           "verdict": "DUPLICATE",
           "canonical_hash": "9aacc040b93cac29e880453ee3a2dab045138339b0020d0327404bbd695171a9",
           "system_confidence": 1.0,
@@ -234,7 +234,7 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213341_d08ce1d7.json",
+          "trace_path": "run_20260913T215752_eecac6bd.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -247,10 +247,10 @@
       "case_id": "ambiguous_unsupported_construct",
       "rule": "Opportunity.Stage_Regression_Blocked",
       "expected": "AMBIGUOUS",
-      "targets": "needs-a-human is a distinct outcome",
+      "targets": "A rule using a construct that cannot be translated (PRIORVALUE). Must be flagged for a human, not guessed.",
       "attempts": [
         {
-          "run_id": "run_20260913T213342_c1436493",
+          "run_id": "run_20260913T215752_063e3851",
           "verdict": "AMBIGUOUS",
           "canonical_hash": "8d25384ad8fc344212be2e435ffada02d5bbac25b2e03af15eca847754276556",
           "system_confidence": 0.0,
@@ -258,12 +258,12 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213342_c1436493.json",
+          "trace_path": "run_20260913T215752_063e3851.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213342_62f3fa8b",
+          "run_id": "run_20260913T215753_1ab493de",
           "verdict": "AMBIGUOUS",
           "canonical_hash": "8d25384ad8fc344212be2e435ffada02d5bbac25b2e03af15eca847754276556",
           "system_confidence": 0.0,
@@ -271,7 +271,7 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213342_62f3fa8b.json",
+          "trace_path": "run_20260913T215753_1ab493de.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -284,10 +284,10 @@
       "case_id": "ambiguous_schema_mismatch",
       "rule": "Opportunity.EMEA_Requires_Amount",
       "expected": "AMBIGUOUS",
-      "targets": "structural mismatch surfaced, not guessed",
+      "targets": "The rule uses a field Airtable does not have. Must be flagged before anything is written.",
       "attempts": [
         {
-          "run_id": "run_20260913T213342_f8c9071e",
+          "run_id": "run_20260913T215755_35bb9873",
           "verdict": "AMBIGUOUS",
           "canonical_hash": "2f8d0bb41c7121fb5c4fc4fb98ab9b9a024695aaf58111403987af34c9dd6efd",
           "system_confidence": 0.0,
@@ -295,12 +295,12 @@
           "overconfidence_gap": 0.15,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213342_f8c9071e.json",
+          "trace_path": "run_20260913T215755_35bb9873.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213342_d7db2621",
+          "run_id": "run_20260913T215757_a73b23e1",
           "verdict": "AMBIGUOUS",
           "canonical_hash": "2f8d0bb41c7121fb5c4fc4fb98ab9b9a024695aaf58111403987af34c9dd6efd",
           "system_confidence": 0.0,
@@ -308,7 +308,7 @@
           "overconfidence_gap": 0.15,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213342_d7db2621.json",
+          "trace_path": "run_20260913T215757_a73b23e1.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -321,10 +321,10 @@
       "case_id": "calibration_null_semantics",
       "rule": "Opportunity.ClosedWon_Amount_Naive",
       "expected": "SOLVER_TRUTH",
-      "targets": "null trap, informed prompt: verdict must follow the proof",
+      "targets": "The blank-amount trap with the production prompt. Whatever the model does, the verdict must match the proof.",
       "attempts": [
         {
-          "run_id": "run_20260913T213342_bc9f413d",
+          "run_id": "run_20260913T215759_0c0ee4ba",
           "verdict": "FAIL",
           "canonical_hash": "45cbc1dbfca3dd3ca81989045322ba998037012cff9a195901aca50070cbfea4",
           "system_confidence": 0.1,
@@ -332,12 +332,12 @@
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213342_bc9f413d.json",
+          "trace_path": "run_20260913T215759_0c0ee4ba.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213343_f6e89cce",
+          "run_id": "run_20260913T215759_4509f7e2",
           "verdict": "FAIL",
           "canonical_hash": "45cbc1dbfca3dd3ca81989045322ba998037012cff9a195901aca50070cbfea4",
           "system_confidence": 0.1,
@@ -345,7 +345,7 @@
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213343_f6e89cce.json",
+          "trace_path": "run_20260913T215759_4509f7e2.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -358,10 +358,10 @@
       "case_id": "calibration_null_semantics_naive_prompt",
       "rule": "Opportunity.ClosedWon_Amount_Naive",
       "expected": "SOLVER_TRUTH",
-      "targets": "null trap, naive prompt (ablation): verdict must follow the proof; the model's accuracy is reported",
+      "targets": "Same trap, but the model is not told about blank handling. Shows what the solver catches when the prompt is weaker.",
       "attempts": [
         {
-          "run_id": "run_20260913T213343_10ff98ea",
+          "run_id": "run_20260913T215800_0f96b06f",
           "verdict": "FAIL",
           "canonical_hash": "2d1a2d6e5a25eca01890ad2b5416694eaa11e8ec8ac435557170d009208b3ccd",
           "system_confidence": 0.1,
@@ -369,12 +369,12 @@
           "overconfidence_gap": 0.95,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213343_10ff98ea.json",
+          "trace_path": "run_20260913T215800_0f96b06f.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213343_bb21c94a",
+          "run_id": "run_20260913T215800_9a2db462",
           "verdict": "FAIL",
           "canonical_hash": "2d1a2d6e5a25eca01890ad2b5416694eaa11e8ec8ac435557170d009208b3ccd",
           "system_confidence": 0.1,
@@ -382,7 +382,7 @@
           "overconfidence_gap": 0.95,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213343_bb21c94a.json",
+          "trace_path": "run_20260913T215800_9a2db462.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -395,10 +395,10 @@
       "case_id": "solver_catches_naive_null_translation",
       "rule": "Opportunity.ClosedWon_Amount_Naive",
       "expected": "FAIL",
-      "targets": "'looked like it worked but didn't': the literal translation flags blank Amounts that Salesforce accepts (hand-edited cassette)",
+      "targets": "The obvious word-for-word translation, forced. It flags blank amounts Salesforce accepts; the solver must block it with that exact record.",
       "attempts": [
         {
-          "run_id": "run_20260913T213343_e6fe8523",
+          "run_id": "run_20260913T215801_6f51fe42",
           "verdict": "FAIL",
           "canonical_hash": "5c3a46210ca84a20cd543db361afeca13593ce745d75097d21a98378be1ba567",
           "system_confidence": 0.1,
@@ -406,12 +406,12 @@
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213343_e6fe8523.json",
+          "trace_path": "run_20260913T215801_6f51fe42.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213344_cc77e92f",
+          "run_id": "run_20260913T215801_15589322",
           "verdict": "FAIL",
           "canonical_hash": "5c3a46210ca84a20cd543db361afeca13593ce745d75097d21a98378be1ba567",
           "system_confidence": 0.1,
@@ -419,7 +419,7 @@
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213344_cc77e92f.json",
+          "trace_path": "run_20260913T215801_15589322.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -432,10 +432,10 @@
       "case_id": "trap_percent_units",
       "rule": "Opportunity.Discount_Cap",
       "expected": "SOLVER_TRUTH",
-      "targets": "percent units, informed prompt: verdict must follow the proof",
+      "targets": "The 50 vs 0.5 percent trap with the production prompt. Verdict must match the proof.",
       "attempts": [
         {
-          "run_id": "run_20260913T213344_d8021596",
+          "run_id": "run_20260913T215802_775196de",
           "verdict": "PASS",
           "canonical_hash": "e7bd9b60030f86f24610a1b0c9fb8fe5a89c7df8c90564148485cf836d16afdf",
           "system_confidence": 0.95,
@@ -443,12 +443,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213344_d8021596.json",
+          "trace_path": "run_20260913T215802_775196de.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213344_808c8b92",
+          "run_id": "run_20260913T215802_47730a6e",
           "verdict": "PASS",
           "canonical_hash": "e7bd9b60030f86f24610a1b0c9fb8fe5a89c7df8c90564148485cf836d16afdf",
           "system_confidence": 0.95,
@@ -456,7 +456,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213344_808c8b92.json",
+          "trace_path": "run_20260913T215802_47730a6e.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -469,10 +469,10 @@
       "case_id": "trap_percent_units_naive_prompt",
       "rule": "Opportunity.Discount_Cap",
       "expected": "SOLVER_TRUTH",
-      "targets": "percent trap, naive prompt (ablation): verdict must follow the proof",
+      "targets": "Same percent trap without the hint about units.",
       "attempts": [
         {
-          "run_id": "run_20260913T213344_5e4863e0",
+          "run_id": "run_20260913T215802_16311a6a",
           "verdict": "PASS",
           "canonical_hash": "0cdfcff28091ea398b8fa0d27277660ff17bd6c66da4af545ab500fa85ba8e3e",
           "system_confidence": 0.95,
@@ -480,12 +480,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213344_5e4863e0.json",
+          "trace_path": "run_20260913T215802_16311a6a.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213345_7c224242",
+          "run_id": "run_20260913T215803_8421efe6",
           "verdict": "PASS",
           "canonical_hash": "0cdfcff28091ea398b8fa0d27277660ff17bd6c66da4af545ab500fa85ba8e3e",
           "system_confidence": 0.95,
@@ -493,7 +493,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213345_7c224242.json",
+          "trace_path": "run_20260913T215803_8421efe6.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -506,10 +506,10 @@
       "case_id": "solver_catches_percent_units",
       "rule": "Opportunity.Discount_Cap",
       "expected": "FAIL",
-      "targets": "silent logic corruption via units: {Discount} > 50 never fires where Salesforce fires at 50% (hand-edited cassette)",
+      "targets": "Copying the number 50 across systems, forced. The target would never fire where Salesforce fires at 50 percent; must be blocked.",
       "attempts": [
         {
-          "run_id": "run_20260913T213345_33faef1e",
+          "run_id": "run_20260913T215803_33402958",
           "verdict": "FAIL",
           "canonical_hash": "e56c48bb3f553278c42115d3165b636e80030687bf48352e16ec6307753b3cae",
           "system_confidence": 0.1,
@@ -517,12 +517,12 @@
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213345_33faef1e.json",
+          "trace_path": "run_20260913T215803_33402958.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213345_e27d4f09",
+          "run_id": "run_20260913T215804_e7b787ce",
           "verdict": "FAIL",
           "canonical_hash": "e56c48bb3f553278c42115d3165b636e80030687bf48352e16ec6307753b3cae",
           "system_confidence": 0.1,
@@ -530,7 +530,7 @@
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213345_e27d4f09.json",
+          "trace_path": "run_20260913T215804_e7b787ce.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -543,10 +543,10 @@
       "case_id": "solver_catches_weaker_translation",
       "rule": "Opportunity.ClosedWon_Requires_Amount",
       "expected": "FAIL",
-      "targets": "off-by-one an eyeball review misses (hand-edited cassette: '<= 0' -> '< 0')",
+      "targets": "A boundary quietly moved from <= to <, forced. A human review would miss it; the solver must not.",
       "attempts": [
         {
-          "run_id": "run_20260913T213345_01512dc4",
+          "run_id": "run_20260913T215804_7bc3570b",
           "verdict": "FAIL",
           "canonical_hash": "1ed57b9a5ed8c669024d3aa224132ba49d48354087e618413ae7e00a62244243",
           "system_confidence": 0.1,
@@ -554,12 +554,12 @@
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213345_01512dc4.json",
+          "trace_path": "run_20260913T215804_7bc3570b.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213345_eb06362a",
+          "run_id": "run_20260913T215804_069671ed",
           "verdict": "FAIL",
           "canonical_hash": "1ed57b9a5ed8c669024d3aa224132ba49d48354087e618413ae7e00a62244243",
           "system_confidence": 0.1,
@@ -567,7 +567,7 @@
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213345_eb06362a.json",
+          "trace_path": "run_20260913T215804_069671ed.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -580,10 +580,10 @@
       "case_id": "recovery_after_partial_failure",
       "rule": "Opportunity.ClosedWon_Requires_Amount",
       "expected": "ERROR",
-      "targets": "Arga recovery / idempotency: injected 503 then rerun",
+      "targets": "Airtable fails mid-write. The run must record the error, and a rerun must finish with exactly one record, no duplicates.",
       "attempts": [
         {
-          "run_id": "run_20260913T213346_56531737",
+          "run_id": "run_20260913T215805_4eadbade",
           "verdict": "ERROR->PASS",
           "canonical_hash": "e7b23d617850a9c67fe512966d076afa47d2513361dc028c80c6e231ef41fcb6",
           "system_confidence": 0.95,
@@ -591,12 +591,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213346_56531737.json",
+          "trace_path": "run_20260913T215805_4eadbade.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213346_fc17bddf",
+          "run_id": "run_20260913T215805_989ddbba",
           "verdict": "ERROR->PASS",
           "canonical_hash": "e7b23d617850a9c67fe512966d076afa47d2513361dc028c80c6e231ef41fcb6",
           "system_confidence": 0.95,
@@ -604,7 +604,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213346_fc17bddf.json",
+          "trace_path": "run_20260913T215805_989ddbba.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -617,10 +617,10 @@
       "case_id": "formula_net_amount",
       "rule": "Opportunity.Net_Amount__c",
       "expected": "SOLVER_TRUTH",
-      "targets": "transformation: arithmetic + percent scale + BLANKVALUE, verified by Z3 and by a live probe record",
+      "targets": "A formula field (net amount after discount). Must compute the same value for every input, then be confirmed by a real probe record in Airtable.",
       "attempts": [
         {
-          "run_id": "run_20260913T213346_c4bb0ad9",
+          "run_id": "run_20260913T215806_2df447d0",
           "verdict": "PASS",
           "canonical_hash": "245cb3d5a2a109d5c9c0142876cc82b10451574f88ae67164d5608b97aacaf1e",
           "system_confidence": 0.95,
@@ -628,12 +628,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213346_c4bb0ad9.json",
+          "trace_path": "run_20260913T215806_2df447d0.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213347_739d6199",
+          "run_id": "run_20260913T215806_7963c145",
           "verdict": "PASS",
           "canonical_hash": "245cb3d5a2a109d5c9c0142876cc82b10451574f88ae67164d5608b97aacaf1e",
           "system_confidence": 0.95,
@@ -641,7 +641,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213347_739d6199.json",
+          "trace_path": "run_20260913T215806_7963c145.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -654,10 +654,10 @@
       "case_id": "formula_is_big_deal",
       "rule": "Opportunity.Is_Big_Deal__c",
       "expected": "SOLVER_TRUTH",
-      "targets": "boolean formula field (checkbox) verified as a condition",
+      "targets": "A yes/no formula field (is this a big deal). Verified like a condition and confirmed by a probe record.",
       "attempts": [
         {
-          "run_id": "run_20260913T213347_8fc06c19",
+          "run_id": "run_20260913T215807_4c64a8b7",
           "verdict": "PASS",
           "canonical_hash": "ede558f830ca1458e6e5b6d3d6ec609a221e4473d01fc0a9b375995b16ae0c18",
           "system_confidence": 0.95,
@@ -665,12 +665,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213347_8fc06c19.json",
+          "trace_path": "run_20260913T215807_4c64a8b7.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213347_1b47116b",
+          "run_id": "run_20260913T215807_657f5fbf",
           "verdict": "PASS",
           "canonical_hash": "ede558f830ca1458e6e5b6d3d6ec609a221e4473d01fc0a9b375995b16ae0c18",
           "system_confidence": 0.95,
@@ -678,7 +678,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213347_1b47116b.json",
+          "trace_path": "run_20260913T215807_657f5fbf.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -691,10 +691,10 @@
       "case_id": "formula_literal_copy_off_by_100",
       "rule": "Opportunity.Net_Amount__c",
       "expected": "FAIL",
-      "targets": "transformation trap: /100 copied although Airtable percent is already 0.5 (hand-edited cassette)",
+      "targets": "Keeping the /100 from Salesforce when Airtable already stores 0.5, forced. Off by 100x; must be blocked with both computed values shown.",
       "attempts": [
         {
-          "run_id": "run_20260913T213347_3d0612bb",
+          "run_id": "run_20260913T215808_96d961cc",
           "verdict": "FAIL",
           "canonical_hash": "f3b3751474230f9338e4e75c6d489ea26f14588729074d49f4d4e00cb1286923",
           "system_confidence": 0.1,
@@ -702,12 +702,12 @@
           "overconfidence_gap": 0.82,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213347_3d0612bb.json",
+          "trace_path": "run_20260913T215808_96d961cc.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213348_e4bf0f3d",
+          "run_id": "run_20260913T215811_2da1acde",
           "verdict": "FAIL",
           "canonical_hash": "f3b3751474230f9338e4e75c6d489ea26f14588729074d49f4d4e00cb1286923",
           "system_confidence": 0.1,
@@ -715,7 +715,7 @@
           "overconfidence_gap": 0.82,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213348_e4bf0f3d.json",
+          "trace_path": "run_20260913T215811_2da1acde.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -728,10 +728,10 @@
       "case_id": "flow_flag_stale_negotiation",
       "rule": "Flow.Flag_Stale_Negotiation",
       "expected": "SOLVER_TRUTH",
-      "targets": "record-triggered flow: entry filters AND decision outcome proven; single assignment reconfigured as a computed field",
+      "targets": "A flow that flags stale negotiations. Its conditions must be proven and, if right, rebuilt as a computed field.",
       "attempts": [
         {
-          "run_id": "run_20260913T213348_67310fa9",
+          "run_id": "run_20260913T215812_47f71170",
           "verdict": "FAIL",
           "canonical_hash": "bf23364465b2f151f7d33d88738faec7a43d136d0546709ce8119dbf3f32a1ac",
           "system_confidence": 0.1,
@@ -739,12 +739,12 @@
           "overconfidence_gap": 0.8,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213348_67310fa9.json",
+          "trace_path": "run_20260913T215812_47f71170.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213348_549baa94",
+          "run_id": "run_20260913T215813_39396664",
           "verdict": "FAIL",
           "canonical_hash": "bf23364465b2f151f7d33d88738faec7a43d136d0546709ce8119dbf3f32a1ac",
           "system_confidence": 0.1,
@@ -752,7 +752,7 @@
           "overconfidence_gap": 0.8,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213348_549baa94.json",
+          "trace_path": "run_20260913T215813_39396664.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -765,10 +765,10 @@
       "case_id": "flow_not_verifiable_inventoried",
       "rule": "Flow.sfdc_default_ReportExport_Protection_Flow",
       "expected": "AMBIGUOUS",
-      "targets": "non-record flow: inventoried with a reason, no LLM call, audit record only",
+      "targets": "A Salesforce default flow OffBoard cannot verify. Must be listed with a reason and left alone, no model call.",
       "attempts": [
         {
-          "run_id": "run_20260913T213348_458ac18a",
+          "run_id": "run_20260913T215814_3f06a144",
           "verdict": "AMBIGUOUS",
           "canonical_hash": "37275aa2a0283b422bc9182274a1fbf6c2b93c8d124331f5c9bd9ea957a06357",
           "system_confidence": 0.0,
@@ -776,12 +776,12 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213348_458ac18a.json",
+          "trace_path": "run_20260913T215814_3f06a144.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213349_b852d1e5",
+          "run_id": "run_20260913T215815_21174c21",
           "verdict": "AMBIGUOUS",
           "canonical_hash": "37275aa2a0283b422bc9182274a1fbf6c2b93c8d124331f5c9bd9ea957a06357",
           "system_confidence": 0.0,
@@ -789,7 +789,7 @@
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213349_b852d1e5.json",
+          "trace_path": "run_20260913T215815_21174c21.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -802,10 +802,10 @@
       "case_id": "distractor_near_duplicate",
       "rule": "Opportunity.ClosedWon_Requires_Amount",
       "expected": "PASS",
-      "targets": "Arga unauthorized / wrong-target write: 15 pre-existing rule records and the agents table must be byte-identical",
+      "targets": "Distractors in the base: 15 unrelated records and a second table. After the run they must be untouched, byte for byte.",
       "attempts": [
         {
-          "run_id": "run_20260913T213349_b13adeb1",
+          "run_id": "run_20260913T215816_eb3ca7f0",
           "verdict": "PASS",
           "canonical_hash": "722a321c54761d86e640faa5b9a9dbc9cceed473b3e3cc0864ba3a3af66bb48d",
           "system_confidence": 0.95,
@@ -813,12 +813,12 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213349_b13adeb1.json",
+          "trace_path": "run_20260913T215816_eb3ca7f0.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T213349_33066b27",
+          "run_id": "run_20260913T215817_fdf1e87b",
           "verdict": "PASS",
           "canonical_hash": "722a321c54761d86e640faa5b9a9dbc9cceed473b3e3cc0864ba3a3af66bb48d",
           "system_confidence": 0.95,
@@ -826,7 +826,7 @@
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T213349_33066b27.json",
+          "trace_path": "run_20260913T215817_fdf1e87b.json",
           "failures": [],
           "eval_verdict": "pass"
         }

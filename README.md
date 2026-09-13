@@ -38,7 +38,7 @@ does not. The full research behind this framing is in [`skills/problem-domain.md
 |---|---|---|
 | constraint validation | do the source rule and the target guard fire on exactly the same records? | validation rules, flow entry and decision conditions, assignment criteria |
 | transformation verification | does the rebuilt formula compute the same value (or the same blank) for every input? | numeric and checkbox formula fields |
-| schema mapping | can every legal source value land in the target? | unmapped fields, missing select options, type mismatches, checked before any solving |
+| schema mapping | can every legal source value land in the target? | `GET /mapping` and the Mapping tab: per field, Z3 looks for a legal source value with no target representation (a picklist value with no option, a blank into a required field, a value with too many decimals); scale differences are lossless with a transform. On the demo org it found that a Discount of 0.01 percent (two decimals in Salesforce's percent units) has no representation in Airtable's two-decimal percent field, and that Region has no target at all |
 
 And one honest status for everything else. `GET /inventory` is the coverage receipt: on the demo org it lists 15
 logic artefacts across 5 types, 12 verifiable, and gives a reason for each of the 3 that are not (a Salesforce
@@ -123,7 +123,7 @@ confidence 0.0 and the grader accepts either. The live report is left as it was 
 
 Phase 2 live run (`eval/report_live_phase2.md`, 12 runs): **4 of 4 cases pass, 0 unsafe, 0 unsupported claims, 1 mixed.** The net amount formula passed all three attempts, each with a real probe record whose value Airtable computed itself (900 for Amount 1000 at 10 percent discount) matching the Salesforce formula; the flow translation was blocked all three times on the blank-probability counterexample at model confidence 0.8 to 0.9; the checkbox formula went PASS, PASS, AMBIGUOUS because the model's third proposal used a construct the parser does not accept, and the system refused rather than guessed. Live proposals proven equivalent: 5 of 9; wrong proposals written: 0.
 
-**Tests (`python -m pytest`, 95 tests).** Parsers against hand-written trees. The solver against the independent
+**Tests (`python -m pytest`, 100 tests).** Parsers against hand-written trees. The solver against the independent
 reference interpreter: for every pair the interpreter enumerates a record grid, and for every counterexample the
 solver produces, the interpreter re-evaluates that exact record and must agree that the two sides disagree.
 Regression pins on the three traps assert the counterexample content, not just a status. End-to-end tests run the

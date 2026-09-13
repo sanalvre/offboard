@@ -53,7 +53,7 @@
 <body>
 <header>
   <h1>OffBoard</h1>
-  <nav><a href="#runs" id="nav-runs">Runs</a><a href="#eval" id="nav-eval">Eval</a><a href="#inventory" id="nav-inv">Inventory</a></nav>
+  <nav><a href="#runs" id="nav-runs">Runs</a><a href="#eval" id="nav-eval">Eval</a><a href="#inventory" id="nav-inv">Inventory</a><a href="#mapping" id="nav-map">Mapping</a></nav>
   <div class="mode">api key <input id="key" value="sk_test_offboard_demo" spellcheck="false"></div>
 </header>
 <main id="main"></main>
@@ -71,14 +71,33 @@ async function api(path, opts={}) {
   return r.json();
 }
 
+const VERDICT_HELP = {
+  PASS: 'Proven equivalent by the solver and written to Airtable.',
+  FAIL: 'The proposal would change the meaning: the solver found a record where source and target disagree. Nothing was written.',
+  AMBIGUOUS: 'Could not be verified: an unsupported construct, a missing target field or option, or an unverifiable proposal. Surfaced for a human, not guessed. Only an audit record was written.',
+  PARTIAL: 'Condition proven, but the action has no API-writable equivalent in Airtable. Spec recorded for a human.',
+  NOT_FOUND: 'No artefact with that name exists in the org. No model call, nothing written.',
+  DUPLICATE: 'Already migrated: a PASS audit record exists. No model call, nothing written.',
+  ERROR: 'An unexpected error; recorded verbatim in the trace.',
+  proven: 'Latest run proved it equivalent and wrote the target.', blocked: 'Latest run found a counterexample; write blocked.',
+  ambiguous: 'Latest run could not verify it; surfaced for a human.', not_attempted: 'Verifiable, but no run yet.',
+  not_verifiable: 'OffBoard cannot encode this kind of logic yet; see the reason.', partial: 'Condition proven; action needs a human.'
+};
+const badge2 = v => `<span class="badge ${esc(v)}" title="${esc(VERDICT_HELP[v]||'')}">${esc(v)}</span>`;
+function legend(keys) { return `<details style="margin:8px 0 0"><summary>what the verdicts mean</summary><table style="margin-top:6px">${keys.map(k => `<tr><td style="width:140px">${badge(k)}</td><td class="mute">${esc(VERDICT_HELP[k])}</td></tr>`).join('')}</table></details>`; }
+
 function route() {
   const h = location.hash || '#runs';
+  $('#main').innerHTML = '<div class="empty">loading…</div>';
+  window.onerror = (m) => { $('#main').innerHTML = `<div class="empty">UI error: ${esc(m)}</div>`; };
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', h.startsWith(a.getAttribute('href'))));
   if (h.startsWith('#run/')) return viewRun(h.slice(5));
   if (h.startsWith('#eval')) return viewEval();
-  if (h.startsWith('#inventory')) return viewInventory();
-  return viewRuns();
+  if (h.startsWith('#inventory')) return viewInventory().catch(showErr);
+  if (h.startsWith('#mapping')) return viewMapping().catch(showErr);
+  return viewRuns().catch(showErr);
 }
+function showErr(e) { $('#main').innerHTML = `<div class="empty">${esc(e.message || e)}<br><span class="mute">check the API key in the header (test key: sk_test_offboard_demo) or the server log</span></div>`; }
 window.addEventListener('hashchange', route);
 
 async function viewRuns() {
@@ -92,6 +111,7 @@ async function viewRuns() {
       <button id="reset">Reset test state</button>
       <span id="status" class="mute"></span>
     </div>
+    ${legend(['PASS','FAIL','AMBIGUOUS','PARTIAL','NOT_FOUND','DUPLICATE'])}
     <h2>Runs · ${runs.length}</h2>
     ${runs.length ? `<table><thead><tr><th>started</th><th>mode</th><th>rule</th><th>case</th><th>verdict</th><th>sys conf</th><th>llm conf</th><th>unsupported claims</th><th>hash</th></tr></thead><tbody>
       ${runs.map(r => `<tr class="row" onclick="location.hash='#run/${esc(r.run_id)}'">
@@ -150,7 +170,7 @@ async function viewRun(id) {
     <div class="toolbar"><a href="#runs">← runs</a><span class="mute">${esc(id)} · ${esc(d.header.mode)} · ${esc(d.header.rule)}${d.header.case_id ? ' · ' + esc(d.header.case_id) : ''}</span>
       <a style="margin-left:auto" href="/runs/${esc(id)}" target="_blank">raw json ↗</a></div>
     <div class="kpis">
-      <div class="kpi"><b>${badge(s.verdict)}</b><span>verdict</span></div>
+      <div class="kpi"><b>${badge(s.verdict)}</b><span>verdict</span><div class="mute" style="margin-top:4px;font-size:11px">${esc(VERDICT_HELP[s.verdict]||'')}</div></div>
       <div class="kpi"><b>${num(dec.system_confidence)}</b><span>system confidence</span></div>
       <div class="kpi"><b>${num(dec.llm_confidence)}</b><span>llm confidence</span></div>
       <div class="kpi"><b>${num(dec.overconfidence_gap)}</b><span>overconfidence gap</span></div>
@@ -203,7 +223,8 @@ async function viewInventory() {
     <h2>Configuration inventory · ${esc(inv.objects.join(', '))} · ${esc(inv.mode)} mode</h2>
     <div class="kpis"><div class="kpi"><b>${inv.found}</b><span>logic artefacts found</span></div><div class="kpi"><b>${inv.verifiable}</b><span>verifiable</span></div>
       ${order.filter(k => inv.counts[k]).map(k => `<div class="kpi"><b>${inv.counts[k]}</b><span>${k.replace('_',' ')}</span></div>`).join('')}</div>
-    <p class="mute" style="margin:10px 0 0">Captured from the Metadata API (${esc(inv.source.split(/[\/]/).slice(-3).join('/'))}). Every artefact carries a reason for its verifiability; nothing is silently skipped.</p>
+    ${legend(['proven','blocked','ambiguous','partial','not_attempted','not_verifiable'])}
+    <p class="mute" style="margin:10px 0 0">Captured from the Metadata API (${esc(inv.source.split(/[\\/]/).slice(-3).join('/'))}). Every artefact carries a reason for its verifiability; nothing is silently skipped.</p>
     ${types.map(t => `<h2>${esc(t)} · ${inv.by_type[t]}</h2>
     <table><thead><tr><th>name</th><th>object</th><th>active</th><th>business intent</th><th>verifiable</th><th>status</th><th>last run</th></tr></thead><tbody>
     ${inv.artefacts.filter(a => a.type === t).map(a => `<tr><td><b>${esc(a.name)}</b>${a.details && a.details.formula ? `<br><code class="mute">${esc(a.details.formula)}</code>` : ''}</td>
@@ -211,6 +232,19 @@ async function viewInventory() {
       <td>${a.verifiable ? 'yes' : '<b>no</b>'}<br><span class="mute">${esc(a.reason)}</span></td><td>${badge(a.status)}</td>
       <td>${a.last_run ? `<a href="#run/${esc(a.last_run.run_id)}">${badge(a.last_run.verdict)}</a>` : '<span class="mute">—</span>'}</td></tr>`).join('')}
     </tbody></table>`).join('')}`;
+}
+async function viewMapping() {
+  const rep = await api('/mapping');
+  const help = {lossless: 'every legal source value has a target representation', lossy: 'the solver found a source value with no target representation', blocked: 'no target field or incompatible types'};
+  $('#main').innerHTML = `
+    <h2>Schema mapping · ${esc(rep.object)} · ${esc(rep.mode)} mode</h2>
+    <div class="kpis">${['lossless','lossy','blocked'].map(k => `<div class="kpi"><b>${rep.counts[k]||0}</b><span>${k}</span></div>`).join('')}</div>
+    <p class="mute" style="margin:10px 0 0">Fields referenced by verifiable artefacts (${rep.fields_considered.length}). For each source field and its Airtable counterpart, Z3 looks for a legal source value that cannot be represented in the target: a picklist value with no option, a blank into a required field, a value with too many decimals. Scale differences are lossless with a transform.</p>
+    <table><thead><tr><th>source field</th><th>type</th><th>target field</th><th>type</th><th>status</th><th>transform</th><th>reason / counterexample</th></tr></thead><tbody>
+    ${rep.mappings.map(m => `<tr><td><b>${esc(m.source)}</b></td><td class="mute">${esc(m.source_type)}</td><td>${esc(m.target||'—')}</td><td class="mute">${esc(m.target_type||'')}</td>
+      <td><span class="badge ${m.status === 'lossless' ? 'PASS' : 'FAIL'}" title="${esc(help[m.status])}">${esc(m.status)}</span></td><td><code>${esc(m.transform||'')}</code></td>
+      <td class="mute">${esc(m.reason)}${m.counterexample ? `<br><code>${esc(JSON.stringify(m.counterexample))}</code>` : ''}</td></tr>`).join('')}
+    </tbody></table>`;
 }
 route();
 </script>
