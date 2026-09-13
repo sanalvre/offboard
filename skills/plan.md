@@ -94,13 +94,19 @@ s.check()  # unsat => equivalent; sat => s.model() is the counterexample record
   org may still be on 67.0 until the October upgrade waves.
 - Dev Edition is still free; Opportunity ships standard with `StageName` (picklist,
   required) and `Amount` (currency, nillable).
-- **Null semantics finding (this became the calibration case):** in a validation rule a
-  blank `Amount` is null, and `Amount <= 0` on null does not evaluate true, so
-  `ISPICKVAL(StageName,"Closed Won") && Amount <= 0` does **not** fire on a Closed Won
-  record with blank Amount. There is no per-rule "treat blanks as zero" setting (that
-  exists only on formula fields). Salesforce's own docs recommend `ISBLANK(...) ||` for
-  exactly this reason. Confidence medium-high; a one-minute empirical check in the Dev
-  org (save a Closed Won opp with blank Amount) is in the block-0 checklist.
+- **Null semantics, VERIFIED EMPIRICALLY 2026-09-13 in the Dev org (`scripts/seed_salesforce.py`):**
+  with only `ClosedWon_Amount_Naive` (`ISPICKVAL(StageName,"Closed Won") && Amount <= 0`)
+  active, inserting a Closed Won opportunity with **blank Amount SAVED**, with **Amount 0
+  was REJECTED** (`FIELD_CUSTOM_VALIDATION_EXCEPTION`), and with Amount 100 saved. After
+  adding the ISBLANK-safe hero rule, blank Amount was rejected. So in a validation rule a
+  blank number is null and `null <= 0` is not true; there is no per-rule "treat blanks as
+  zero" setting. Combined with the Airtable probe (blank is 0), both halves of the
+  calibration trap are now facts recorded in the trace as verified assumptions, not
+  beliefs from documentation.
+- **Seeded state (2026-09-13):** custom fields `Loss_Reason__c` (Text 255), `Discount__c`
+  (Percent 5,2), `Region__c` (Picklist: Americas, EMEA, APAC) and the eight rules in
+  section 3.1 exist in the org, each with a business-intent `description`. Org API version
+  is 67.0.
 
 ### 1.3 Airtable free tier: CHANGED (two hard constraints)
 
@@ -386,7 +392,7 @@ Eight validation rules, created in the org and mirrored byte-for-byte in
 | `ClosedWon_Amount_Naive` | `ISPICKVAL(StageName,"Closed Won") && Amount <= 0` | trap: null semantics |
 | `Discount_Cap` | `Discount__c > 50` | trap: percent units (naive `{Discount}>50` never fires) |
 | `Stage_Regression_Blocked` | `ISPICKVAL(PRIORVALUE(StageName),"Closed Won") && NOT(ISPICKVAL(StageName,"Closed Won"))` | AMBIGUOUS, unsupported construct |
-| `Partner_Stage_Requires_Amount` | `ISPICKVAL(StageName,"Closed Won - Partner") && ISBLANK(Amount)` | AMBIGUOUS, schema mismatch |
+| `EMEA_Requires_Amount` | `ISPICKVAL(Region__c,"EMEA") && ISBLANK(Amount)` | AMBIGUOUS, schema mismatch (custom `Region__c` picklist exists only in Salesforce; replaces the earlier "Closed Won - Partner" stage idea, which would have needed sales-process metadata) |
 
 Plus about 8 Opportunity records, including two that violate the hero rule if the guard
 is right, so the Airtable violation view has something to show in the demo.
