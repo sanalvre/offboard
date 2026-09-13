@@ -4,59 +4,94 @@
 
 **Demo video (2 min):** https://www.loom.com/share/b4adb53c35de442c896678b5116fc026
 
-Multi-App Agent Hackathon, 13 September 2026. Solo build, Python 3.10 / FastAPI. Apps touched: Salesforce
-(Tooling API and Metadata API), Airtable (Web API), OpenRouter (Claude Sonnet 5), Discord (webhooks).
+Built solo for the Multi-App Agent Hackathon, 13 September 2026. Python 3.10 / FastAPI. Apps in the stack:
+**Salesforce** (Tooling API and Metadata API, the source), **Airtable** (Web API, the destination), **Discord**
+(webhooks, the notification channel), and **OpenRouter** (Claude Sonnet 5, the model that proposes translations).
 
-## What the demo shows
-
-1. **Inventory**: the whole configuration layer pulled from the Metadata API. 15 pieces of logic across 5 types, 12
-   verifiable, 3 not, each with a reason.
-2. **A proven migration**: the closed-won rule, the exact prompt the model saw, the solver's `unsat`, and the claims
-   checked against Airtable after the write.
-3. **A blocked migration**: the same rule without its blank guard. The model said 0.9; the solver found the record
-   (Closed Won, Amount blank) and nothing was written. That gap between what the model believed and what could be
-   proven is the failure this tool exists to catch.
-4. **Eval**: 22 of 22 offline cases pass, 0 unsafe, and every trace **hashes identical** on a second run. The hash is a
-   SHA-256 fingerprint of the whole trace with only timestamps and run ids stripped, so a match means the two runs were
-   indistinguishable down to the counterexample record and the confidence numbers, not just "passed twice". Live: the
-   model mapped the logic correctly 18 of 30 times; 8 wrong proposals were blocked with their counterexample; 4 could
-   not be expressed in Airtable and were flagged for a human; 0 wrong proposals reached Airtable, checked by a
-   before-and-after diff of the base on every run.
-5. **Mapping**: the schema check that runs before any rule. It found a real precision loss (Discount at two decimals in
-   percent units needs four as a fraction) and a field with no home (Region).
-6. **Discord**: one embed per step as it happens, each carrying the run id, so the notification is one click from the
-   receipt.
-
-## What it does
+## The problem
 
 Everyone knows companies hate their legacy systems, and Salesforce is the example here. So why do they stay if moving
-data is easy? Because they have years of custom logic their organization runs on: validation rules, formula fields,
-flows, assignment rules. Mapping every one of those, rebuilding it in the new system, and then checking it actually
-behaves the same is tedious, expensive, and the failures are silent. A rule that says "a closed won deal can't have an
-amount of zero or less" gets rebuilt so it fires on different records, and nobody notices until the numbers stop
-matching.
+data is easy nowadays? Usually because they have years of custom logic their organization runs on: validation rules,
+formula fields, flows, assignment rules. Having to map out every rule and workflow, rebuild it in the new system, and
+then verify it actually behaves the same is tedious and expensive. CRMs like HubSpot offer migration services off
+Salesforce, but they take months and cost five to six figures, and the verification at the end is record counts, a
+spot check, and a couple of weeks running both systems side by side. Nobody checks the logic formally, so when a
+rebuilt rule fires on different records than the original, nobody notices until the numbers stop matching.
 
-OffBoard uses the Salesforce Metadata API to capture that configuration. It feeds each piece to an LLM, which proposes
-the Airtable equivalent, and then it refuses to trust the LLM. The Z3 solver checks the proposal against the original for
-every possible record, not a sample, and either proves the two are equivalent or hands back the exact record that breaks
-it. If they're not identical, nothing gets written. If the logic can't be expressed in Airtable at all, it's flagged for a
-human instead of guessed. And every run leaves a receipt: the exact prompt, the raw model response, every API call, the
-solver's proof, the state of the base before and after, and every claim the agent made, checked against reality.
+## What OffBoard does
 
-## Why this matters
+OffBoard uses the Salesforce Metadata API to capture your Salesforce configuration. Each piece is fed to an LLM, which
+proposes an equivalent in the destination. In this demo the destination is Airtable. After the LLM writes the Airtable
+version of a rule, it goes through the Z3 solver, which checks the proposal against the original for every possible
+record, not a sample, and either proves the two are equivalent or hands back the exact record that breaks it. If the
+two are not identical, nothing gets pushed into Airtable. If the logic cannot be expressed in Airtable at all, it is
+flagged for a human instead of guessed.
 
-The two systems don't even agree on what a blank means. In a Salesforce validation rule a blank Amount is null, so
-`Amount <= 0` never fires on it. Airtable treats a blank as zero, so the word-for-word translation flags every won deal
-with no amount. Percent is stored as 50 in Salesforce and 0.5 in Airtable. In today's live runs the model wrote the
-obvious translation of the closed-won rule at 0.9 confidence, and the solver blocked it with that one record: Closed Won,
-Amount blank. On another attempt the model added "and the amount isn't blank," the solver proved it equivalent, and that
-version was written.
+One of the reasons this is hard for agents is that you are not only migrating data, you are re-applying logic to a
+system whose rules do not line up with the source. Here is the example from today's run. We migrated a Salesforce rule
+that says "a closed won deal cannot have an amount of zero or less." The LLM wrote a translation of it for Airtable,
+and the solver's job was to answer whether the translation behaves exactly like the original on every possible record.
+It looked right. But Airtable treats a blank amount as zero and Salesforce treats it as null, so the translation behaves
+differently on one kind of record: a won deal with no amount filled in. Salesforce lets that deal through; the
+translation would have flagged it. The solver found that record, blocked the write, and handed the record back. On
+another attempt the LLM added one condition, "and the amount isn't blank," the solver proved that version equivalent,
+and it was written. Same original rule, two translations, and the solver told them apart in a way you could not by
+reading them.
 
-Nobody in the migration business checks logic this way. Consultancies describe Salesforce-to-HubSpot projects where
-"moving records is the cheap part" and "every workflow is rebuilt by hand," and their verification is record counts, a
-5% spot check, and a couple of weeks of running both systems side by side. OffBoard is a scoped demonstration of the
-missing piece: proving, not sampling, that a piece of logic means the same thing after migration, and refusing to write
-when it doesn't. The research behind that framing is in [`skills/problem-domain.md`](skills/problem-domain.md).
+The semantics the solver relies on were not taken from documentation. Blank-is-null was confirmed by saving records in
+the real org; blank-is-zero by running the formula in the real base; and every trace begins by listing those assumptions
+with their evidence and whether each was verified empirically.
+
+## The results
+
+Across the offline test run, 22 out of 22 cases passed with zero unsafe writes. Live against the real org and base, the
+raw LLM correctly mapped the logic 18 out of 30 times. Eight of its proposals were wrong, and four could not be expressed
+in Airtable at all and were flagged for human evaluation. Because Z3 checks every proposal against both systems' actual
+rules, zero wrong proposals reached Airtable, and that zero is not the agent's word for it: every run diffs the base
+before and after and any unintended change is graded **unsafe**.
+
+Every run writes a full trace: the exact prompt, the raw model response, every API call and what came back, the solver's
+proof in SMT-LIB, the state of the base before and after, and every claim the agent made about what it did, checked
+against the state. OffBoard then fingerprints the whole file with a SHA-256 hash, stripping only timestamps and run ids.
+When I ran all 22 cases a second time, every hash matched. That means the runs were not just passing twice; they were
+identical down to the counterexample records and the confidence numbers, and anyone who clones this repo and reruns the
+suite will surface the same results.
+
+In this demo I used Discord for notifications; most teams would use Slack. Every step of a run posts a short embed as it
+happens: what was extracted, what the model proposed and how confident it was, what the solver decided, and a final result
+line. Each post carries the run id, so the notification is one click from the full trace. The Discord post is the
+headline; the trace file is the receipt.
+
+## The panel
+
+`uvicorn app.main:app` serves a single page at http://127.0.0.1:8000 with four tabs.
+
+**Runs.** Every run, with its verdict and two confidence numbers. **System confidence** is the solver's verdict as a
+number: 0.95 when Z3 proved equivalence, 0.10 when it found a counterexample, 0 when the rule could not be encoded at
+all. **LLM confidence** is what the model said about its own proposal. The gap between them on the blocked run (the model
+said 0.9, the system said 0.1) is the calibration failure this tool exists to catch. Clicking a run shows the trace step
+by step: each entry expands to its raw JSON, the solver step to the SMT-LIB problem as posed, the LLM step to the exact
+prompt. Verdicts: PASS (proven and written), FAIL (a record disagrees, nothing written), AMBIGUOUS (could not be verified,
+flagged for a human, audit record only), PARTIAL (condition proven, action has no API-writable equivalent), NOT_FOUND,
+DUPLICATE (already migrated, nothing written).
+
+**Inventory.** Pulls every piece of logic on the object from the Metadata API and groups it by type: validation rules,
+formula fields, flows, workflow rules, assignment rules, Apex, approval processes. For each one it says whether OffBoard
+can verify it, with a reason, and what happened the last time it ran. On the demo org: 15 artefacts across 5 types, 12
+verifiable, 3 not (a Salesforce default transaction-security flow, a retired workflow field update, and assignment rules
+that are lowered but not yet migrated). Nothing is silently skipped.
+
+**Mapping.** The schema check that runs before any rule. For every Salesforce field a verifiable artefact touches, it
+proposes the Airtable counterpart by name and asks Z3 whether any legal Salesforce value has no home in the Airtable
+field: a picklist value with no matching option, a blank going into a required field, a number with more decimals than
+the target holds. Where units differ (percent as 50 versus 0.5) it reports lossless with the transform. On the demo org
+it found one real precision loss nobody would spot by eye (a Discount of 0.01 percent has two decimals in Salesforce's
+units but needs four as a fraction, and Airtable's field has two) and one field with no home at all (Region). No model is
+involved in this tab.
+
+**Eval.** The reliability report, read straight from `eval/report.json`. Headline numbers, then one row per case with a
+plain-English description of what it checks, the verdict from each run, the eval result in pass / fail / unsafe, both
+confidences, and a link to the trace of each attempt.
 
 ## Three things the solver checks
 
@@ -64,102 +99,86 @@ when it doesn't. The research behind that framing is in [`skills/problem-domain.
 |---|---|---|
 | constraint validation | do the source rule and the target guard fire on exactly the same records? | validation rules, flow entry and decision conditions, assignment criteria |
 | transformation verification | does the rebuilt formula compute the same value (or the same blank) for every input? | numeric and checkbox formula fields |
-| schema mapping | can every legal source value land in the target? | `GET /mapping` and the Mapping tab: per field, Z3 looks for a legal source value with no target representation (a picklist value with no option, a blank into a required field, a value with too many decimals); scale differences are lossless with a transform. On the demo org it found that a Discount of 0.01 percent (two decimals in Salesforce's percent units) has no representation in Airtable's two-decimal percent field, and that Region has no target at all |
+| schema mapping | can every legal source value land in the target? | the Mapping tab, and per-run pre-checks before any solving |
 
-And one honest status for everything else. `GET /inventory` is the coverage receipt: on the demo org it lists 15
-logic artefacts across 5 types, 12 verifiable, and gives a reason for each of the 3 that are not (a Salesforce
-default transaction-security flow, a retired Workflow field update, and a formula returning text would all land here).
-
-Reconfiguration goes through the API wherever the API exists: guard formula fields for validation rules, real
-formula fields for formula fields (then a **behavioural probe**: a record with known inputs is created, Airtable's own
-computed value is read back and compared with the reference interpreter's evaluation of the Salesforce formula, and
-the probe is deleted), and a computed field for a flow whose only action assigns a same-record checkbox. Flows with
-other actions stop at `PARTIAL`: the condition is proven, the action spec is recorded, and Airtable automations have no
-API to write to. Details and the reasoning behind each choice: [`skills/plan-phase2.md`](skills/plan-phase2.md) and
-[`skills/phase2-configuration.md`](skills/phase2-configuration.md).
+Reconfiguration goes through the API wherever the API exists: guard formula fields for validation rules, real formula
+fields for formula fields (followed by a **behavioural probe**: a record with known inputs is created, Airtable's own
+computed value is read back and compared with the reference interpreter's evaluation of the Salesforce formula, and the
+probe is deleted; live, Airtable computed 900 and the Salesforce formula gives 900), and a computed field for a flow whose
+only action assigns a same-record checkbox. Flows with other actions stop at PARTIAL: Airtable automations have no API.
 
 ## Architecture
 
 ```
 POST /runs {rule}   X-API-Key sk_test_* -> mocks + recorded LLM cassettes (deterministic, offline)
                     X-API-Key sk_live_* -> Salesforce CLI transport, OpenRouter, Airtable REST, Discord
-  1 extract   Tooling API: list rules, fetch Metadata.errorConditionFormula + description + error message
-  2 parse     Salesforce formula subset -> RuleIR with typed field metadata (scale, nullability, options)
-  3 target    Airtable schema -> FieldSpecs; before-snapshot; idempotency lookup in Migration_Rules
-  4 propose   LLM (structured JSON): field mapping, guard formula, business intent, self-reported confidence
-  5 verify    Airtable formula parser -> Node; Z3: unsat = equivalent, sat = counterexample record
-  6 decide    PASS (0.95) | FAIL (0.10) | AMBIGUOUS (0.0-0.3) | NOT_FOUND | DUPLICATE
-  7 write     PASS only: create guard formula field; always: one audit record; read back
-  8 report    after-snapshot, bounded diff, claims checked against state, Discord headline, trace finalised
+  1 extract   Tooling API for validation rules; Metadata API XML for formula fields, flows, everything else
+  2 parse     Salesforce formula subset -> IR with typed field metadata (scale, nullability, options)
+  3 target    Airtable schema -> field specs; before-snapshot; idempotency lookup in Migration_Rules
+  4 propose   LLM (structured JSON): field mapping, target formula, business intent, self-reported confidence
+  5 verify    Airtable formula parser -> IR; Z3: unsat = equivalent, sat = counterexample record
+  6 decide    PASS (0.95) | FAIL (0.10) | AMBIGUOUS (0.0-0.3) | PARTIAL | NOT_FOUND | DUPLICATE
+  7 write     PASS only: create the target field; formula fields also get the behavioural probe; always one audit record
+  8 report    after-snapshot, bounded diff, claims checked against state, Discord headline, trace finalised with hash
 ```
 
-The LLM is never in the verification path. It proposes; a parser and a solver decide. Code map:
-`app/pipeline.py` (the steps), `app/parsers/` (both formula subsets), `app/solver.py` (Z3 encoding),
-`app/reference.py` (an independent plain-Python interpreter the solver is tested against), `app/adapters/`
-(live and mock Salesforce, Airtable, Discord), `app/llm.py` (OpenRouter with cassette record/replay),
-`app/trace.py` (the receipt), `app/main.py` (API and UI), `eval/` (harness), `skills/` (design docs per feature).
+The LLM is never in the verification path. It proposes; a parser and a solver decide. Code map: `app/pipeline.py` and
+`app/artefacts.py` (the steps), `app/inventory.py` (Metadata API capture), `app/parsers/` (both formula subsets),
+`app/solver.py` (Z3), `app/reference.py` (an independent plain-Python interpreter the solver is tested against),
+`app/mapping.py` (schema check), `app/adapters/` (live and mock Salesforce, Airtable, Discord), `app/llm.py` (OpenRouter
+with cassette record/replay), `app/trace.py` (the receipt), `app/main.py` (API and UI), `eval/` (harness), `skills/`
+(design docs per feature).
 
 ## How reliability was tested
 
-Two protocols, and every row in both reports links to the trace it was graded on. Nothing here is a summary you
-have to take on faith.
+Two protocols, and every row in both reports links to the trace it was graded on. Nothing here is a summary you have to
+take on faith.
 
-**Protocol A, offline (`eval/report.md`).** 22 cases, each run twice from a reset mock with recorded LLM
-cassettes and no network. The harness asserts the expected verdict, case-specific evidence in the trace, and
-three invariants on every run: no unexpected state change (any means **unsafe**), zero unsupported claims,
-and a final result post. The two runs must produce identical canonical hashes (content-only; timestamps,
-latencies and run ids normalised). Result: **22 pass, 0 fail, 0 unsafe, 22/22 reproducible**.
+**Protocol A, offline (`eval/report.md`).** 22 cases, each run twice from a reset mock with recorded LLM responses and no
+network. The harness asserts the expected verdict, case-specific evidence in the trace, and three invariants on every run:
+no unexpected state change (any means **unsafe**), zero unsupported claims, and a final result post. The two runs must
+produce identical hashes. Result: **22 pass, 0 fail, 0 unsafe, 22/22 reproducible**.
 
 | case | what it checks |
 |---|---|
-| `happy_closedwon_amount` | the hero rule: cross-field, null-safe; proven equivalent, guard written |
-| `happy_closedlost_reason`, `happy_percent_scaling`, `over_refusal_guard` | more rule shapes; `over_refusal_guard` must PASS, not hide behind AMBIGUOUS |
-| `record_not_found` | no LLM call, no write |
-| `duplicate_already_processed` | second run finds the audit record and writes nothing |
-| `ambiguous_unsupported_construct` | `PRIORVALUE` is named, confidence 0, no LLM call, human review |
-| `ambiguous_schema_mismatch` | source field with no Airtable counterpart; solver refuses before solving |
-| `calibration_null_semantics` (+ `_naive_prompt`) | the `Amount <= 0` trap under the production prompt and an ablation without semantics hints |
+| `happy_closedwon_amount` | a clean rule that should migrate; proves the happy path end to end |
+| `happy_closedlost_reason`, `happy_percent_scaling`, `over_refusal_guard` | more rule shapes; the last must PASS rather than hide behind "needs a human" |
+| `record_not_found` | a rule that does not exist: no model call, nothing written |
+| `duplicate_already_processed` | the same rule twice: the second run notices and writes nothing |
+| `ambiguous_unsupported_construct` | a construct that cannot be translated (PRIORVALUE): flagged for a human, not guessed |
+| `ambiguous_schema_mismatch` | the rule uses a field Airtable does not have: flagged before anything is written |
+| `calibration_null_semantics` (+ `_naive_prompt`) | the blank-amount trap, with and without the prompt explaining blank handling; the verdict must match the proof either way |
 | `trap_percent_units` (+ `_naive_prompt`) | the 50 vs 0.5 trap, same two prompts |
-| `solver_catches_naive_null_translation`, `solver_catches_percent_units`, `solver_catches_weaker_translation` | hand-edited cassettes (labelled inside the file) that guarantee a wrong proposal reaches the solver; each must be blocked with the right counterexample |
-| `recovery_after_partial_failure` | injected 503 on the audit write; the rerun completes with exactly one record |
-| `distractor_near_duplicate` | 15 pre-existing rule records and a second table must be byte-identical after the run |
-| `formula_net_amount`, `formula_is_big_deal` | formula fields proven as transformations, written as real formula fields, confirmed by a behavioural probe |
-| `formula_literal_copy_off_by_100` | hand-edited cassette keeping Salesforce's `/ 100`; blocked with both computed outputs on the counterexample |
-| `flow_flag_stale_negotiation` | record-triggered flow: entry filters AND decision outcome verified; the model omitted the blank guard on Probability and was blocked |
-| `flow_not_verifiable_inventoried` | Salesforce's default transaction-security flow: inventoried with a reason, no model call |
+| `solver_catches_naive_null_translation`, `solver_catches_percent_units`, `solver_catches_weaker_translation` | hand-edited wrong translations (labelled inside the cassette file) that guarantee a wrong proposal reaches the solver; each must be blocked with the right record |
+| `recovery_after_partial_failure` | Airtable fails mid-write; the rerun must finish with exactly one record, no duplicates |
+| `distractor_near_duplicate` | 15 unrelated records and a second table must be untouched, byte for byte |
+| `formula_net_amount`, `formula_is_big_deal` | formula fields proven as transformations, written, confirmed by a probe record |
+| `formula_literal_copy_off_by_100` | keeping Salesforce's `/ 100`, forced; blocked with both computed outputs shown |
+| `flow_flag_stale_negotiation` | a record-triggered flow's conditions proven; the model omitted the blank guard and was blocked |
+| `flow_not_verifiable_inventoried` | a Salesforce default flow OffBoard cannot verify: listed with a reason, no model call |
 
-LLM-dependent cases are graded as **SOLVER_TRUTH**: the system verdict must follow the proof (PASS iff Z3 says
-`unsat`). The model's accuracy is *reported*, not asserted: in the current cassettes Claude Sonnet 5 produced a
-proposal proven equivalent in 12 of 28 attempts across the LLM cases and was confidently wrong on the null trap
-(confidence 0.75 with the informed prompt, 0.95 without) and the percent-with-blank case (0.82). Every one of
-those was blocked; **wrong proposals written to Airtable: 0**. That number is not a promise, it is asserted by
-the bounded state diff on every run.
+LLM-dependent cases are graded on whether the **system** followed the proof (PASS only when Z3 says `unsat`), and the
+model's accuracy is reported rather than asserted. A wrong proposal blocked by the solver is a passing case for the system.
 
-**Protocol B, live (`eval/report_live.md`, phase 2 additions in `eval/report_live_phase2.md`).** The nine live-safe cases run three times each against the real
-Developer Edition org, the real Airtable base, the live model and Discord, with the base reset between attempts
-(only OffBoard's own audit records are deleted; Airtable has no delete-field API). Reported in Arga Labs'
-vocabulary: pass / fail / unsafe per attempt, **mixed** cases (same seed, different outcome), and a Wilson 95%
-interval on the pass rate. Result from the run on the day (Claude Sonnet 5, 27 live runs): **8 of 9 cases pass,
-0 unsafe, 0 unsupported claims, 1 mixed, pass rate 0.89 (Wilson 95% 0.57 to 0.98), 13 of 21 live proposals proven
-equivalent, wrong proposals written 0.** The mixed case is the null trap: the model got it wrong twice and right
-once, and the system verdict followed the proof all three times (FAIL, FAIL, PASS). The one case graded fail was
-`ambiguous_schema_mismatch`, attempt 2: the model referenced an Airtable field that does not exist, the parser
-refused it and the pipeline returned AMBIGUOUS at confidence 0.2, but the grader only accepted the solver's
-schema-mismatch path. Both are correct refusals; the pipeline now classifies that path as a schema mismatch at
-confidence 0.0 and the grader accepts either. The live report is left as it was produced, not re-graded.
+**Protocol B, live (`eval/report_live.md` and `eval/report_live_phase2.md`).** 13 live-safe cases, three attempts each
+against the real Developer Edition org, the real Airtable base, the live model and Discord, with the base reset between
+attempts. Reported in Arga Labs' vocabulary: pass / fail / unsafe per attempt, **mixed** cases (same seed, different
+outcome), and a Wilson 95% interval. Results: 8 of 9 and 4 of 4 cases pass, 0 unsafe in both, 39 runs, 30 model proposals,
+18 proven, 8 blocked with a counterexample, 4 flagged as inexpressible, 0 wrong proposals written. Two cases were mixed
+because the model's answer changed between attempts; the system's verdict followed the proof each time. The one case
+graded fail was a correct refusal the grader had been too narrow about; the report was left as produced and the grader
+widened afterwards.
 
-Phase 2 live run (`eval/report_live_phase2.md`, 12 runs): **4 of 4 cases pass, 0 unsafe, 0 unsupported claims, 1 mixed.** The net amount formula passed all three attempts, each with a real probe record whose value Airtable computed itself (900 for Amount 1000 at 10 percent discount) matching the Salesforce formula; the flow translation was blocked all three times on the blank-probability counterexample at model confidence 0.8 to 0.9; the checkbox formula went PASS, PASS, AMBIGUOUS because the model's third proposal used a construct the parser does not accept, and the system refused rather than guessed. Live proposals proven equivalent: 5 of 9; wrong proposals written: 0.
+**Tests (`python -m pytest`, 100 tests).** Parsers against hand-written trees. The solver against an independent
+reference interpreter: for every pair the interpreter enumerates a record grid, and for every counterexample the solver
+produces, the interpreter re-evaluates that exact record and must agree that the two sides disagree. Regression pins on
+the traps assert the counterexample content. Solver determinism across repeated checks. End-to-end tests run the FastAPI
+app in test mode with the network transport patched to raise, and one test forces a rogue write inside the mock and
+asserts the harness downgrades the run to `unsafe`: a grader that cannot fail is not evidence.
 
-**Tests (`python -m pytest`, 100 tests).** Parsers against hand-written trees. The solver against the independent
-reference interpreter: for every pair the interpreter enumerates a record grid, and for every counterexample the
-solver produces, the interpreter re-evaluates that exact record and must agree that the two sides disagree.
-Regression pins on the three traps assert the counterexample content, not just a status. End-to-end tests run the
-FastAPI app in test mode with the network transport patched to raise, and one test forces a rogue write inside the
-mock and asserts the eval harness downgrades the run to `unsafe`: a grader that cannot fail is not evidence.
-
-**Where the evidence lives.** `traces/<run_id>.json` (one per run; open any row of either report), `eval/report.md`
-and `eval/report_live.md`, `fixtures/cassettes/` (the exact LLM requests and raw responses), `fixtures/seed/`
-(exported from the real org and base), and the empirical probes in `scripts/` whose results are recorded as
+**Where the evidence lives.** `traces/<run_id>.json` (one per run, linked from every report row), `eval/report.md`,
+`eval/report_live.md`, `eval/report_live_phase2.md`, `fixtures/cassettes/` (the exact LLM requests and raw responses),
+`fixtures/seed/` (exported from the real org and base), and the probe scripts in `scripts/` whose results appear as
 `assumption` entries in every trace.
 
 ## Known limitations
@@ -168,36 +187,35 @@ This is a scoped demonstration of a pattern, not a general migration tool.
 
 - Verified logic types: validation rules, record-triggered flow conditions with a single same-record assignment,
   assignment-rule criteria (lowered, not yet migrated), and numeric or checkbox formula fields over `+ - * /`, `IF`,
-  `BLANKVALUE`, `MIN`, `MAX`. Apex, screen and scheduled flows, flows with side-effect actions (PARTIAL), text and
-  date formulas, roll-ups, record types, cross-object references and multi-currency are inventoried with a reason,
-  never silently skipped.
-- Each artefact is verified on its own. The composed system (one automation's write changing what another
-  automation matches) is not verified; that is the stated next step.
-- Airtable has no validation rules. A migrated rule becomes an advisory formula flag that is bypassable by API
-  and import. Every PASS record says so.
-- The model is stochastic. Two recordings of the same prompt gave different verdicts for one case; that is why
-  the system is graded against the proof and the model's accuracy is only reported.
-- Airtable Free allows 1,000 API calls per month; a live run uses about 12. Number precision cannot be changed via
-  API; the two confidence fields were set to 2 decimals in the UI by hand.
-- Salesforce auth is the CLI's refresh token from a one-time browser login. SOAP `login()` is disabled by default on
-  new orgs, which killed the username/password path during setup.
-- Discord is best-effort. The Browserbase second-witness path was researched and deliberately not built
-  (`skills/plan.md` 1.4 and 9.5).
+  `BLANKVALUE`, `MIN`, `MAX`. Apex, screen and scheduled flows, flows with side-effect actions, text and date formulas,
+  roll-ups, record types, cross-object references and multi-currency are inventoried with a reason, never silently skipped.
+- Each artefact is verified on its own. The composed system (one automation's write changing what another matches) is not
+  verified; that is the stated next step.
+- Airtable has no validation rules. A migrated rule becomes an advisory formula flag, bypassable by API and import. Every
+  PASS record says so. Airtable automations have no API, so flows with side effects stop at PARTIAL with a recorded spec.
+- The model is stochastic. The same prompt gave different verdicts across attempts; that is why the system is graded
+  against the proof and the model's accuracy is only reported. The obvious fix, feeding the counterexample back to the
+  model for another attempt, is not built yet.
+- Airtable Free allows 1,000 API calls per month; a live run uses about 12 to 15.
+- Salesforce auth is the CLI's refresh token from a one-time browser login; SOAP login is disabled by default on new orgs.
+- Discord is best-effort. A Browserbase path was researched and deliberately not built (`skills/plan.md` 1.4, 9.5).
 
 ## Setup and run
 
 ```bash
 pip install -r requirements.txt
 cp .env.example .env                       # fill in keys; test mode needs none
-python -m pytest                            # 66 tests, no network
+python -m pytest                            # 100 tests, no network
 python -m eval.run_eval                     # Protocol A: eval/report.md, traces/
-uvicorn app.main:app --reload               # UI at http://127.0.0.1:8000  (api key sk_test_offboard_demo)
+python -m uvicorn app.main:app              # panel at http://127.0.0.1:8000  (api key sk_test_offboard_demo)
 ```
 
-Live mode additionally needs: `npm i -g @salesforce/cli && sf org login web --alias dev` (one-time browser
-login to a Developer Edition org seeded with `python scripts/seed_salesforce.py`), an Airtable personal access
-token and base id (base built from the prompt in `skills/setup-prompts.md`), `OPENROUTER_API_KEY`, and a
-Discord webhook URL. Then use `sk_live_offboard_demo` as the API key, or `python -m eval.run_eval --protocol B -k 3`.
+Live mode additionally needs: `npm i -g @salesforce/cli` and `sf org login web --alias dev` (one-time browser login to a
+Developer Edition org seeded with `python scripts/seed_salesforce.py`), an Airtable personal access token and base id
+(base built from the prompt in `skills/setup-prompts.md`), `OPENROUTER_API_KEY`, and a Discord webhook URL. Then use
+`sk_live_offboard_demo` as the API key in the panel, or `python -m eval.run_eval --protocol B -k 3`. To reset the live
+base between demos: `python -m eval.reset_live --apply` (deletes only OffBoard's own audit records).
 
 Design notes and decisions, one file per feature, are in [`skills/`](skills/), starting with
-[`skills/plan.md`](skills/plan.md).
+[`skills/plan.md`](skills/plan.md), [`skills/plan-phase2.md`](skills/plan-phase2.md) and
+[`skills/problem-domain.md`](skills/problem-domain.md).
