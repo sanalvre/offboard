@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Needs_Review__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Set by the Flag_Stale_Negotiation flow when a large negotiation-stage deal has low probability.</description>
+    <label>Needs Review</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

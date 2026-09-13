@@ -73,3 +73,58 @@ def evaluate(node: Node, record: Mapping[str, Any], fields: Mapping[str, FieldSp
     else:
         eq = str(raw) == str(node.value)
     return eq if op == "eq" else not eq
+
+
+# --------------------------------------------------------------------------- numeric expressions (formula fields)
+
+from typing import Optional  # noqa: E402
+
+from .models import Expr  # noqa: E402
+
+
+def evaluate_expr(expr: Expr, record: Mapping[str, Any], fields: Mapping[str, FieldSpec], system: System,
+                  blanks_as: str = "BlankAsBlank") -> Optional[float]:
+    """Value of a numeric formula in the formula's own units (Salesforce percent operands appear as 50 for 50%,
+    Airtable as 0.5). Returns None for a blank result.
+
+    Salesforce (formula field): with BlankAsBlank any arithmetic on a blank operand yields blank, unless guarded by
+    BLANKVALUE; with BlankAsZero blank operands are 0. Division by zero yields blank (Salesforce shows #Error).
+    Airtable: blank operands are 0; division by zero yields blank (Airtable shows an error, no value).
+    IF conditions use the boolean semantics of `evaluate`.
+    """
+    def ev(e: Expr) -> Optional[float]:
+        op = e.op
+        if op == "num":
+            return float(e.value)  # type: ignore[arg-type]
+        if op == "field":
+            raw = record.get(e.field)  # type: ignore[arg-type]
+            spec = fields[e.field]  # type: ignore[index]
+            if raw is None or raw == "":
+                return 0.0 if (system == "at" or blanks_as == "BlankAsZero") else None
+            return raw * spec.scale
+        if op == "blankvalue":
+            raw = record.get(e.field)  # type: ignore[arg-type]
+            spec = fields[e.field]  # type: ignore[index]
+            return float(e.value) if raw is None or raw == "" else raw * spec.scale  # type: ignore[arg-type]
+        if op == "neg":
+            a = ev(e.args[0])
+            return None if a is None else -a
+        if op == "if":
+            return ev(e.args[0]) if evaluate(e.cond, record, fields, system) else ev(e.args[1])  # type: ignore[arg-type]
+        a, b = ev(e.args[0]), ev(e.args[1])
+        if a is None or b is None:
+            return None
+        if op == "add":
+            return a + b
+        if op == "sub":
+            return a - b
+        if op == "mul":
+            return a * b
+        if op == "div":
+            return None if b == 0 else a / b
+        if op == "min":
+            return min(a, b)
+        if op == "max":
+            return max(a, b)
+        raise ValueError(op)
+    return ev(expr)

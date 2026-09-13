@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Negotiation_Min_Probability</fullName>
+    <active>true</active>
+    <description>Forecasting: negotiation-stage deals below 50% distort the weighted pipeline.</description>
+    <errorConditionFormula>ISPICKVAL(StageName,&quot;Negotiation/Review&quot;) &amp;&amp; Probability &lt; 50</errorConditionFormula>
+    <errorDisplayField>Probability</errorDisplayField>
+    <errorMessage>Deals in Negotiation/Review must have probability of at least 50%.</errorMessage>
+</ValidationRule>

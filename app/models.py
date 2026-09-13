@@ -63,6 +63,31 @@ class Node(BaseModel):
 Node.model_rebuild()
 
 
+ExprOp = Literal["num", "field", "add", "sub", "mul", "div", "neg", "if", "blankvalue", "min", "max"]
+
+
+class Expr(BaseModel):
+    """Numeric expression over record fields (formula fields). `if` carries a boolean Node in `cond`.
+    Values of fields are in canonical units; each system's scale is applied by the evaluator/solver."""
+
+    op: ExprOp
+    value: Optional[float] = None
+    field: Optional[str] = None
+    args: list["Expr"] = Field(default_factory=list)
+    cond: Optional[Node] = None
+
+    def fields(self) -> set[str]:
+        out = {self.field} if self.field else set()
+        for a in self.args:
+            out |= a.fields()
+        if self.cond is not None:
+            out |= self.cond.fields()
+        return out
+
+
+Expr.model_rebuild()
+
+
 # --------------------------------------------------------------------------- source rule and IR
 
 
@@ -123,6 +148,7 @@ class SolverResult(BaseModel):
     status: Literal["equivalent", "not_equivalent", "ambiguous", "error"]
     reason: str = ""
     counterexample: Optional[dict[str, Any]] = None  # record on which the two sides disagree
+    outputs: Optional[dict[str, Any]] = None  # transformation checks: {"source": value|None, "target": value|None} on the counterexample
     source_fires: Optional[bool] = None  # under the counterexample
     target_flags: Optional[bool] = None
     unsat_core: list[str] = Field(default_factory=list)

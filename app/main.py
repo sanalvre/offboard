@@ -68,31 +68,11 @@ def get_run(run_id: str) -> Any:
 
 
 @app.get("/inventory")
-def inventory(object: str = "Opportunity", mode: Mode = Depends(mode_dep)) -> dict[str, Any]:
-    """Coverage receipt: every validation rule on the object with its latest status."""
-    tracer = Tracer(mode=mode, rule=f"{object}.*", case_id="inventory")
-    sf = MockSalesforce(tracer) if mode == "test" else LiveSalesforce(tracer)
-    rules = sf.list_rules(object)
-    latest: dict[str, dict] = {}
-    for p in sorted(settings.traces_dir.glob("*.json"), key=lambda p: p.stat().st_mtime):
-        try:
-            d = json.loads(p.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
-            continue
-        if d["header"]["mode"] == mode and d.get("summary", {}).get("verdict") not in (None, "NOT_FOUND", "DUPLICATE"):
-            latest[d["header"]["rule"]] = {"run_id": d["header"]["run_id"], "verdict": d["summary"]["verdict"]}
-    status_map = {"PASS": "proven", "FAIL": "blocked", "AMBIGUOUS": "ambiguous", "ERROR": "error"}
-    items = []
-    for r in rules:
-        key = f"{object}.{r['ValidationName']}"
-        last = latest.get(key)
-        items.append({"rule": key, "active": r["Active"], "description": r.get("Description") or "",
-                      "status": status_map.get(last["verdict"], "error") if last else "not_attempted", "last_run": last})
-    counts: dict[str, int] = {}
-    for i in items:
-        counts[i["status"]] = counts.get(i["status"], 0) + 1
-    tracer.finalize({"verdict": None, "inventory": counts})
-    return {"object": object, "mode": mode, "rules": items, "counts": counts}
+def inventory_endpoint(object: str = "Opportunity", mode: Mode = Depends(mode_dep)) -> dict[str, Any]:
+    """Coverage receipt across every logic type in the org (validation rules, formula fields, flows, workflow rules,
+    assignment rules, Apex, approval processes), each with a verifiability reason and its latest status."""
+    from .inventory import inventory
+    return inventory(mode, [object])
 
 
 @app.post("/state/reset")

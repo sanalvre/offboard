@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Net_Amount__c</fullName>
+    <description>Finance: amount after the negotiated discount. Discount is a percent field (50 = 50%).</description>
+    <formula>Amount - (Amount * BLANKVALUE(Discount__c, 0) / 100)</formula>
+    <label>Net Amount</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackTrending>false</trackTrending>
+    <type>Currency</type>
+</CustomField>

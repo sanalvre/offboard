@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>EMEA_Requires_Amount</fullName>
+    <active>true</active>
+    <description>EMEA partner routing needs an amount at creation to pick the partner tier.</description>
+    <errorConditionFormula>ISPICKVAL(Region__c,&quot;EMEA&quot;) &amp;&amp; ISBLANK(Amount)</errorConditionFormula>
+    <errorDisplayField>Amount</errorDisplayField>
+    <errorMessage>EMEA opportunities must carry an amount at creation.</errorMessage>
+</ValidationRule>

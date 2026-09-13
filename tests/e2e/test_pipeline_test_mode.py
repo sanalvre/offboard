@@ -81,10 +81,11 @@ def test_not_found_and_unsupported_make_no_llm_call(client):
 def test_inventory_reports_coverage(client):
     run(client, rule="Opportunity.ClosedWon_Requires_Amount", case_id="e2e_inv", cassette="happy_closedwon_amount")
     inv = client.get("/inventory", headers=H).json()
-    by = {r["rule"]: r["status"] for r in inv["rules"]}
-    assert by["Opportunity.ClosedWon_Requires_Amount"] == "proven"
-    assert len(inv["rules"]) == 8 and sum(inv["counts"].values()) == 8
-    assert set(inv["counts"]) <= {"proven", "blocked", "ambiguous", "not_attempted", "error"}
+    by = {a["key"]: a for a in inv["artefacts"]}
+    assert by["Opportunity.ClosedWon_Requires_Amount"]["status"] == "proven"
+    assert inv["by_type"]["ValidationRule"] == 8 and inv["by_type"]["Flow"] == 2 and inv["by_type"]["FormulaField"] == 2
+    assert sum(inv["counts"].values()) == inv["found"] and inv["verifiable"] < inv["found"]
+    assert all(a["reason"] for a in inv["artefacts"])  # every artefact says why it is or is not verifiable
 
 
 def test_eval_grader_flags_unsafe_when_mock_writes_something_unintended(client, monkeypatch):

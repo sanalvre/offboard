@@ -25,7 +25,7 @@
   .badge { display:inline-block; padding:1px 7px; border:1px solid var(--ink); font-size:11px; letter-spacing:.06em; }
   .badge.PASS { background:var(--paper); }
   .badge.FAIL, .badge.AMBIGUOUS, .badge.ERROR, .badge.unsafe, .badge.fail { background:var(--ink); color:var(--paper); }
-  .badge.NOT_FOUND, .badge.DUPLICATE { border-style:dashed; }
+  .badge.NOT_FOUND, .badge.DUPLICATE, .badge.not_attempted, .badge.not_verifiable { border-style:dashed; }
   .num { font-variant-numeric:tabular-nums; }
   .mute { color:var(--mute); }
   .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0; border:1px solid var(--ink); }
@@ -196,14 +196,20 @@ async function viewEval() {
 
 async function viewInventory() {
   const inv = await api('/inventory');
+  const order = ['proven','blocked','ambiguous','partial','not_attempted','not_verifiable','error'];
+  const types = [...new Set(inv.artefacts.map(a => a.type))];
   $('#main').innerHTML = `
-    <h2>Coverage · ${esc(inv.object)} · ${esc(inv.mode)} mode</h2>
-    <div class="kpis">${['proven','blocked','ambiguous','not_attempted','error'].map(k => `<div class="kpi"><b>${inv.counts[k]||0}</b><span>${k.replace('_',' ')}</span></div>`).join('')}</div>
-    <h2>Rules</h2>
-    <table><thead><tr><th>rule</th><th>active</th><th>business intent</th><th>status</th><th>last run</th></tr></thead><tbody>
-    ${inv.rules.map(r => `<tr><td><b>${esc(r.rule)}</b></td><td>${r.active}</td><td class="mute">${esc(r.description)}</td>
-      <td>${badge(r.status)}</td><td>${r.last_run ? `<a href="#run/${esc(r.last_run.run_id)}">${badge(r.last_run.verdict)}</a>` : '<span class="mute">—</span>'}</td></tr>`).join('')}
-    </tbody></table>`;
+    <h2>Configuration inventory · ${esc(inv.objects.join(', '))} · ${esc(inv.mode)} mode</h2>
+    <div class="kpis"><div class="kpi"><b>${inv.found}</b><span>logic artefacts found</span></div><div class="kpi"><b>${inv.verifiable}</b><span>verifiable</span></div>
+      ${order.filter(k => inv.counts[k]).map(k => `<div class="kpi"><b>${inv.counts[k]}</b><span>${k.replace('_',' ')}</span></div>`).join('')}</div>
+    <p class="mute" style="margin:10px 0 0">Captured from the Metadata API (${esc(inv.source.split(/[\/]/).slice(-3).join('/'))}). Every artefact carries a reason for its verifiability; nothing is silently skipped.</p>
+    ${types.map(t => `<h2>${esc(t)} · ${inv.by_type[t]}</h2>
+    <table><thead><tr><th>name</th><th>object</th><th>active</th><th>business intent</th><th>verifiable</th><th>status</th><th>last run</th></tr></thead><tbody>
+    ${inv.artefacts.filter(a => a.type === t).map(a => `<tr><td><b>${esc(a.name)}</b>${a.details && a.details.formula ? `<br><code class="mute">${esc(a.details.formula)}</code>` : ''}</td>
+      <td>${esc(a.object||'')}</td><td>${a.active == null ? '<span class="mute">—</span>' : a.active}</td><td class="mute">${esc(a.description||a.label||'')}</td>
+      <td>${a.verifiable ? 'yes' : '<b>no</b>'}<br><span class="mute">${esc(a.reason)}</span></td><td>${badge(a.status)}</td>
+      <td>${a.last_run ? `<a href="#run/${esc(a.last_run.run_id)}">${badge(a.last_run.verdict)}</a>` : '<span class="mute">—</span>'}</td></tr>`).join('')}
+    </tbody></table>`).join('')}`;
 }
 route();
 </script>

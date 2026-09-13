@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ClosedWon_Amount_Naive</fullName>
+    <active>true</active>
+    <description>Finance: no deal may be booked as won with zero or negative revenue.</description>
+    <errorConditionFormula>ISPICKVAL(StageName,&quot;Closed Won&quot;) &amp;&amp; Amount &lt;= 0</errorConditionFormula>
+    <errorDisplayField>Amount</errorDisplayField>
+    <errorMessage>A Closed Won opportunity must have a positive amount.</errorMessage>
+</ValidationRule>

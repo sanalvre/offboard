@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Stage_Regression_Blocked</fullName>
+    <active>true</active>
+    <description>Revenue integrity: booked deals are immutable; a reopened deal must be cloned instead.</description>
+    <errorConditionFormula>ISPICKVAL(PRIORVALUE(StageName),&quot;Closed Won&quot;) &amp;&amp; NOT(ISPICKVAL(StageName,&quot;Closed Won&quot;))</errorConditionFormula>
+    <errorDisplayField>StageName</errorDisplayField>
+    <errorMessage>A Closed Won opportunity cannot be reopened; clone it instead.</errorMessage>
+</ValidationRule>

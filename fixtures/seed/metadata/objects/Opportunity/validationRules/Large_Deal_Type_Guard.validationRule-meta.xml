@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Large_Deal_Type_Guard</fullName>
+    <active>true</active>
+    <description>Exec review: every seven-figure deal is routed as new business regardless of account history.</description>
+    <errorConditionFormula>Amount &gt; 1000000 &amp;&amp; NOT(ISPICKVAL(Type,&quot;New Customer&quot;))</errorConditionFormula>
+    <errorDisplayField>Type</errorDisplayField>
+    <errorMessage>Deals over $1M must be typed as New Customer for exec review.</errorMessage>
+</ValidationRule>
