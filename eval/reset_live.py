@@ -1,4 +1,4 @@
-"""Live scenario reset for Protocol B: delete the Migration_Rules records Receipt wrote (Run ID starts with
+"""Live scenario reset for Protocol B: delete the Migration_Rules records OffBoard wrote (Run ID starts with
 `run_`), leaving the 15 seeded records and every other table untouched. Guard formula fields cannot be
 deleted via the Airtable API, so they persist and later runs report them as `exists`.
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         offset = page.get("offset")
         if not offset:
             break
-    print(f"{len(recs)} Receipt-written Migration_Rules records:", [r["fields"].get("Rule") for r in recs])
+    print(f"{len(recs)} OffBoard-written Migration_Rules records:", [r["fields"].get("Rule") for r in recs])
     if "--apply" in sys.argv and recs:
         for i in range(0, len(recs), 10):
             ids = [r["id"] for r in recs[i:i + 10]]

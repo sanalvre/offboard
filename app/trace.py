@@ -84,7 +84,7 @@ class Tracer:
         self.dir.mkdir(parents=True, exist_ok=True)
         self.header: dict[str, Any] = {
             "run_id": self.run_id, "mode": mode, "rule": rule, "case_id": case_id, "attempt": attempt,
-            "started_at": _now(), "schema": "receipt-trace/1",
+            "started_at": _now(), "schema": "offboard-trace/1",
         }
         self.entries: list[dict[str, Any]] = []
         self._seq = 0

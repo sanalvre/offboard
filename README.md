@@ -1,4 +1,4 @@
-# Receipt
+# OffBoard
 
 **Salesforce logic capture and Z3-verified migration to Airtable, with a receipt for every decision.**
 
@@ -7,11 +7,11 @@ Multi-App Agent Hackathon, 13 September 2026. Solo build, Python 3.10 / FastAPI.
 
 ## What it does
 
-Receipt takes one Salesforce validation rule, asks an LLM to propose the equivalent guard in Airtable, and then
+OffBoard takes one Salesforce validation rule, asks an LLM to propose the equivalent guard in Airtable, and then
 refuses to trust the LLM. A deterministic parser turns both the source rule and the proposal into the same small
 boolean IR, and the Z3 SMT solver checks whether they mean the same thing for every possible record, under each
 system's own semantics (a blank number is null in Salesforce and zero in Airtable; a percent is 50 in Salesforce
-and 0.5 in Airtable). If Z3 proves equivalence, Receipt writes the guard formula field and an audit record to
+and 0.5 in Airtable). If Z3 proves equivalence, OffBoard writes the guard formula field and an audit record to
 Airtable, snapshots the base before and after, and checks that nothing else changed. If Z3 finds a record on
 which the two disagree, the write is blocked and the counterexample is the explanation. If the rule cannot be
 encoded at all, it is surfaced as AMBIGUOUS for a human instead of guessed. Every LLM prompt and raw response,
@@ -27,7 +27,7 @@ by hand", and their verification is record counts, a 5% spot check, and two week
 compares source and target logic formally. Meanwhile the traps are real and documented: a validation rule written
 as `Amount <= 0` does not fire on a blank Amount in Salesforce, but its literal Airtable translation flags every
 blank record; a discount cap of `50` means 50% in Salesforce and 5,000% in Airtable. A migrated guard like that
-"looks complete and reports nothing useful". Receipt is a scoped demonstration of the missing capability:
+"looks complete and reports nothing useful". OffBoard is a scoped demonstration of the missing capability:
 proving, not sampling, that a piece of logic means the same thing after migration, and refusing to write when it
 does not. The full research behind this framing is in [`skills/problem-domain.md`](skills/problem-domain.md).
 
@@ -85,7 +85,7 @@ the bounded state diff on every run.
 
 **Protocol B, live (`eval/report_live.md`).** The nine live-safe cases run three times each against the real
 Developer Edition org, the real Airtable base, the live model and Discord, with the base reset between attempts
-(only Receipt's own audit records are deleted; Airtable has no delete-field API). Reported in Arga Labs'
+(only OffBoard's own audit records are deleted; Airtable has no delete-field API). Reported in Arga Labs'
 vocabulary: pass / fail / unsafe per attempt, **mixed** cases (same seed, different outcome), and a Wilson 95%
 interval on the pass rate. Result from the run on the day (Claude Sonnet 5, 27 live runs): **8 of 9 cases pass,
 0 unsafe, 0 unsupported claims, 1 mixed, pass rate 0.89 (Wilson 95% 0.57 to 0.98), 13 of 21 live proposals proven
@@ -134,13 +134,13 @@ pip install -r requirements.txt
 cp .env.example .env                       # fill in keys; test mode needs none
 python -m pytest                            # 66 tests, no network
 python -m eval.run_eval                     # Protocol A: eval/report.md, traces/
-uvicorn app.main:app --reload               # UI at http://127.0.0.1:8000  (api key sk_test_receipt_demo)
+uvicorn app.main:app --reload               # UI at http://127.0.0.1:8000  (api key sk_test_offboard_demo)
 ```
 
 Live mode additionally needs: `npm i -g @salesforce/cli && sf org login web --alias dev` (one-time browser
 login to a Developer Edition org seeded with `python scripts/seed_salesforce.py`), an Airtable personal access
 token and base id (base built from the prompt in `skills/setup-prompts.md`), `OPENROUTER_API_KEY`, and a
-Discord webhook URL. Then use `sk_live_receipt_demo` as the API key, or `python -m eval.run_eval --protocol B -k 3`.
+Discord webhook URL. Then use `sk_live_offboard_demo` as the API key, or `python -m eval.run_eval --protocol B -k 3`.
 
 Design notes and decisions, one file per feature, are in [`skills/`](skills/), starting with
 [`skills/plan.md`](skills/plan.md).

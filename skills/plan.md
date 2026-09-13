@@ -1,6 +1,6 @@
 # Plan: Salesforce Logic Capture & Verified Migration
 
-Working name: **Receipt** (a migration agent that leaves a receipt for every decision).
+Working name: **OffBoard** (a migration agent that leaves a receipt for every decision).
 Hackathon: Multi-App Agent Hackathon, 2026-09-13. Solo, Python 3.10 / FastAPI.
 Judging: 30% technical, 25% reliability & eval, 20% usefulness, 15% originality, 10% demo.
 
@@ -13,7 +13,7 @@ changed versus the plan. Feature docs live beside this file in `skills/`.
 
 Agentic migrations corrupt *logic*, not just data, and they do it silently: the agent
 says "done", the records look fine, and the guard rail that used to stop a Closed Won
-deal with a $0 amount is gone or subtly wrong. Receipt extracts one Salesforce
+deal with a $0 amount is gone or subtly wrong. OffBoard extracts one Salesforce
 validation rule, has an LLM propose the Airtable equivalent, and then refuses to trust
 the LLM: a deterministic parser turns both the source rule and the proposal into Z3
 constraints and the solver either proves them equivalent or hands back a concrete
@@ -326,7 +326,7 @@ That is the honest version of "calibration".
   `POST /eval/run` runs the suite and writes `eval/report.json` + `report.md`;
   `GET /eval/report` returns the latest report; `GET /` serves the UI.
 - Keys: `sk_test_*` selects test adapters; `sk_live_*` selects live adapters; anything
-  else is 401. Keys are compared against `RECEIPT_TEST_KEY` / `RECEIPT_LIVE_KEY` env vars.
+  else is 401. Keys are compared against `OFFBOARD_TEST_KEY` / `OFFBOARD_LIVE_KEY` env vars.
 - Idempotency: `state/processed.json` (test) or the `Migration_Rules` table (live) keyed
   by `object.rule`; a repeat yields `DUPLICATE`, no write, and the trace shows the lookup.
 

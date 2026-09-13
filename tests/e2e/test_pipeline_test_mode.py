@@ -19,7 +19,7 @@ from app.main import app
 from eval.cases import CASES_BY_ID
 from eval.run_eval import grade
 
-H = {"X-API-Key": "sk_test_receipt_demo"}
+H = {"X-API-Key": "sk_test_offboard_demo"}
 
 
 @pytest.fixture()

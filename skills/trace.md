@@ -18,8 +18,8 @@ headline and every eval row.
 - `redact()` runs on every payload before it touches disk: configured secret values (OpenRouter key,
   Airtable PAT, Discord webhook token) plus token shapes (`sk-or-v1-…`, `pat….…`, `Bearer …`, webhook
   path token). Deterministic, so it does not disturb the hash.
-- `config.resolve_mode(api_key)`: `sk_test_*` matching `RECEIPT_TEST_KEY` selects mocks and cassettes;
-  `sk_live_*` matching `RECEIPT_LIVE_KEY` selects real adapters; anything else is 401.
+- `config.resolve_mode(api_key)`: `sk_test_*` matching `OFFBOARD_TEST_KEY` selects mocks and cassettes;
+  `sk_live_*` matching `OFFBOARD_LIVE_KEY` selects real adapters; anything else is 401.
 
 ## Decisions and why
 - **jsonl first, json at the end.** A crash mid-run must still leave evidence (Arga: "claimed a result

@@ -48,7 +48,7 @@ data.records:write, schema.bases:read and schema.bases:write scopes on this base
 
 ## Browserbase (project description prompt)
 
-Project: "Receipt, Salesforce evidence witness".
+Project: "OffBoard, Salesforce evidence witness".
 
 I am building a migration verification agent in Python and TypeScript that moves a
 Salesforce validation rule into Airtable and proves the logic survived. The primary
@@ -80,9 +80,9 @@ the trace as a finding rather than resolved silently.
 
 ## Claude design agent (HTML artifact for the product UI)
 
-Design a single-page HTML artifact for **Receipt**, an evidence-log tool for AI-driven CRM migrations.
+Design a single-page HTML artifact for **OffBoard**, an evidence-log tool for AI-driven CRM migrations.
 
-**What the product does, in one paragraph.** Receipt migrates one piece of business logic (a Salesforce
+**What the product does, in one paragraph.** OffBoard migrates one piece of business logic (a Salesforce
 validation rule) into Airtable and proves the meaning survived. An LLM proposes the Airtable formula; a parser and
 the Z3 solver check it against the original for every possible record; if they are equivalent the guard is
 written, if not the write is blocked and a concrete counterexample record explains why, and if the rule cannot

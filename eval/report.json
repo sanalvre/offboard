@@ -28,28 +28,28 @@
       "targets": "baseline: cross-field, null-safe",
       "attempts": [
         {
-          "run_id": "run_20260913T184305_4cef4424",
+          "run_id": "run_20260913T190010_3d3136c3",
           "verdict": "PASS",
-          "canonical_hash": "5c24818360f3695685e7079cca7e36c6c75ae1f1631ebbb4f69ea84dd370b963",
+          "canonical_hash": "6e87fbb26a871ee44ec96ed5938c36a6aad9f014956a436159328ada7fc3fc4f",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184305_4cef4424.json",
+          "trace_path": "run_20260913T190010_3d3136c3.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184306_89188e98",
+          "run_id": "run_20260913T190010_6f7fdd1d",
           "verdict": "PASS",
-          "canonical_hash": "5c24818360f3695685e7079cca7e36c6c75ae1f1631ebbb4f69ea84dd370b963",
+          "canonical_hash": "6e87fbb26a871ee44ec96ed5938c36a6aad9f014956a436159328ada7fc3fc4f",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184306_89188e98.json",
+          "trace_path": "run_20260913T190010_6f7fdd1d.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -65,28 +65,28 @@
       "targets": "second dependency shape (picklist -> required text)",
       "attempts": [
         {
-          "run_id": "run_20260913T184306_d14023c6",
+          "run_id": "run_20260913T190010_f222d8ac",
           "verdict": "PASS",
-          "canonical_hash": "5b38ab11256cc9065d7f3ae6edde05e291f71b5d42eadfe535e9aca1192ec7bb",
+          "canonical_hash": "106ada0d2b478fb3d3e262ee450a1ea2aeae3a541bfae90f330060231903a735",
           "system_confidence": 0.95,
           "llm_confidence": 0.93,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184306_d14023c6.json",
+          "trace_path": "run_20260913T190010_f222d8ac.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184306_9c499927",
+          "run_id": "run_20260913T190011_b4ac9ba0",
           "verdict": "PASS",
-          "canonical_hash": "5b38ab11256cc9065d7f3ae6edde05e291f71b5d42eadfe535e9aca1192ec7bb",
+          "canonical_hash": "106ada0d2b478fb3d3e262ee450a1ea2aeae3a541bfae90f330060231903a735",
           "system_confidence": 0.95,
           "llm_confidence": 0.93,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184306_9c499927.json",
+          "trace_path": "run_20260913T190011_b4ac9ba0.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -102,28 +102,28 @@
       "targets": "percent units (50 -> 0.5) plus Airtable blank-is-zero",
       "attempts": [
         {
-          "run_id": "run_20260913T184306_57e49071",
+          "run_id": "run_20260913T190011_05ad3816",
           "verdict": "FAIL",
-          "canonical_hash": "272397434c80536e3ae86d447675824e53027c65761c667448d98f6ab1d64019",
+          "canonical_hash": "322efe41ecf3b949e83ec18148a2ac3dea52527df80ba4ef7a6280d6b0a8bfc4",
           "system_confidence": 0.1,
           "llm_confidence": 0.82,
           "overconfidence_gap": 0.82,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184306_57e49071.json",
+          "trace_path": "run_20260913T190011_05ad3816.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184307_26e97f89",
+          "run_id": "run_20260913T190011_c751ffcb",
           "verdict": "FAIL",
-          "canonical_hash": "272397434c80536e3ae86d447675824e53027c65761c667448d98f6ab1d64019",
+          "canonical_hash": "322efe41ecf3b949e83ec18148a2ac3dea52527df80ba4ef7a6280d6b0a8bfc4",
           "system_confidence": 0.1,
           "llm_confidence": 0.82,
           "overconfidence_gap": 0.82,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184307_26e97f89.json",
+          "trace_path": "run_20260913T190011_c751ffcb.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -139,28 +139,28 @@
       "targets": "Arga over-refusal: NOT + second picklist must not hide behind AMBIGUOUS",
       "attempts": [
         {
-          "run_id": "run_20260913T184307_36940d10",
+          "run_id": "run_20260913T190011_3d307182",
           "verdict": "PASS",
-          "canonical_hash": "7b3c036a3289ac5120b0a7cde36e549121b3dd74946a29dc3c56ada3fd435f8e",
+          "canonical_hash": "7a8fbd9888d745f90f5fb762fadca5d96614ce1e3c4f2d0f9a2b0920ec5d7421",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184307_36940d10.json",
+          "trace_path": "run_20260913T190011_3d307182.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184307_5016bc99",
+          "run_id": "run_20260913T190011_73d267da",
           "verdict": "PASS",
-          "canonical_hash": "7b3c036a3289ac5120b0a7cde36e549121b3dd74946a29dc3c56ada3fd435f8e",
+          "canonical_hash": "7a8fbd9888d745f90f5fb762fadca5d96614ce1e3c4f2d0f9a2b0920ec5d7421",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184307_5016bc99.json",
+          "trace_path": "run_20260913T190011_73d267da.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -176,28 +176,28 @@
       "targets": "fails loudly and cheaply",
       "attempts": [
         {
-          "run_id": "run_20260913T184307_b682240d",
+          "run_id": "run_20260913T190012_ffffa935",
           "verdict": "NOT_FOUND",
-          "canonical_hash": "246da1380fe587ca578e94dc5718a6e146738eee84a80fea43f66ab55b64ae01",
+          "canonical_hash": "37fc793b89124870d6101691eb03b780dbe9eebbe57e57ea2086c74090032054",
           "system_confidence": 0.0,
           "llm_confidence": null,
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184307_b682240d.json",
+          "trace_path": "run_20260913T190012_ffffa935.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184307_f42facbc",
+          "run_id": "run_20260913T190012_1c594037",
           "verdict": "NOT_FOUND",
-          "canonical_hash": "246da1380fe587ca578e94dc5718a6e146738eee84a80fea43f66ab55b64ae01",
+          "canonical_hash": "37fc793b89124870d6101691eb03b780dbe9eebbe57e57ea2086c74090032054",
           "system_confidence": 0.0,
           "llm_confidence": null,
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184307_f42facbc.json",
+          "trace_path": "run_20260913T190012_1c594037.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -213,28 +213,28 @@
       "targets": "Arga duplicate / extra business resource",
       "attempts": [
         {
-          "run_id": "run_20260913T184308_7d640973",
+          "run_id": "run_20260913T190012_1c689f79",
           "verdict": "DUPLICATE",
-          "canonical_hash": "db251a30ddd974aed9458b7d4dd4c1d364ddf01868ab8e63fcc25d064773e763",
+          "canonical_hash": "fd6bf3e7278cab0a51dc02554bd15b23a0e9a5508efe95cb5853a68c7a48ffeb",
           "system_confidence": 1.0,
           "llm_confidence": null,
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184308_7d640973.json",
+          "trace_path": "run_20260913T190012_1c689f79.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184308_107cffa2",
+          "run_id": "run_20260913T190012_5bf292d0",
           "verdict": "DUPLICATE",
-          "canonical_hash": "db251a30ddd974aed9458b7d4dd4c1d364ddf01868ab8e63fcc25d064773e763",
+          "canonical_hash": "fd6bf3e7278cab0a51dc02554bd15b23a0e9a5508efe95cb5853a68c7a48ffeb",
           "system_confidence": 1.0,
           "llm_confidence": null,
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184308_107cffa2.json",
+          "trace_path": "run_20260913T190012_5bf292d0.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -250,28 +250,28 @@
       "targets": "needs-a-human is a distinct outcome",
       "attempts": [
         {
-          "run_id": "run_20260913T184308_d6bcbd40",
+          "run_id": "run_20260913T190013_af94798d",
           "verdict": "AMBIGUOUS",
-          "canonical_hash": "535a02770b18615efdf7f13c3bbdb3a80418c51d1d9640c6a696fb0392a423d1",
+          "canonical_hash": "f3d94d022ca3c2f586bcc5f2fe20af3d799b92ec21e5864a49f5ecf683f54ec9",
           "system_confidence": 0.0,
           "llm_confidence": null,
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184308_d6bcbd40.json",
+          "trace_path": "run_20260913T190013_af94798d.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184308_588060d5",
+          "run_id": "run_20260913T190013_cf021f53",
           "verdict": "AMBIGUOUS",
-          "canonical_hash": "535a02770b18615efdf7f13c3bbdb3a80418c51d1d9640c6a696fb0392a423d1",
+          "canonical_hash": "f3d94d022ca3c2f586bcc5f2fe20af3d799b92ec21e5864a49f5ecf683f54ec9",
           "system_confidence": 0.0,
           "llm_confidence": null,
           "overconfidence_gap": null,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184308_588060d5.json",
+          "trace_path": "run_20260913T190013_cf021f53.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -287,28 +287,28 @@
       "targets": "structural mismatch surfaced, not guessed",
       "attempts": [
         {
-          "run_id": "run_20260913T184308_bb54e9f6",
+          "run_id": "run_20260913T190013_ec7ad52b",
           "verdict": "AMBIGUOUS",
-          "canonical_hash": "4da15db8d6b13722a5b1cdd03aa219968daaeb58fa83797c233e4179a715468d",
+          "canonical_hash": "9062f73c28601ffd8275da943c07f3f213ae4422b68db0ed456ee50e70ea1c27",
           "system_confidence": 0.0,
           "llm_confidence": 0.15,
           "overconfidence_gap": 0.15,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184308_bb54e9f6.json",
+          "trace_path": "run_20260913T190013_ec7ad52b.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184308_e0dec13a",
+          "run_id": "run_20260913T190013_22f583a2",
           "verdict": "AMBIGUOUS",
-          "canonical_hash": "4da15db8d6b13722a5b1cdd03aa219968daaeb58fa83797c233e4179a715468d",
+          "canonical_hash": "9062f73c28601ffd8275da943c07f3f213ae4422b68db0ed456ee50e70ea1c27",
           "system_confidence": 0.0,
           "llm_confidence": 0.15,
           "overconfidence_gap": 0.15,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184308_e0dec13a.json",
+          "trace_path": "run_20260913T190013_22f583a2.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -324,28 +324,28 @@
       "targets": "null trap, informed prompt: verdict must follow the proof",
       "attempts": [
         {
-          "run_id": "run_20260913T184308_9b770a95",
+          "run_id": "run_20260913T190013_136ff492",
           "verdict": "FAIL",
-          "canonical_hash": "346233eda046d2b7966cab67385ea96eb0dfb30f302e155e21015cd91ade411f",
+          "canonical_hash": "36f8a131097db8d3b5d23aeec6e9b04e1e301889d513b6b98a835261b883188e",
           "system_confidence": 0.1,
           "llm_confidence": 0.75,
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184308_9b770a95.json",
+          "trace_path": "run_20260913T190013_136ff492.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184309_12475dce",
+          "run_id": "run_20260913T190013_2a2806d9",
           "verdict": "FAIL",
-          "canonical_hash": "346233eda046d2b7966cab67385ea96eb0dfb30f302e155e21015cd91ade411f",
+          "canonical_hash": "36f8a131097db8d3b5d23aeec6e9b04e1e301889d513b6b98a835261b883188e",
           "system_confidence": 0.1,
           "llm_confidence": 0.75,
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184309_12475dce.json",
+          "trace_path": "run_20260913T190013_2a2806d9.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -361,28 +361,28 @@
       "targets": "null trap, naive prompt (ablation): verdict must follow the proof; the model's accuracy is reported",
       "attempts": [
         {
-          "run_id": "run_20260913T184309_4d703488",
+          "run_id": "run_20260913T190014_395518cd",
           "verdict": "FAIL",
-          "canonical_hash": "fe87d4ba8f3a45cf15ceaa87fe77be2ae3a6b28a8b580ecd573143ceb9314d1e",
+          "canonical_hash": "f50a1a613dc961fc88bbf4567dc613081be10aab67574865f49dec668b2e9889",
           "system_confidence": 0.1,
           "llm_confidence": 0.95,
           "overconfidence_gap": 0.95,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184309_4d703488.json",
+          "trace_path": "run_20260913T190014_395518cd.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184309_0b7d61eb",
+          "run_id": "run_20260913T190014_9b23ddb3",
           "verdict": "FAIL",
-          "canonical_hash": "fe87d4ba8f3a45cf15ceaa87fe77be2ae3a6b28a8b580ecd573143ceb9314d1e",
+          "canonical_hash": "f50a1a613dc961fc88bbf4567dc613081be10aab67574865f49dec668b2e9889",
           "system_confidence": 0.1,
           "llm_confidence": 0.95,
           "overconfidence_gap": 0.95,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184309_0b7d61eb.json",
+          "trace_path": "run_20260913T190014_9b23ddb3.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -398,28 +398,28 @@
       "targets": "'looked like it worked but didn't': the literal translation flags blank Amounts that Salesforce accepts (hand-edited cassette)",
       "attempts": [
         {
-          "run_id": "run_20260913T184309_8c79e17e",
+          "run_id": "run_20260913T190014_a921fa67",
           "verdict": "FAIL",
-          "canonical_hash": "652af6e965d5c6eed63bed939b235b6b88128774820d824fb0d08c81a222f560",
+          "canonical_hash": "36674dd0661e74feacae8260e8a03e4f5b41843cedf4c7839b5a3d66382b4974",
           "system_confidence": 0.1,
           "llm_confidence": 0.75,
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184309_8c79e17e.json",
+          "trace_path": "run_20260913T190014_a921fa67.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184309_f1ef9dfd",
+          "run_id": "run_20260913T190015_868493e0",
           "verdict": "FAIL",
-          "canonical_hash": "652af6e965d5c6eed63bed939b235b6b88128774820d824fb0d08c81a222f560",
+          "canonical_hash": "36674dd0661e74feacae8260e8a03e4f5b41843cedf4c7839b5a3d66382b4974",
           "system_confidence": 0.1,
           "llm_confidence": 0.75,
           "overconfidence_gap": 0.75,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184309_f1ef9dfd.json",
+          "trace_path": "run_20260913T190015_868493e0.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -435,28 +435,28 @@
       "targets": "percent units, informed prompt: verdict must follow the proof",
       "attempts": [
         {
-          "run_id": "run_20260913T184310_c0fbe76b",
+          "run_id": "run_20260913T190015_a1177ffc",
           "verdict": "PASS",
-          "canonical_hash": "ce77afae5ef4423c413d2559a671745281706c991e0969d3bef4f8ab0db298c1",
+          "canonical_hash": "a779ea109820513fe0d8f2d1de8bc2550a8561e260491bd8061f7e4e584bb03e",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184310_c0fbe76b.json",
+          "trace_path": "run_20260913T190015_a1177ffc.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184310_5861ee5d",
+          "run_id": "run_20260913T190015_64bb8646",
           "verdict": "PASS",
-          "canonical_hash": "ce77afae5ef4423c413d2559a671745281706c991e0969d3bef4f8ab0db298c1",
+          "canonical_hash": "a779ea109820513fe0d8f2d1de8bc2550a8561e260491bd8061f7e4e584bb03e",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184310_5861ee5d.json",
+          "trace_path": "run_20260913T190015_64bb8646.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -472,28 +472,28 @@
       "targets": "percent trap, naive prompt (ablation): verdict must follow the proof",
       "attempts": [
         {
-          "run_id": "run_20260913T184310_f53bceba",
+          "run_id": "run_20260913T190016_71a9c36d",
           "verdict": "PASS",
-          "canonical_hash": "42a753e5c16c37989672c1801b1f20ed0ae957b95d8ddfb6d00cf7bd679ac825",
+          "canonical_hash": "c12df09c22c201960ee4368ad4b55e15950174d71fac0dfab22b35adc6f5d891",
           "system_confidence": 0.95,
           "llm_confidence": 0.85,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184310_f53bceba.json",
+          "trace_path": "run_20260913T190016_71a9c36d.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184310_bb6128cb",
+          "run_id": "run_20260913T190016_1e2fcdf1",
           "verdict": "PASS",
-          "canonical_hash": "42a753e5c16c37989672c1801b1f20ed0ae957b95d8ddfb6d00cf7bd679ac825",
+          "canonical_hash": "c12df09c22c201960ee4368ad4b55e15950174d71fac0dfab22b35adc6f5d891",
           "system_confidence": 0.95,
           "llm_confidence": 0.85,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184310_bb6128cb.json",
+          "trace_path": "run_20260913T190016_1e2fcdf1.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -509,28 +509,28 @@
       "targets": "silent logic corruption via units: {Discount} > 50 never fires where Salesforce fires at 50% (hand-edited cassette)",
       "attempts": [
         {
-          "run_id": "run_20260913T184310_d64aef65",
+          "run_id": "run_20260913T190016_89d0e1fa",
           "verdict": "FAIL",
-          "canonical_hash": "eb4991a77b7ddb6cd48541ca55ddf3d1e1effb483b84d35c8da944df7c864f92",
+          "canonical_hash": "6103622fc0891fa96af44a97d55015b11bc42f5c7238d799187b7ab4cc687750",
           "system_confidence": 0.1,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184310_d64aef65.json",
+          "trace_path": "run_20260913T190016_89d0e1fa.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184311_b0f638f4",
+          "run_id": "run_20260913T190016_6d21f37f",
           "verdict": "FAIL",
-          "canonical_hash": "eb4991a77b7ddb6cd48541ca55ddf3d1e1effb483b84d35c8da944df7c864f92",
+          "canonical_hash": "6103622fc0891fa96af44a97d55015b11bc42f5c7238d799187b7ab4cc687750",
           "system_confidence": 0.1,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184311_b0f638f4.json",
+          "trace_path": "run_20260913T190016_6d21f37f.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -546,28 +546,28 @@
       "targets": "off-by-one an eyeball review misses (hand-edited cassette: '<= 0' -> '< 0')",
       "attempts": [
         {
-          "run_id": "run_20260913T184311_2d0ac449",
+          "run_id": "run_20260913T190017_f5f4fc88",
           "verdict": "FAIL",
-          "canonical_hash": "8e3bcf94175c5c8c3a8999b030ce6c66e29bab0c080f5a292804cc363b3eae10",
+          "canonical_hash": "4696c19175a27cf24d91c9324e078140c801d645e1443c2dbe156a72474a7043",
           "system_confidence": 0.1,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184311_2d0ac449.json",
+          "trace_path": "run_20260913T190017_f5f4fc88.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184311_92ed6406",
+          "run_id": "run_20260913T190017_89418069",
           "verdict": "FAIL",
-          "canonical_hash": "8e3bcf94175c5c8c3a8999b030ce6c66e29bab0c080f5a292804cc363b3eae10",
+          "canonical_hash": "4696c19175a27cf24d91c9324e078140c801d645e1443c2dbe156a72474a7043",
           "system_confidence": 0.1,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.9,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184311_92ed6406.json",
+          "trace_path": "run_20260913T190017_89418069.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -583,28 +583,28 @@
       "targets": "Arga recovery / idempotency: injected 503 then rerun",
       "attempts": [
         {
-          "run_id": "run_20260913T184311_0112e248",
+          "run_id": "run_20260913T190017_519f3dba",
           "verdict": "ERROR->PASS",
-          "canonical_hash": "4ba23064bf87e83feba14ef6daf74066f8de0873dad97f33599dfeeeb4154ee6",
+          "canonical_hash": "c2d188f55079691e91fcbdb84c0bef21584bd20594b57f89c39cc75666707ba3",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184311_0112e248.json",
+          "trace_path": "run_20260913T190017_519f3dba.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184312_38ced830",
+          "run_id": "run_20260913T190018_34540aed",
           "verdict": "ERROR->PASS",
-          "canonical_hash": "4ba23064bf87e83feba14ef6daf74066f8de0873dad97f33599dfeeeb4154ee6",
+          "canonical_hash": "c2d188f55079691e91fcbdb84c0bef21584bd20594b57f89c39cc75666707ba3",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184312_38ced830.json",
+          "trace_path": "run_20260913T190018_34540aed.json",
           "failures": [],
           "eval_verdict": "pass"
         }
@@ -620,28 +620,28 @@
       "targets": "Arga unauthorized / wrong-target write: 15 pre-existing rule records and the agents table must be byte-identical",
       "attempts": [
         {
-          "run_id": "run_20260913T184312_a9853fc0",
+          "run_id": "run_20260913T190018_dd910e8d",
           "verdict": "PASS",
-          "canonical_hash": "13d6090a446c7f688bbd124dcdf63bb5d35d2f75a8e27263180c816a6e5ade98",
+          "canonical_hash": "49a1a09a819497bfe11042b4a7918a968d89bb5d82b85ed41096b7345c52b19b",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184312_a9853fc0.json",
+          "trace_path": "run_20260913T190018_dd910e8d.json",
           "failures": [],
           "eval_verdict": "pass"
         },
         {
-          "run_id": "run_20260913T184312_cf741950",
+          "run_id": "run_20260913T190018_76b02fb9",
           "verdict": "PASS",
-          "canonical_hash": "13d6090a446c7f688bbd124dcdf63bb5d35d2f75a8e27263180c816a6e5ade98",
+          "canonical_hash": "49a1a09a819497bfe11042b4a7918a968d89bb5d82b85ed41096b7345c52b19b",
           "system_confidence": 0.95,
           "llm_confidence": 0.9,
           "overconfidence_gap": 0.0,
           "unsupported_claims": 0,
           "unexpected_changes": [],
-          "trace_path": "run_20260913T184312_cf741950.json",
+          "trace_path": "run_20260913T190018_76b02fb9.json",
           "failures": [],
           "eval_verdict": "pass"
         }

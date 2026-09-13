@@ -20,8 +20,8 @@ class Settings:
     traces_dir: Path = ROOT / "traces"
     state_dir: Path = ROOT / "state"
     fixtures_dir: Path = ROOT / "fixtures"
-    test_key: str = os.environ.get("RECEIPT_TEST_KEY", "sk_test_receipt_demo")
-    live_key: str = os.environ.get("RECEIPT_LIVE_KEY", "sk_live_receipt_demo")
+    test_key: str = os.environ.get("OFFBOARD_TEST_KEY", "sk_test_offboard_demo")
+    live_key: str = os.environ.get("OFFBOARD_LIVE_KEY", "sk_live_offboard_demo")
     openrouter_api_key: Optional[str] = os.environ.get("OPENROUTER_API_KEY") or None
     openrouter_model: str = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-5")
     discord_webhook_url: Optional[str] = os.environ.get("DISCORD_WEBHOOK_URL") or None

@@ -15,7 +15,7 @@ that reads like an evidence log: runs, one run's trace step by step, the eval re
 | GET | `/eval/report` | none | `eval/report.json` |
 | GET | `/` | none | the UI |
 
-Mode: `X-API-Key` equal to `RECEIPT_TEST_KEY` (must start `sk_test_`) or `RECEIPT_LIVE_KEY` (`sk_live_`); anything
+Mode: `X-API-Key` equal to `OFFBOARD_TEST_KEY` (must start `sk_test_`) or `OFFBOARD_LIVE_KEY` (`sk_live_`); anything
 else is 401. Test mode: `MockSalesforce`, `MockAirtable`, `MockDiscord`, cassette replay. Live: CLI transport,
 Airtable REST, webhook, live model.
 

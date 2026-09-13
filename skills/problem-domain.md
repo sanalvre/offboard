@@ -7,7 +7,7 @@ Gearset, Elements.cloud, Clientell, Equals11, Airtable Community. Reddit and sev
 HubSpot Community thread bodies were unreachable; nothing here relies on them.
 
 This file exists so every future agent on this project understands the real problem
-Receipt is a scoped answer to. Read it before touching the parsers, the solver, or the
+OffBoard is a scoped answer to. Read it before touching the parsers, the solver, or the
 eval cases.
 
 ---
@@ -65,7 +65,7 @@ alerts and time-dependent actions, Apex written by people who left, validation r
 rare record types, assignment and escalation rules, roll-up summaries (they look like
 fields), scheduled jobs, approval processes.
 
-**Consequence for Receipt:** a migration tool must produce a coverage receipt, not just
+**Consequence for OffBoard:** a migration tool must produce a coverage receipt, not just
 per-rule verdicts. "8 rules found, 4 migrated and proven, 2 blocked with counterexamples,
 2 need a human" is the honest output. Silence about what was not attempted is the
 failure mode.
@@ -187,9 +187,9 @@ customers during import.
 
 ---
 
-## 6. What this means for Receipt
+## 6. What this means for OffBoard
 
-Receipt is a scoped demonstration of one missing capability: **proving, not sampling,
+OffBoard is a scoped demonstration of one missing capability: **proving, not sampling,
 that a piece of business logic means the same thing after migration, and refusing to
 write when it does not.** The catalogue above tells us exactly which traps a one-rule
 demo must handle to be credible, and which to name as out of scope.

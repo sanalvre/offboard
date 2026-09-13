@@ -17,7 +17,7 @@ from .models import RunRequest, RunSummary
 from .pipeline import Pipeline
 from .trace import Tracer
 
-app = FastAPI(title="Receipt", version="0.1", description="Salesforce logic capture and Z3-verified migration to Airtable, with a receipt for every decision.")
+app = FastAPI(title="OffBoard", version="0.1", description="Salesforce logic capture and Z3-verified migration to Airtable, with a receipt for every decision.")
 
 
 def mode_dep(x_api_key: Optional[str] = Header(default=None)) -> Mode:

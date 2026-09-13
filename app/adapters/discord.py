@@ -32,7 +32,7 @@ class DiscordAdapter:
             embed["fields"] = [{"name": _clip(n, 256), "value": _clip(v, 1024), "inline": True} for n, v in fields[:25]]
         if footer:
             embed["footer"] = {"text": _clip(footer, 2048)}
-        payload = {"username": "Receipt", "embeds": [embed]}
+        payload = {"username": "OffBoard", "embeds": [embed]}
         t0 = time.perf_counter()
         try:
             resp = self._send(payload)

@@ -131,7 +131,7 @@ class Proposer:
             if not settings.openrouter_api_key:
                 raise RuntimeError("OPENROUTER_API_KEY not configured")
             r = httpx.post(OPENROUTER_URL, headers={"Authorization": f"Bearer {settings.openrouter_api_key}",
-                                                     "HTTP-Referer": "https://github.com/sanalvre/offboard", "X-Title": "Receipt"},
+                                                     "HTTP-Referer": "https://github.com/sanalvre/offboard", "X-Title": "OffBoard"},
                            json=request, timeout=120)
             raw = r.json()
             model = self.model

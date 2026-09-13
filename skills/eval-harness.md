@@ -20,7 +20,7 @@ system's correctness.
   with a Wilson 95% interval, reproducible count, LLM proposals proven, wrong proposals written (0 by
   construction, asserted by the bounded diff).
 - Protocol B (`--protocol B -k 3`): live mode against the real org, base, model and Discord. Before every attempt
-  `live_reset()` deletes only the `Migration_Rules` records Receipt wrote (guard fields persist; Airtable has no
+  `live_reset()` deletes only the `Migration_Rules` records OffBoard wrote (guard fields persist; Airtable has no
   delete-field API, so later attempts report `exists`). Cases marked `live_ok=False` (fault injection, hand-edited
   cassettes, prompt ablations, the mock-only distractor) are skipped. Reports mixed cases instead of reproducibility,
   to `eval/report_live.md`.

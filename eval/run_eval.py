@@ -101,7 +101,7 @@ def grade(case: Case, summary: dict, expected: str, checks=None) -> Attempt:
 
 
 def live_reset() -> None:
-    """Delete only the Migration_Rules records Receipt wrote (Run ID starts with run_). Guard fields persist (no delete-field API)."""
+    """Delete only the Migration_Rules records OffBoard wrote (Run ID starts with run_). Guard fields persist (no delete-field API)."""
     import httpx
     h = {"Authorization": f"Bearer {settings.airtable_pat}"}
     url = f"https://api.airtable.com/v0/{settings.airtable_base_id}/Migration_Rules"

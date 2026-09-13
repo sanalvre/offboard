@@ -45,7 +45,7 @@ class Pipeline:
 
     # ------------------------------------------------------------------ helpers
     def _post(self, step: str, title: str, description: str = "", fields: Optional[list[tuple[str, str]]] = None) -> None:
-        self.discord.post(f"receipt · {step} · {self.t.header['rule']}", description, fields, footer=f"run {self.t.run_id} · mode {self.mode}")
+        self.discord.post(f"offboard · {step} · {self.t.header['rule']}", description, fields, footer=f"run {self.t.run_id} · mode {self.mode}")
 
     def _decide(self, verdict: Verdict, system_confidence: float, reasons: list[str], proposal: Optional[Proposal], solver: Optional[SolverResult]) -> Decision:
         llm_conf = proposal.confidence if proposal else None
@@ -205,7 +205,7 @@ class Pipeline:
             self.claims.append(Claim(kind="field_exists", detail=f"{OPP_TABLE}.{proposal.guard_field_name} already existed ({f['id']}); not recreated"))
             return {"created": False, "id": f["id"], "existing_formula_present": same}
         f = self.at.create_field(OPP_TABLE, proposal.guard_field_name, "formula", {"formula": proposal.guard_formula},
-                                 description=f"Receipt guard for Salesforce rule {self.t.header['rule']}. Verified equivalent by Z3 in run {self.t.run_id}.")
+                                 description=f"OffBoard guard for Salesforce rule {self.t.header['rule']}. Verified equivalent by Z3 in run {self.t.run_id}.")
         self.claims.append(Claim(kind="field_created", detail=f"{OPP_TABLE}.{proposal.guard_field_name} created as formula field {f['id']}"))
         return {"created": True, "id": f["id"]}
 
