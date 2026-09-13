@@ -77,3 +77,50 @@ Constraints: one session per run, under 5 minutes; Free plan (1 browser hour per
 15-minute session cap) is enough for the demo; no proxies needed. The output JSON is
 compared field by field with the Tooling API response, and any mismatch is recorded in
 the trace as a finding rather than resolved silently.
+
+## Claude design agent (HTML artifact for the product UI)
+
+Design a single-page HTML artifact for **Receipt**, an evidence-log tool for AI-driven CRM migrations.
+
+**What the product does, in one paragraph.** Receipt migrates one piece of business logic (a Salesforce
+validation rule) into Airtable and proves the meaning survived. An LLM proposes the Airtable formula; a parser and
+the Z3 solver check it against the original for every possible record; if they are equivalent the guard is
+written, if not the write is blocked and a concrete counterexample record explains why, and if the rule cannot
+be encoded it is flagged for a human. Every run leaves a receipt: the exact LLM prompt and response, every API
+call, the solver's SMT-LIB problem and verdict, before-and-after state of the destination, and a list of claims
+the agent made that were checked against reality. The audience is engineers and RevOps leads who have been burned
+by migrations that "looked complete" and judges evaluating agent reliability.
+
+**Views the page needs (tabs or sections, static sample data is fine):**
+1. **Runs**: a table of runs with started time, mode (test/live), rule name, verdict badge, system confidence,
+   LLM confidence, unsupported claims count, short hash. A toolbar with a rule picker, an "informed / naive
+   prompt" toggle and a Run button.
+2. **Run detail**: a KPI strip (verdict, system confidence 0.95, LLM confidence 0.75, overconfidence gap 0.75,
+   unsupported claims 0/3, unexpected state changes 0, canonical hash), then a vertical step log of about 25
+   entries in order: assumption (5 of them, each with a "verified" mark and an evidence line), tool_call
+   (salesforce.rest, airtable.get_schema, discord.post), rule_ir, llm_call (model, cassette or live, the guard
+   formula in code, confidence), solver (status, z3 sat/unsat, a boxed counterexample like
+   `{StageName: "Closed Won", Amount: blank}` with "source does not fire, target flags"), decision,
+   state_snapshot before/after with a diff line, claims with check marks. Each step expands to its raw JSON; the
+   solver step also expands to SMT-LIB text; the LLM step expands to the exact prompt.
+3. **Eval**: KPI strip (17/17 pass, 0 fail, 0 unsafe, 17/17 reproducible, Wilson 95% 0.82–1.0, unsupported
+   claims 0, LLM proposals proven 12/28, wrong proposals written 0) and a case table with columns case, targets,
+   expected, attempts (verdict badges), eval verdict, sys, llm, gap, trace links.
+4. **Inventory**: coverage counts (proven / blocked / ambiguous / not attempted) and a table of the 8 rules with
+   business intent and status.
+
+**Verdict vocabulary and badges:** PASS, FAIL, AMBIGUOUS, NOT_FOUND, DUPLICATE, ERROR for the pipeline;
+pass / fail / unsafe for the eval. PASS outlined, FAIL/AMBIGUOUS/ERROR/unsafe inverted (white on black),
+NOT_FOUND/DUPLICATE dashed outline.
+
+**Design direction.** Black on white, high contrast, minimal but considered. Monospace-leaning typography
+(ui-monospace / SF Mono / Menlo stack) because this is an evidence log, not a dashboard. 1px rules and hairlines
+instead of cards and shadows; no colour except black, white and two greys; generous whitespace; tabular numbers;
+uppercase letter-spaced labels for metadata; the counterexample record and the guard formula rendered as code.
+The page should feel like a well-set technical document or a lab notebook: intuitive to scan, nothing decorative.
+Dark mode optional; if included, invert cleanly.
+
+**Constraints.** One self-contained HTML file, vanilla CSS, no frameworks, no external assets, responsive down to
+a laptop width, and the structure should be easy to wire to JSON endpoints (`/runs`, `/runs/{id}`,
+`/eval/report`, `/inventory`) later: use data attributes or simple render functions rather than hard-coded
+markup where practical. Keep the header small: the word RECEIPT, four nav items, and an API-key input on the right.
