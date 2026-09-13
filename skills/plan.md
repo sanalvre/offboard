@@ -224,6 +224,16 @@ comparisons `= <> < <= > >=`, numeric and string literals, parentheses. Anything
 and forces AMBIGUOUS. Same shape for the Airtable subset: `AND/OR/NOT/IF`, `{Field}`,
 `BLANK()`, comparisons, literals.
 
+Field descriptors are type-aware because formula text alone does not determine meaning
+(see `skills/problem-domain.md` 3.3): each carries `type`, `nullable`, `scale` (percent
+is 100 on the Salesforce side and 1 on the Airtable side), the option list with
+`api_name` and `label`, and `compare_on` (`api_name` for ISPICKVAL, `label` for Airtable
+selects). Additions from the domain research: `GET /inventory` returns every validation
+rule on the object with a status (`proven`, `blocked`, `ambiguous`, `not_attempted`) so
+coverage is reported rather than implied; and every semantic assumption the pipeline
+relies on (blank handling, percent scale, case sensitivity) is written to the trace as an
+`assumption` entry with its evidence source and whether block 0 verified it empirically.
+
 ### 2.3 Z3 encoding (with null semantics; this is what makes the calibration case real)
 
 - Each picklist / select field: `EnumSort`; values are the union of both systems' option
