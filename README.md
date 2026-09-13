@@ -7,30 +7,34 @@ Multi-App Agent Hackathon, 13 September 2026. Solo build, Python 3.10 / FastAPI.
 
 ## What it does
 
-OffBoard captures the configuration layer of a Salesforce org (validation rules, formula fields, flows, assignment
-rules, and everything else the Metadata API returns), asks an LLM to propose the equivalent in Airtable for each piece
-it can verify, and then refuses to trust the LLM. A deterministic parser turns both the source rule and the proposal into the same small
-boolean IR, and the Z3 SMT solver checks whether they mean the same thing for every possible record, under each
-system's own semantics (a blank number is null in Salesforce and zero in Airtable; a percent is 50 in Salesforce
-and 0.5 in Airtable). If Z3 proves equivalence, OffBoard writes the guard formula field and an audit record to
-Airtable, snapshots the base before and after, and checks that nothing else changed. If Z3 finds a record on
-which the two disagree, the write is blocked and the counterexample is the explanation. If the rule cannot be
-encoded at all, it is surfaced as AMBIGUOUS for a human instead of guessed. Every LLM prompt and raw response,
-every API call and response, the solver's SMT-LIB problem and result, every semantic assumption with its evidence,
-and every claim the agent makes about what it did are written to a per-run JSON trace. The Discord post is the
-headline; the trace file is the receipt.
+Everyone knows companies hate their legacy systems, and Salesforce is the example here. So why do they stay if moving
+data is easy? Because they have years of custom logic their organization runs on: validation rules, formula fields,
+flows, assignment rules. Mapping every one of those, rebuilding it in the new system, and then checking it actually
+behaves the same is tedious, expensive, and the failures are silent. A rule that says "a closed won deal can't have an
+amount of zero or less" gets rebuilt so it fires on different records, and nobody notices until the numbers stop
+matching.
+
+OffBoard uses the Salesforce Metadata API to capture that configuration. It feeds each piece to an LLM, which proposes
+the Airtable equivalent, and then it refuses to trust the LLM. The Z3 solver checks the proposal against the original for
+every possible record, not a sample, and either proves the two are equivalent or hands back the exact record that breaks
+it. If they're not identical, nothing gets written. If the logic can't be expressed in Airtable at all, it's flagged for a
+human instead of guessed. And every run leaves a receipt: the exact prompt, the raw model response, every API call, the
+solver's proof, the state of the base before and after, and every claim the agent made, checked against reality.
 
 ## Why this matters
 
-Agentic migrations do not only lose data; they corrupt business logic, and they do it silently. Consultancies
-describe Salesforce-to-HubSpot migrations where "moving records is the cheap part" and "every workflow is rebuilt
-by hand", and their verification is record counts, a 5% spot check, and two weeks of parallel running. Nobody
-compares source and target logic formally. Meanwhile the traps are real and documented: a validation rule written
-as `Amount <= 0` does not fire on a blank Amount in Salesforce, but its literal Airtable translation flags every
-blank record; a discount cap of `50` means 50% in Salesforce and 5,000% in Airtable. A migrated guard like that
-"looks complete and reports nothing useful". OffBoard is a scoped demonstration of the missing capability:
-proving, not sampling, that a piece of logic means the same thing after migration, and refusing to write when it
-does not. The full research behind this framing is in [`skills/problem-domain.md`](skills/problem-domain.md).
+The two systems don't even agree on what a blank means. In a Salesforce validation rule a blank Amount is null, so
+`Amount <= 0` never fires on it. Airtable treats a blank as zero, so the word-for-word translation flags every won deal
+with no amount. Percent is stored as 50 in Salesforce and 0.5 in Airtable. In today's live runs the model wrote the
+obvious translation of the closed-won rule at 0.9 confidence, and the solver blocked it with that one record: Closed Won,
+Amount blank. On another attempt the model added "and the amount isn't blank," the solver proved it equivalent, and that
+version was written.
+
+Nobody in the migration business checks logic this way. Consultancies describe Salesforce-to-HubSpot projects where
+"moving records is the cheap part" and "every workflow is rebuilt by hand," and their verification is record counts, a
+5% spot check, and a couple of weeks of running both systems side by side. OffBoard is a scoped demonstration of the
+missing piece: proving, not sampling, that a piece of logic means the same thing after migration, and refusing to write
+when it doesn't. The research behind that framing is in [`skills/problem-domain.md`](skills/problem-domain.md).
 
 ## Three things the solver checks
 
@@ -75,7 +79,8 @@ The LLM is never in the verification path. It proposes; a parser and a solver de
 
 ## How reliability was tested
 
-Two protocols, both reported with links to the trace behind every row.
+Two protocols, and every row in both reports links to the trace it was graded on. Nothing here is a summary you
+have to take on faith.
 
 **Protocol A, offline (`eval/report.md`).** 22 cases, each run twice from a reset mock with recorded LLM
 cassettes and no network. The harness asserts the expected verdict, case-specific evidence in the trace, and
