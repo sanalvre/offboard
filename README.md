@@ -121,6 +121,8 @@ refused it and the pipeline returned AMBIGUOUS at confidence 0.2, but the grader
 schema-mismatch path. Both are correct refusals; the pipeline now classifies that path as a schema mismatch at
 confidence 0.0 and the grader accepts either. The live report is left as it was produced, not re-graded.
 
+Phase 2 live run (`eval/report_live_phase2.md`, 12 runs): **4 of 4 cases pass, 0 unsafe, 0 unsupported claims, 1 mixed.** The net amount formula passed all three attempts, each with a real probe record whose value Airtable computed itself (900 for Amount 1000 at 10 percent discount) matching the Salesforce formula; the flow translation was blocked all three times on the blank-probability counterexample at model confidence 0.8 to 0.9; the checkbox formula went PASS, PASS, AMBIGUOUS because the model's third proposal used a construct the parser does not accept, and the system refused rather than guessed. Live proposals proven equivalent: 5 of 9; wrong proposals written: 0.
+
 **Tests (`python -m pytest`, 95 tests).** Parsers against hand-written trees. The solver against the independent
 reference interpreter: for every pair the interpreter enumerates a record grid, and for every counterexample the
 solver produces, the interpreter re-evaluates that exact record and must agree that the two sides disagree.
