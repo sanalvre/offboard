@@ -102,10 +102,13 @@ s.check()  # unsat => equivalent; sat => s.model() is the counterexample record
   Free via personal access token with scopes `data.records:read/write`,
   `schema.bases:read/write`. Creatable types include `singleSelect`, `number`,
   `currency`, `checkbox`, `singleLineText`, `multilineText`.
-- **Constraint A: formula fields are almost certainly NOT creatable via API.** The field
-  model docs mark `formula` read-only (no write block); pyAirtable excludes it; community
-  answers say no. One fetch summary claimed otherwise, so block 0 includes a single
-  `POST .../fields` with `type: formula` to settle it. Plan assumes **no**.
+- **Constraint A, RESOLVED 2026-09-13 by the block-0 probe: formula fields CAN be created
+  via API.** `POST .../fields` with `type: formula, options: {formula: ...}` succeeded
+  against the real base (field `Guard: ClosedWon_Requires_Amount`). The docs and
+  community answers saying otherwise were wrong or stale. So the agent writes the guard
+  formula field directly on PASS, and the `Migration_Rules` record is the audit entry,
+  not a workaround. There is still no delete-field endpoint, so scenario reset cannot
+  remove guard fields; creation is create-if-missing and logged as `exists`.
 - **Constraint B: 1,000 API calls per workspace per month on Free**, schema reads
   included. Overage is blocked after a grace period. So test mode makes **zero** Airtable
   calls, and a live run is budgeted at 6 calls or fewer (1 schema read, up to 3 field
@@ -124,9 +127,21 @@ s.check()  # unsat => equivalent; sat => s.model() is the counterexample record
   README as a manual option the human can add from the verified formula.
 - Formula text *is* readable back via the schema endpoint (`options.formula`, field refs
   as `{fldXXX}` IDs): used for the duplicate check and a read-back verification step.
-- Airtable blank semantics for the calibration case: Airtable treats a blank number as 0
-  in numeric comparisons, so `{Amount}<=0` is true on blank. Block 0 includes typing that
-  formula into the base once to confirm before building an eval case on it.
+- **Airtable blank semantics, VERIFIED 2026-09-13 in the real base:** the naive formula
+  `AND({Stage}='Closed Won', {Amount}<=0)` matches a Closed Won record with a blank
+  Amount (and one with Amount 0); `{Amount}<0` matches neither. Airtable treats blank as
+  0 in numeric comparisons. The Salesforce half of the trap (blank is null, rule does not
+  fire) is verified in the org once login works.
+- **Field options are not patchable for type or precision** (`422 Changing a field's type
+  or number precision is not currently supported`). The base builder created the two
+  confidence fields with precision 0; change them to 2 decimals in the Airtable UI once.
+  The agent never relies on changing existing field options.
+- **Base as built differs from the prompt** (acceptable, recorded): Stage has two extra
+  options (`Negotiation`, `Proposal`), Type has three extra, `Migration_Rules` has 15
+  unrelated AI-generated records and extra Verdict options (`Approved`, `Rejected`), and
+  there is a `Migration_Agents` table instead of `Opportunities_Archive`. Those 15 records
+  and the `Migration_Agents` table now serve as the distractors that must never change.
+  Two `PROBE` records (Closed Won, blank and zero Amount) were added for the demo view.
 
 ### 1.4 Browserbase + Stagehand: DROPPED as fallback; documented as "why not"
 
