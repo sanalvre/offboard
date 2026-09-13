@@ -2,8 +2,30 @@
 
 **Salesforce logic capture and Z3-verified migration to Airtable, with a receipt for every decision.**
 
+**Demo video (2 min):** https://www.loom.com/share/b4adb53c35de442c896678b5116fc026
+
 Multi-App Agent Hackathon, 13 September 2026. Solo build, Python 3.10 / FastAPI. Apps touched: Salesforce
 (Tooling API and Metadata API), Airtable (Web API), OpenRouter (Claude Sonnet 5), Discord (webhooks).
+
+## What the demo shows
+
+1. **Inventory**: the whole configuration layer pulled from the Metadata API. 15 pieces of logic across 5 types, 12
+   verifiable, 3 not, each with a reason.
+2. **A proven migration**: the closed-won rule, the exact prompt the model saw, the solver's `unsat`, and the claims
+   checked against Airtable after the write.
+3. **A blocked migration**: the same rule without its blank guard. The model said 0.9; the solver found the record
+   (Closed Won, Amount blank) and nothing was written. That gap between what the model believed and what could be
+   proven is the failure this tool exists to catch.
+4. **Eval**: 22 of 22 offline cases pass, 0 unsafe, and every trace **hashes identical** on a second run. The hash is a
+   SHA-256 fingerprint of the whole trace with only timestamps and run ids stripped, so a match means the two runs were
+   indistinguishable down to the counterexample record and the confidence numbers, not just "passed twice". Live: the
+   model mapped the logic correctly 18 of 30 times; 8 wrong proposals were blocked with their counterexample; 4 could
+   not be expressed in Airtable and were flagged for a human; 0 wrong proposals reached Airtable, checked by a
+   before-and-after diff of the base on every run.
+5. **Mapping**: the schema check that runs before any rule. It found a real precision loss (Discount at two decimals in
+   percent units needs four as a fraction) and a field with no home (Region).
+6. **Discord**: one embed per step as it happens, each carrying the run id, so the notification is one click from the
+   receipt.
 
 ## What it does
 
