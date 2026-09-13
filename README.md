@@ -2,7 +2,7 @@
 
 **Salesforce logic capture and Z3-verified migration to Airtable, with a receipt for every decision.**
 
-**Demo video (2 min):** https://www.loom.com/share/b4adb53c35de442c896678b5116fc026
+**Demo video (2 min):** https://www.loom.com/share/0abf3b6a72ee44bfa900564caf640a1a
 
 Built solo for the Multi-App Agent Hackathon, 13 September 2026. Python 3.10 / FastAPI. Apps in the stack:
 **Salesforce** (Tooling API and Metadata API, the source), **Airtable** (Web API, the destination), **Discord**
